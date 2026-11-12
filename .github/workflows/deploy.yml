@@ -35,19 +35,24 @@ jobs:
       - name: Build and Push Docker image
         run: |
           IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
-          docker build -t "$IMAGE_URI" .
+          LATEST_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:latest"
+          docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
           docker push "$IMAGE_URI"
+          docker push "$LATEST_URI"
 
       - name: Deploy to Cloud Run
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.GCP_REGION }}
-          image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          flags: '--allow-unauthenticated'
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --region ${{ env.GCP_REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080
 
       - name: Output Service URL
         run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.GCP_REGION }} --project ${{ secrets.GCP_PROJECT_ID }} --format 'value(status.url)')
           echo "Service deployed successfully!"
-          echo "URL: ${{ steps.deploy.outputs.url }}"
+          echo "Public URL: $URL"

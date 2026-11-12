@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Northgate eKYC · Analyst Assist System</title>
+  <style>
+    :root {
+      --primary: #0f2b48;
+      --accent: #2563eb;
+      --accent-subtle: #dbeafe;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --success-subtle: #dcfce7;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --danger-subtle: #fee2e2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text-main); line-height: 1.55; }
+
+    header {
+      background: var(--primary); color: #fff; padding: 16px 28px;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-badge { background: #38bdf8; color: var(--primary); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .header-title { font-size: 17px; font-weight: 600; }
+    .header-sub { font-size: 12px; color: #94a3b8; }
+    .header-target { font-size: 12px; background: rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 4px; }
+
+    .nav-tabs-bar {
+      background: #fff; border-bottom: 2px solid var(--border); padding: 0 28px;
+      display: flex; gap: 4px; position: sticky; top: 0; z-index: 100; overflow-x: auto;
+    }
+    .nav-tab-btn {
+      background: none; border: none; padding: 14px 16px; font-size: 14px; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    .nav-tab-btn:hover { color: var(--accent); background: #f1f5f9; }
+    .nav-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-tab-btn:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .tab-badge { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 6px; border-radius: 10px; }
+    .nav-tab-btn.active .tab-badge { background: var(--accent-subtle); color: var(--accent); }
+
+    .tab-page { display: none; padding: 28px; max-width: 1280px; margin: 0 auto; }
+    .tab-page.active-page { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .card-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .panel { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+    .panel h3 { font-size: 15px; color: var(--primary); margin-bottom: 8px; }
+    .panel ul { padding-left: 20px; font-size: 14px; }
+    .panel li { margin-bottom: 6px; }
+    .panel.do { border-top: 4px solid var(--success); }
+    .panel.dont { border-top: 4px solid var(--danger); background: #fff7f7; }
+    .muted { color: var(--text-muted); font-size: 13px; }
+
+    .plain-english-box { background: #f0fdf4; border-left: 5px solid var(--success); padding: 18px 22px; border-radius: 6px; margin-bottom: 24px; }
+    .plain-english-box h2 { font-size: 15px; color: #166534; margin-bottom: 6px; }
+    .plain-english-box p { font-size: 16px; }
+
+    /* Glossary tooltips */
+    .term { border-bottom: 1px dotted var(--accent); cursor: help; position: relative; color: var(--accent); font-weight: 600; outline: none; }
+    .term::after {
+      content: attr(data-def); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+      width: 260px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 400; line-height: 1.45;
+      padding: 10px 12px; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+      opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 50; text-align: left;
+    }
+    .term:hover::after, .term:focus::after { opacity: 1; }
+
+    /* Quiz */
+    .quiz-q { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .quiz-q p { font-weight: 600; margin-bottom: 10px; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-opt {
+      text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 12px; cursor: pointer; font-size: 14px;
+    }
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.right { background: var(--success-subtle); border-color: var(--success); }
+    .quiz-opt.wrong { background: var(--danger-subtle); border-color: var(--danger); }
+    .quiz-feedback { font-size: 13px; margin-top: 8px; color: var(--text-muted); min-height: 18px; }
+
+    /* Pipeline */
+    .pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 8px 0 20px; }
+    .pipe-step {
+      background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 10px; padding: 14px 12px;
+      text-align: center; cursor: pointer; font: inherit; color: inherit; transition: transform 0.15s, border-color 0.2s, background 0.2s;
+    }
+    .pipe-step:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .pipe-step.selected { border-color: var(--accent); background: #eff6ff; box-shadow: 0 4px 14px rgba(37,99,235,0.15); }
+    .pipe-step.playing { border-color: var(--success); background: var(--success-subtle); }
+    .step-num { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; background: #cbd5e1; color: #334155; border-radius: 50%; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .pipe-step.selected .step-num { background: var(--accent); color: #fff; }
+    .pipe-step.human .step-num { background: var(--success); color: #fff; }
+    .step-name { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .step-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .step-detail { border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 18px 20px; background: #fff; min-height: 150px; }
+    .step-detail h3 { color: var(--primary); margin-bottom: 8px; font-size: 16px; }
+    .step-detail dt { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); margin-top: 8px; }
+    .step-detail dd { font-size: 14px; margin-left: 0; }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .btn { border: 1px solid var(--border); background: #fff; color: var(--primary); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: #1d4ed8; color: #fff; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Code block */
+    .code-block { background: #f1f5f9; padding: 18px; border-radius: 8px; font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.7; margin-top: 16px; }
+    .code-note { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+
+    /* Demo */
+    .case-picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .case-btn { background: #fff; border: 2px solid var(--border); border-radius: 8px; padding: 14px; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .case-btn:hover { border-color: var(--accent); }
+    .case-btn.selected { border-color: var(--accent); background: #eff6ff; box-shadow: 0 0 0 1px var(--accent); }
+    .case-btn-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+    .tag-clean { background: var(--success-subtle); color: #15803d; }
+    .tag-complex { background: #fef3c7; color: #b45309; }
+    .tag-fail { background: var(--danger-subtle); color: #b91c1c; }
+    .case-btn-title { font-size: 14px; font-weight: 700; }
+    .case-btn-type { font-size: 12px; color: var(--text-muted); }
+
+    .explainer { background: #eff6ff; border-left: 4px solid var(--accent); padding: 14px 16px; border-radius: 4px; font-size: 14px; }
+    .explainer ul { padding-left: 20px; margin-top: 6px; }
+    .explainer.warn { background: #fff7ed; border-left-color: var(--warning); }
+
+    .workspace-split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 20px; }
+    .panel-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .panel-label .lbl { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .panel-label .hint { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+
+    .doc-preview-panel {
+      background: #0f172a; color: #f1f5f9; border-radius: 8px; padding: 16px;
+      font-family: "Courier New", Courier, monospace; font-size: 12.5px; line-height: 1.6;
+      overflow-y: auto; max-height: 540px; border: 1px solid #334155;
+    }
+    .doc-page { color: #7dd3fc; font-weight: 700; margin-top: 10px; }
+    .doc-page:first-child { margin-top: 0; }
+    .doc-line { padding: 2px 6px; border-radius: 3px; transition: background 0.3s; }
+    .doc-line.flash { background: #1e40af; outline: 2px solid #60a5fa; }
+    .doc-highlight { background: #854d0e; color: #fef08a; padding: 1px 4px; border-radius: 3px; }
+    .doc-highlight-fail { background: #991b1b; color: #fecaca; padding: 1px 4px; border-radius: 3px; text-decoration: underline; }
+
+    .progress-wrap { margin-bottom: 12px; }
+    .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width 0.3s; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { background: #f8fafc; color: #475569; text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .table-responsive { overflow-x: auto; }
+    .cite-btn {
+      background: #e2e8f0; color: #1e293b; font-size: 11px; font-weight: 600; padding: 4px 8px;
+      border-radius: 4px; border: none; cursor: pointer; font-family: monospace;
+    }
+    .cite-btn:hover { background: var(--accent-subtle); color: var(--accent); }
+    .conf { font-weight: 700; }
+    .conf.high { color: var(--success); }
+    .conf.low { color: var(--danger); }
+    .status-chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; display: inline-block; margin-top: 4px; }
+    .st-pending { background: #e2e8f0; color: #334155; }
+    .st-accepted { background: var(--success-subtle); color: #166534; }
+    .st-edited { background: #fef3c7; color: #92400e; }
+    .st-rejected { background: var(--danger-subtle); color: #991b1b; }
+    .action-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-act { border: 1px solid var(--border); background: #fff; padding: 5px 9px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-act.btn-accept:hover { background: var(--success); color: #fff; border-color: var(--success); }
+    .btn-act.btn-edit:hover { background: var(--warning); color: #fff; border-color: var(--warning); }
+    .btn-act.btn-reject:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .field-row.error { background: #fff5f5; }
+
+    .red-line-zone { background: #fff5f5; border: 2px solid #fecaca; border-left: 6px solid var(--danger); padding: 16px 18px; border-radius: 6px; margin-top: 18px; }
+    .red-line-title { font-size: 13px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .checklist { list-style: none; font-size: 13px; margin: 10px 0 12px; }
+    .checklist li { padding: 3px 0; color: var(--text-muted); }
+    .checklist li.done { color: var(--success); font-weight: 600; }
+    .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .sign-grid label { font-size: 11px; font-weight: 700; color: #7f1d1d; display: block; margin-bottom: 4px; }
+    select.input { width: 100%; padding: 7px; border-radius: 4px; border: 1px solid #f87171; font-size: 13px; background: #fff; }
+
+    .audit-box { background: #090d16; color: #38bdf8; font-family: "Courier New", Courier, monospace; padding: 12px; border-radius: 6px; font-size: 12px; height: 170px; overflow-y: auto; margin-top: 8px; }
+    .audit-entry { margin-bottom: 4px; }
+    .audit-entry.human { color: #fde68a; }
+
+    /* Metrics */
+    .calc { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+    .calc label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .calc input[type=range] { width: 100%; }
+    .calc-row { margin-bottom: 16px; }
+    .calc-val { font-size: 14px; color: var(--primary); font-weight: 700; }
+    .result-big { font-size: 34px; font-weight: 800; color: var(--success); }
+    .bar-row { margin-bottom: 14px; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+    .bar { height: 14px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; transition: width 0.4s; }
+    .bar-fill.base { background: #94a3b8; }
+    .bar-fill.new { background: var(--success); }
+    details.pillar { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: #fff; }
+    details.pillar summary { cursor: pointer; padding: 14px 16px; font-weight: 700; color: var(--primary); list-style: none; }
+    details.pillar summary::-webkit-details-marker { display: none; }
+    details.pillar summary::after { content: "+"; float: right; color: var(--accent); font-size: 18px; line-height: 1; }
+    details.pillar[open] summary::after { content: "−"; }
+    details.pillar .body { padding: 0 16px 16px; font-size: 14px; color: var(--text-muted); }
+    details.pillar .body p + p { margin-top: 8px; }
+
+    .why-box { background: #fdf2f8; border-left: 5px solid #db2777; padding: 16px 20px; border-radius: 4px; margin-bottom: 20px; }
+    .why-box strong { color: #9d174d; }
+    .why-box p { font-size: 14px; color: #831843; margin-top: 4px; }
+
+    /* Orchestrator workflow */
+    .wf { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 8px 0 4px; }
+    .wf-node {
+      border: 2px solid #cbd5e1; background: #fff; border-radius: 10px; padding: 10px 16px; min-width: 240px;
+      text-align: center; font: inherit; font-weight: 700; color: var(--primary); cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .wf-node small { display: block; font-weight: 400; color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+    .wf-node:hover, .wf-node.selected { border-color: var(--accent); background: #eff6ff; box-shadow: 0 4px 14px rgba(37,99,235,0.15); }
+    .wf-node.orch { background: var(--primary); color: #fff; border-color: var(--primary); min-width: 320px; }
+    .wf-node.orch small { color: #cbd5e1; }
+    .wf-node.orch:hover, .wf-node.orch.selected { background: var(--primary-light, #1d456f); border-color: #38bdf8; }
+    .wf-node.exc { border-color: var(--warning); }
+    .wf-node.human { border-color: var(--success); background: var(--success-subtle); }
+    .wf-arrow { color: var(--text-muted); font-size: 16px; line-height: 1; }
+    .wf-branches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; margin: 4px 0; }
+    .wf-branch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .wf-cond {
+      font-size: 11px; color: var(--text-muted); background: #f1f5f9; border: 1px dashed #cbd5e1;
+      border-radius: 6px; padding: 5px 8px; text-align: center; min-height: 36px; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .wf-branch .wf-node { width: 100%; min-width: 0; }
+    .wf-detail { margin-top: 18px; }
+    .trace-box {
+      background: #090d16; color: #cbd5e1; font-family: "Courier New", Courier, monospace; font-size: 12.5px;
+      padding: 14px; border-radius: 6px; line-height: 1.7; margin-top: 8px;
+    }
+    .trace-box .t-orch { color: #38bdf8; }
+    .trace-box .t-sub { color: #86efac; }
+    .trace-box .t-flag { color: #fbbf24; }
+    .trace-box .t-human { color: #fde68a; }
+    .rules-table { margin-top: 16px; }
+    @media (max-width: 1000px) {
+      .wf-branches { grid-template-columns: 1fr; }
+      .pipeline { grid-template-columns: 1fr 1fr; }
+      .workspace-split, .calc, .grid-2 { grid-template-columns: 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .case-picker-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .tab-page { padding: 16px; }
+      .grid-4, .case-picker-grid, .sign-grid { grid-template-columns: 1fr; }
+      .pipeline { grid-template-columns: 1fr; }
+      header { padding: 14px 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tab-page.active-page, .term::after, .pipe-step, .bar-fill { transition: none; animation: none; }
+    }
+    .portal-banner {
+      background: #070e18; color: #cbd5e1; padding: 10px 28px; font-size: 13px;
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b;
+    }
+    .portal-banner a {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(56, 189, 248, 0.15); color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35); padding: 6px 14px;
+      border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    .portal-banner a:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      color: #ffffff;
+    }
+    .portal-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-banner">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="portal-dot"></span>
+      <span style="font-weight: 700; color: #f8fafc; letter-spacing: 0.3px;">NORTHGATE RECRUITMENT PORTAL</span>
+      <span style="color: #475569;">|</span>
+      <span style="color: #94a3b8; font-weight: 500;">Assignment 2: Analyst Assist UBO Extraction Desk</span>
+    </div>
+    <a href="/">
+      <span>← Switch to Assignment 1: ChaseUp Workbench</span>
+      <span style="background: #38bdf8; color: #0b192c; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">ACTIVE</span>
+    </a>
+  </div>
+
+  <header>
+    <div class="brand">
+      <span class="brand-badge">Northgate Corporate Bank</span>
+      <div>
+        <div class="header-title">KYC Analyst Assist · Interactive Prototype</div>
+        <div class="header-sub">Assignment 2 Submission · 11-Day UBO Extraction Slice</div>
+      </div>
+    </div>
+    <span class="header-target">Target: save about 2.5 hrs per file · no AI risk rating</span>
+  </header>
+
+  <nav class="nav-tabs-bar" aria-label="Sections">
+    <button class="nav-tab-btn active" data-page="tab-overview" type="button">1. What it is <span class="tab-badge">Start here</span></button>
+    <button class="nav-tab-btn" data-page="tab-architecture" type="button">2. How it works <span class="tab-badge">Agents</span></button>
+    <button class="nav-tab-btn" data-page="tab-demo" type="button">3. Live demo <span class="tab-badge">4 cases</span></button>
+    <button class="nav-tab-btn" data-page="tab-metrics" type="button">4. Value <span class="tab-badge">Time saved</span></button>
+    <button class="nav-tab-btn" data-page="tab-governance" type="button">5. Governance <span class="tab-badge">SR 11-7</span></button>
+  </nav>
+
+  <!-- PAGE 1: OVERVIEW -->
+  <main id="tab-overview" class="tab-page active-page">
+    <div class="plain-english-box">
+      <h2>The problem in plain English</h2>
+      <p>
+        Opening an account for a company takes the bank <strong>62 days</strong>. <strong>11 of those days</strong> go on analysts reading long legal documents
+        (share registers, partnership deeds, articles of association) to answer three questions:
+        <strong>Who owns this company? How much do they own? Who actually controls it?</strong>
+        Hover over any <span class="term" tabindex="0" data-def="Ultimate Beneficial Owner: a real person who owns or controls 25% or more of a company, or controls it in another way.">blue term</span> on this page for a plain definition.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What the agent does, and what it never does</div>
+      <div class="card-subtitle">The AI prepares the work. The human analyst makes every decision and signs.</div>
+      <div class="grid-2">
+        <div class="panel do">
+          <h3>The assistant does</h3>
+          <ul>
+            <li><strong>Reads long, messy PDFs</strong> such as incorporation papers and partnership deeds.</li>
+            <li><strong>Finds the names</strong> of direct and indirect owners.</li>
+            <li><strong>Works out ownership percentages</strong> across layers of holding companies.</li>
+            <li><strong>Spots control</strong>, such as voting rights, veto rights, or managing partner status.</li>
+            <li><strong>Gives a citation</strong> (for example, Page 14, Line 9) so you can check any value in seconds.</li>
+          </ul>
+        </div>
+        <div class="panel dont">
+          <h3>The assistant is never allowed to</h3>
+          <ul>
+            <li><strong>Assign a risk rating</strong> (Low, Medium, High, Prohibited). This is the MLRO's decision.</li>
+            <li><strong>Make the final call</strong> on whether someone is a UBO.</li>
+            <li><strong>Judge whether a document is genuine.</strong> That belongs to fraud operations.</li>
+            <li><strong>Write to core banking</strong> without an analyst clicking Confirm.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Four test cases, and what to expect from each</div>
+      <div class="card-subtitle">Each case is a fictional document. Case 4 is included on purpose: it shows the AI getting something wrong.</div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Case 1 · Apex Logistics (clean UK company)</h3>
+          <p class="muted">One direct owner holds 75% of the shares. The AI extracts the name, the 75%, and the voting control, and cites Page 2. Expected result: the analyst accepts each field in one click.</p>
+        </div>
+        <div class="panel">
+          <h3>Case 2 · Meridian Green LLP (partnership deed)</h3>
+          <p class="muted">Capital is split 50/50, but Clause 11 gives one partner sole management control. The AI should name that partner as the controller, even though they hold only half the capital.</p>
+        </div>
+        <div class="panel">
+          <h3>Case 3 · Veloce FinTech AG (two layers)</h3>
+          <p class="muted">A parent company owns 70% of the operating company, and one person owns 100% of the parent. The effective holding is 100% × 70% = 70%, and both share certificates are cited.</p>
+        </div>
+        <div class="panel" style="border-color:#fecaca; background:#fffaf0">
+          <h3 style="color: var(--danger)">Case 4 · Nautilus Offshore BVI (failure case)</h3>
+          <p class="muted">Four layers, bearer shares, and a nominee director. The AI wrongly names the nominee company as the owner, with low confidence (54%). The analyst should catch this, reject the field, and log a red flag.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Check your understanding</div>
+      <div class="card-subtitle">Pick an answer. The feedback explains why.</div>
+      <div class="quiz-q" data-answer="1">
+        <p>1. Who assigns the risk rating for a client?</p>
+        <div class="quiz-opts">
+          <button class="quiz-opt" type="button">The AI assistant, based on the documents</button>
+          <button class="quiz-opt" type="button">The KYC analyst and MLRO, using their own judgment</button>
+          <button class="quiz-opt" type="button">The orchestrator, once all fields are accepted</button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-q" data-answer="1">
+        <p>2. A field comes back with 54% confidence. What should the analyst do?</p>
+        <div class="quiz-opts">
+          <button class="quiz-opt" type="button">Accept it, because the AI is usually right</button>
+          <button class="quiz-opt" type="button">Check the cited source, then accept, edit, or reject it</button>
+          <button class="quiz-opt" type="button">Ignore it, because low-confidence fields are removed automatically</button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-q" data-answer="1">
+        <p>3. What does a citation give an auditor?</p>
+        <div class="quiz-opts">
+          <button class="quiz-opt" type="button">A confidence score to trust</button>
+          <button class="quiz-opt" type="button">The exact page and line that support the value</button>
+          <button class="quiz-opt" type="button">Proof that the document is genuine</button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- PAGE 2: ARCHITECTURE -->
+  <main id="tab-architecture" class="tab-page">
+    <div class="card">
+      <div class="card-title">How a document moves through the system</div>
+      <div class="card-subtitle">Click any step to see what it does. Press Play to watch the flow.</div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="play-flow" type="button">Play flow</button>
+        <button class="btn" id="reset-flow" type="button">Reset</button>
+      </div>
+
+      <div class="pipeline" id="pipeline" role="group" aria-label="Pipeline steps"></div>
+
+      <div class="step-detail" id="step-detail" aria-live="polite"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Orchestrator workflow: how work is routed to subagents</div>
+      <div class="card-subtitle">The orchestrator decides which subagent runs, in what order, and what happens when a check fails. Click any box to see its inputs and outputs.</div>
+
+      <div class="wf" id="wf">
+        <button class="wf-node" type="button" data-node="upload">Analyst upload<small>One PDF, 50 pages</small></button>
+        <div class="wf-arrow">&#8595;</div>
+        <button class="wf-node orch" type="button" data-node="orch">Master orchestrator<small>Plans, routes, checks, and collects results</small></button>
+        <div class="wf-arrow">&#8595; routes to subagents based on rules</div>
+        <div class="wf-branches">
+          <div class="wf-branch">
+            <div class="wf-cond">Always runs first</div>
+            <button class="wf-node" type="button" data-node="cite">Citation scanner<small>Subagent 1</small></button>
+          </div>
+          <div class="wf-branch">
+            <div class="wf-cond">Only if a holding chain or ownership % is found</div>
+            <button class="wf-node" type="button" data-node="ubo">UBO math<small>Subagent 2</small></button>
+          </div>
+          <div class="wf-branch">
+            <div class="wf-cond">Only if confidence is under 70% or values conflict</div>
+            <button class="wf-node exc" type="button" data-node="exc">Exception route<small>Flags the item for a person</small></button>
+          </div>
+        </div>
+        <div class="wf-arrow">&#8595; results return to the orchestrator</div>
+        <button class="wf-node" type="button" data-node="guard">Guardrail check<small>Subagent 3 · always runs before the analyst</small></button>
+        <div class="wf-arrow">&#8595;</div>
+        <button class="wf-node human" type="button" data-node="human">Analyst decides<small>Accept, edit, or reject each field, then set the risk rating</small></button>
+      </div>
+
+      <div class="step-detail wf-detail" id="wf-detail" aria-live="polite">
+        <p class="muted">Select a box to see what it receives, what it returns, and when it runs.</p>
+      </div>
+
+      <div class="card" style="margin: 24px 0 0; box-shadow:none">
+        <div class="card-title" style="font-size:16px">Routing rules</div>
+        <table class="rules-table">
+          <thead><tr><th>Condition</th><th>Route to</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Every document</td><td>Citation scanner</td><td>Every value needs a page and line citation.</td></tr>
+            <tr><td>Holding chain or percentage found</td><td>UBO math</td><td>Percentages must be exact across each layer.</td></tr>
+            <tr><td>Confidence under 70%, or values conflict</td><td>Exception route</td><td>A person checks it. The system does not accept it automatically.</td></tr>
+            <tr><td>Every draft, before the analyst</td><td>Guardrail check</td><td>Hard stop if any risk rating or clearance language appears.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin: 24px 0 0; box-shadow:none">
+        <div class="card-title" style="font-size:16px">Routing trace for a case</div>
+        <div class="card-subtitle">See which subagents the orchestrator called for each case, and why.</div>
+        <div class="controls" id="trace-controls"></div>
+        <div class="trace-box" id="trace-box"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Four design principles</div>
+      <div class="card-subtitle">These choices keep the pilot clear of heavy model-risk review, as covered on the Governance tab.</div>
+      <div class="grid-4">
+        <div class="panel" style="border-top:4px solid #3b82f6"><h3>1. Reuse</h3><p class="muted">Uses the bank's existing document store, OCR, and case IDs. No new storage.</p></div>
+        <div class="panel" style="border-top:4px solid #8b5cf6"><h3>2. Contain</h3><p class="muted">Calls only the approved LLM gateway. No outside data sharing, PII masked, and every call logged.</p></div>
+        <div class="panel" style="border-top:4px solid #06b6d4"><h3>3. Suggest</h3><p class="muted">Only fills in suggested values with citations. It does not decide anything.</p></div>
+        <div class="panel" style="border-top:4px solid #10b981"><h3>4. Sign</h3><p class="muted">The analyst accepts, edits, or rejects each field. The AI cannot submit anything.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Routing logic (for technical readers)</div>
+      <div class="card-subtitle">The same flow written as code. Each line maps to a step above.</div>
+      <div class="code-block">
+        <span style="color:#0284c7"># Orchestrator routing</span><br>
+        1. orchestrator.receive(raw_pdf)              → split into numbered pages and lines<br>
+        2. subagent_citations.extract_anchors()       → exact text spans with page and line<br>
+        3. subagent_ubo.synthesize_graph()            → people with 25% or more, or decisive control<br>
+        4. subagent_guardrails.verify_boundary()      → assert "risk_rating" not in payload<br>
+        5. orchestrator.render_hitl_screen()          → draft shown to the analyst
+      </div>
+      <p class="code-note">Step 4 is a hard check, not a prompt instruction. If the output contains a risk field, the pipeline stops.</p>
+    </div>
+  </main>
+
+  <!-- PAGE 3: LIVE DEMO -->
+  <main id="tab-demo" class="tab-page">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:4px">Choose a case</div>
+      <div class="card-subtitle" style="margin-bottom:14px">Read the source on the left, then review each field on the right. Click a citation to jump to its line.</div>
+      <div class="case-picker-grid" id="case-picker"></div>
+      <div class="explainer" id="case-explainer"></div>
+    </div>
+
+    <div class="workspace-split">
+      <section>
+        <div class="panel-label">
+          <span class="lbl">Source document</span>
+          <span class="hint" id="doc-metadata"></span>
+        </div>
+        <div class="doc-preview-panel" id="doc-display"></div>
+      </section>
+
+      <section>
+        <div class="panel-label">
+          <span class="lbl" style="color: var(--primary)">Analyst review (AI pre-filled)</span>
+          <span class="hint">Rule: every field needs a decision</span>
+        </div>
+
+        <div class="card" style="padding:16px">
+          <div class="progress-wrap">
+            <div class="progress-row"><span id="progress-text">0 of 3 fields reviewed</span><span id="progress-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Field</th><th>AI value</th><th>Citation</th><th>Your decision</th></tr>
+              </thead>
+              <tbody id="ubo-table-body"></tbody>
+            </table>
+          </div>
+
+          <div class="red-line-zone">
+            <div class="red-line-title">MLRO red line: human judgment only</div>
+            <p style="font-size:13px; color:#7f1d1d; margin-bottom:10px">
+              The AI never sets a risk rating, PEP exposure, or clearance. Choose these yourself.
+            </p>
+            <ul class="checklist" id="checklist">
+              <li id="chk-fields">Every field accepted, edited, or rejected</li>
+              <li id="chk-risk">Risk rating chosen by you</li>
+            </ul>
+            <div class="sign-grid">
+              <div>
+                <label for="mlro-risk">Risk rating (analyst judgment)</label>
+                <select id="mlro-risk" class="input">
+                  <option value="" disabled selected>Select a rating</option>
+                  <option value="Low">Low (standard due diligence)</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High (enhanced due diligence)</option>
+                  <option value="Prohibited">Prohibited (exit relationship)</option>
+                </select>
+              </div>
+              <div>
+                <label>Analyst sign-off</label>
+                <button class="btn btn-primary" id="sign-btn" type="button" style="width:100%" disabled>Sign and submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel-label">
+            <span class="lbl">Audit log (every action is recorded)</span>
+            <span class="hint">Read-only trail for model risk and audit</span>
+          </div>
+          <div class="audit-box" id="audit-log"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- PAGE 4: VALUE -->
+  <main id="tab-metrics" class="tab-page">
+    <div class="card">
+      <div class="card-title">Time saved per file</div>
+      <div class="card-subtitle">Drag the sliders to see the effect. The numbers are the pilot targets; the file volume is an example. The 180-minute baseline is an assumption until it is measured during shadowing.</div>
+      <div class="calc">
+        <div>
+          <div class="calc-row">
+            <label for="in-files">Complex files per month</label>
+            <input type="range" id="in-files" min="10" max="200" step="5" value="40">
+            <div class="calc-val" id="out-files"></div>
+          </div>
+          <div class="calc-row">
+            <label for="in-manual">Manual time per file (minutes)</label>
+            <input type="range" id="in-manual" min="60" max="240" step="5" value="180">
+            <div class="calc-val" id="out-manual"></div>
+          </div>
+          <div class="calc-row">
+            <label for="in-assist">Review time with the assistant (minutes)</label>
+            <input type="range" id="in-assist" min="15" max="90" step="1" value="32">
+            <div class="calc-val" id="out-assist"></div>
+          </div>
+        </div>
+        <div>
+          <div class="muted">Analyst hours saved per month</div>
+          <div class="result-big" id="result-hours"></div>
+          <div class="muted" id="result-detail" style="margin-bottom:16px"></div>
+          <div class="bar-row">
+            <div class="bar-label"><span>Manual</span><span id="bar-manual-val"></span></div>
+            <div class="bar"><div class="bar-fill base" id="bar-manual"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label"><span>With assistant</span><span id="bar-assist-val"></span></div>
+            <div class="bar"><div class="bar-fill new" id="bar-assist"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Three measures to track in production</div>
+      <div class="card-subtitle">To be measured during the pilot, so the team can see whether analysts actually use the tool. No measurements have been taken yet.</div>
+      <table>
+        <thead>
+          <tr><th>Measure</th><th>What it tells you</th><th>Pilot target</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Minutes per file</strong><br><span class="muted">Time from opening the file to signing</span></td>
+            <td>Whether analysts save time. Frees about 2.5 hours of senior capacity per complex file.</td>
+            <td>Under 35 minutes (from 180)</td>
+          </tr>
+          <tr>
+            <td><strong>Field correction rate</strong><br><span class="muted">Share of AI fields edited or rejected</span></td>
+            <td>Whether the AI stays accurate. Rising corrections are an early warning.</td>
+            <td>Under 12% clean files, under 25% complex</td>
+          </tr>
+          <tr>
+            <td><strong>Citation click-through</strong><br><span class="muted">Share of changed fields where the citation was opened</span></td>
+            <td>Whether analysts check the source before changing a value. Evidence for audit.</td>
+            <td>100% of edited or rejected fields</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- PAGE 5: GOVERNANCE -->
+  <main id="tab-governance" class="tab-page">
+    <div class="card">
+      <div class="card-title">Why this pilot avoids the 14-week model validation queue</div>
+      <div class="card-subtitle">Memo summary for the Chief Risk Officer and Model Risk Management</div>
+
+      <div class="why-box">
+        <strong>The question:</strong>
+        <p>Does this influence a risk outcome, which would trigger about 14 weeks of model validation? If not, how do we keep the 2-week pilot out of that path?</p>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="panel">
+          <h3>Why AI usually gets stuck</h3>
+          <p class="muted">Under Federal Reserve SR 11-7 and the bank's Model Risk Governance Framework (MRGF), a system that makes or changes a credit decision, an AML tier, or a risk score counts as a model. Models need stress testing and formal approval.</p>
+        </div>
+        <div class="panel do">
+          <h3>How this pilot is designed</h3>
+          <p class="muted">The tool is classified as an analyst productivity tool. Three design guarantees keep it there. Open each one below.</p>
+        </div>
+      </div>
+
+      <details class="pillar" open>
+        <summary>1. Zero autonomous output</summary>
+        <div class="body">
+          <p>The agent cannot write to core banking, update customer records, or tick off a checklist item. It only places draft values on the analyst's screen.</p>
+          <p><strong>Why it matters:</strong> the output has no legal effect until a person signs it.</p>
+        </div>
+      </details>
+      <details class="pillar">
+        <summary>2. Grounded, extractive output</summary>
+        <div class="body">
+          <p>Every extracted field carries a page and line citation. The system copies text from the document and points to it; it does not invent names or wording.</p>
+          <p><strong>Why it matters:</strong> the tool is an index and search aid, not a cognitive decision model.</p>
+        </div>
+      </details>
+      <details class="pillar">
+        <summary>3. Risk decisions are kept separate</summary>
+        <div class="body">
+          <p>The prompt forbids words such as "approved", "high risk", or "suspicious". The risk rating field starts empty and only the analyst can fill it.</p>
+          <p><strong>Why it matters:</strong> Model Risk agrees that the risk outcome is decided by a person.</p>
+        </div>
+      </details>
+    </div>
+    <div class="card">
+      <div class="card-title">Model risk and the 14-week validation queue</div>
+      <div class="card-subtitle">How the pilot is positioned, and what happens if Model Risk classifies it differently.</div>
+      <div class="grid-2">
+        <div class="panel do">
+          <h3>Our position</h3>
+          <ul>
+            <li>The pilot is an analyst productivity tool. It produces no risk outcome.</li>
+            <li>Citations are lookups into the source text, not generated claims.</li>
+            <li>The model is called through the bank's existing LLM gateway, so no new gateway is built.</li>
+          </ul>
+        </div>
+        <div class="panel dont">
+          <h3>What we need from Model Risk, in writing</h3>
+          <ul>
+            <li>Confirmation of the classification before any live use.</li>
+            <li>Agreement on the test set below as the evidence for the pilot.</li>
+            <li>A named reviewer and a turnaround date.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h3>Fallback if Model Risk classifies it as a model</h3>
+        <p class="muted" style="font-size:14px">The pilot runs in shadow mode only: the assistant produces drafts that analysts do not rely on for live decisions. Full model validation proceeds on the normal 14-week timeline, and the test results below become the first evidence in that process.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Test plan on messy synthetic documents</div>
+      <div class="card-subtitle">Status reflects the prototype. The demo cases use scripted outputs, so none of these tests has been run on the live model yet.</div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Input</th><th>Expected behavior</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>T1 Clean single owner</td><td>Case 1</td><td>Extracts owner, 75% shareholding, and majority control, each with a citation.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+            <tr><td>T2 Capital versus control</td><td>Case 2</td><td>Names the controlling partner even though capital is split 50/50.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+            <tr><td>T3 Two-tier pass-through</td><td>Case 3</td><td>Calculates 100% × 70% = 70% effective holding.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+            <tr><td>T4 Nominee and bearer trap</td><td>Case 4</td><td>Does not name the nominee as owner, and flags the field as low confidence.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+            <tr><td>T5 Risk language check</td><td>All cases</td><td>Zero risk-rating or clearance words in any output.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+            <tr><td>T6 Citation accuracy</td><td>All cases</td><td>Every citation opens the stated page and line.</td><td><span class="status-chip st-pending">Not yet run</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="font-size:13px; margin-top:12px">Add messy cases before the pilot: scanned pages, missing pages, conflicting share counts, and documents in different layouts.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Assumptions and shadowing plan</div>
+      <div class="card-subtitle">The current design is based on assumptions. None has been checked with an analyst yet.</div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Assumptions to test</h3>
+          <ul>
+            <li>Analysts check each citation before accepting a field.</li>
+            <li>Analysts want the risk rating kept on a separate step.</li>
+            <li>One screen with every field is easier than a document-by-document review.</li>
+            <li>The 180-minute manual baseline is accurate for complex files.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Shadowing status</h3>
+          <p class="muted" style="font-size:14px"><span class="status-chip st-pending">Not yet done</span></p>
+          <p class="muted" style="font-size:14px; margin-top:10px">Plan: sit with 3 to 5 analysts for a half day each. Watch how they handle CDD gaps, where they look for sources, and how long each file takes. Use the findings to change the screen before the pilot.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ---------- Tabs ---------- */
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active-page'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.page).classList.add('active-page');
+      });
+    });
+
+    /* ---------- Quiz ---------- */
+    const quizFeedback = [
+      ["Correct. The analyst and MLRO set the rating. The AI is barred from doing so.", "Not quite. The AI is barred from setting risk ratings. Only the analyst and MLRO set them."],
+      ["Correct. Low confidence is a signal to check the source, not a reason to accept or ignore.", "Not quite. Low confidence means check the citation before deciding."],
+      ["Correct. The citation shows where the value comes from, so it can be checked quickly.", "Not quite. A citation points to the exact page and line in the source."]
+    ];
+    document.querySelectorAll('.quiz-q').forEach((q, qi) => {
+      const correct = Number(q.dataset.answer);
+      const opts = q.querySelectorAll('.quiz-opt');
+      const fb = q.querySelector('.quiz-feedback');
+      opts.forEach((opt, oi) => {
+        opt.addEventListener('click', () => {
+          opts.forEach(o => { o.classList.remove('right', 'wrong'); });
+          if (oi === correct) {
+            opt.classList.add('right');
+            fb.textContent = quizFeedback[qi][0];
+          } else {
+            opt.classList.add('wrong');
+            opts[correct].classList.add('right');
+            fb.textContent = quizFeedback[qi][1];
+          }
+        });
+      });
+    });
+
+    /* ---------- Pipeline ---------- */
+    const STEPS = [
+      { name: 'Input ingestion', hint: 'Analyst uploads a PDF', what: 'The 50-page PDF is converted to text and split into numbered pages and lines.', why: 'Every later step needs a fixed address, such as Page 14, Line 9, so citations can point to real places.', sees: 'Nothing yet. The file is being prepared in the background.', human: false },
+      { name: 'Citation scanner', hint: 'Finds the key clauses', what: 'Subagent 1 searches for share counts, voting rights, and control clauses, and records where each one appears.', why: 'This is text matching, not guessing. The output is always traceable to a line.', sees: 'Highlighted lines in the source viewer.', human: false },
+      { name: 'UBO math', hint: 'Works out percentages', what: 'Subagent 2 follows the ownership chain and multiplies percentages across layers (for example, 100% × 70% = 70%).', why: 'Ownership layers are easy to misread by hand, and the arithmetic must be exact.', sees: 'Proposed names and percentages, each with a citation.', human: false },
+      { name: 'Guardrail check', hint: 'Blocks risk ratings', what: 'Subagent 3 checks the draft and stops the pipeline if it contains a risk rating or a clearance decision.', why: 'This is a hard rule, so it cannot be skipped by a prompt that goes wrong.', sees: 'Nothing visible unless the check fails.', human: false },
+      { name: 'Analyst decides', hint: 'The human signs', what: 'The analyst checks each citation, accepts, edits, or rejects each field, and then chooses the risk rating.', why: 'Legal responsibility stays with a named person.', sees: 'The full review screen, with one decision per field.', human: true }
+    ];
+
+    const pipeline = document.getElementById('pipeline');
+    const stepDetail = document.getElementById('step-detail');
+    let playTimer = null;
+
+    function renderPipeline() {
+      pipeline.innerHTML = '';
+      STEPS.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pipe-step' + (s.human ? ' human' : '');
+        b.dataset.index = i;
+        b.innerHTML = `<span class="step-num">${i + 1}</span><div class="step-name">${s.name}</div><div class="step-hint">${s.hint}</div>`;
+        b.addEventListener('click', () => { stopPlay(); selectStep(i); });
+        pipeline.appendChild(b);
+      });
+    }
+
+    function selectStep(i) {
+      document.querySelectorAll('.pipe-step').forEach((el, idx) => el.classList.toggle('selected', idx === i));
+      const s = STEPS[i];
+      stepDetail.innerHTML = `
+        <h3>Step ${i + 1}: ${s.name}</h3>
+        <dl>
+          <dt>What it does</dt><dd>${s.what}</dd>
+          <dt>Why it exists</dt><dd>${s.why}</dd>
+          <dt>What the analyst sees</dt><dd>${s.sees}</dd>
+        </dl>`;
+    }
+
+    function playFlow() {
+      stopPlay();
+      let i = 0;
+      selectStep(0);
+      playTimer = setInterval(() => {
+        document.querySelectorAll('.pipe-step').forEach(el => el.classList.remove('playing'));
+        if (i >= STEPS.length) { stopPlay(); return; }
+        document.querySelectorAll('.pipe-step')[i].classList.add('playing');
+        selectStep(i);
+        i++;
+      }, 1100);
+    }
+
+    function stopPlay() {
+      if (playTimer) { clearInterval(playTimer); playTimer = null; }
+      document.querySelectorAll('.pipe-step').forEach(el => el.classList.remove('playing'));
+    }
+
+    document.getElementById('play-flow').addEventListener('click', playFlow);
+    document.getElementById('reset-flow').addEventListener('click', () => {
+      stopPlay();
+      document.querySelectorAll('.pipe-step').forEach(el => el.classList.remove('selected'));
+      stepDetail.innerHTML = '<p class="muted">Select a step to see what it does.</p>';
+    });
+    renderPipeline();
+    stepDetail.innerHTML = '<p class="muted">Select a step to see what it does.</p>';
+
+    /* ---------- Orchestrator workflow ---------- */
+    const WF = {
+      upload: { title: 'Analyst upload', receives: 'A PDF from the analyst\'s case file.', returns: 'The PDF, passed to the orchestrator.', when: 'Starts every run. Nothing runs until a file arrives.' },
+      orch: { title: 'Master orchestrator', receives: 'The PDF and the routing rules.', returns: 'Subagent results, a log of each routing decision, and one draft for the analyst.', when: 'Runs throughout. It decides which subagents run and in what order. It never makes a risk decision.' },
+      cite: { title: 'Citation scanner (subagent 1)', receives: 'Numbered pages and lines.', returns: 'Candidate fields, each with a page and line citation and a confidence score.', when: 'Always runs first, because later steps depend on its citations.' },
+      ubo: { title: 'UBO math (subagent 2)', receives: 'Ownership clauses and share counts from the citation scanner.', returns: 'Effective percentages for each layer, and the people at 25% or more, or with decisive control.', when: 'Runs only when a holding chain or ownership percentage is found. Otherwise skipped.' },
+      exc: { title: 'Exception route', receives: 'Any field under 70% confidence, or values that conflict across documents.', returns: 'A flagged item sent straight to the analyst, with the conflicting citations side by side.', when: 'Triggered by low confidence or conflict. The field is never accepted automatically.' },
+      guard: { title: 'Guardrail check (subagent 3)', receives: 'The full draft.', returns: 'Pass, or a stop if the draft contains a risk rating or a clearance decision.', when: 'Always runs before the analyst sees the draft. A failure stops the pipeline.' },
+      human: { title: 'Analyst decides', receives: 'The draft, its citations, and any exception flags.', returns: 'Accept, edit, or reject for each field, and the risk rating.', when: 'The only step that can submit to core banking.' }
+    };
+
+    const wfDetail = document.getElementById('wf-detail');
+    document.querySelectorAll('#wf .wf-node').forEach(node => {
+      node.addEventListener('click', () => {
+        document.querySelectorAll('#wf .wf-node').forEach(n => n.classList.remove('selected'));
+        node.classList.add('selected');
+        const d = WF[node.dataset.node];
+        wfDetail.innerHTML = `
+          <h3>${d.title}</h3>
+          <dl>
+            <dt>Receives</dt><dd>${d.receives}</dd>
+            <dt>Returns</dt><dd>${d.returns}</dd>
+            <dt>When it runs</dt><dd>${d.when}</dd>
+          </dl>`;
+      });
+    });
+
+    /* Routing traces: what the orchestrator did for each case */
+    const TRACES = {
+      1: [
+        ['orch', 'Received Apex_Confirmation_Statement_2026.pdf. Splitting into numbered pages and lines.'],
+        ['sub', 'Route: citation scanner (always). Found 3 candidate fields, all at 96% confidence or higher.'],
+        ['orch', 'Route: UBO math skipped. Single direct owner, no holding chain.'],
+        ['sub', 'Route: guardrail check. Draft contains no risk or clearance language. Pass.'],
+        ['human', 'Draft sent to the analyst. No exception flags.']
+      ],
+      2: [
+        ['orch', 'Received Meridian_Partnership_Deed_v4.pdf. Splitting into numbered pages and lines.'],
+        ['sub', 'Route: citation scanner (always). Found capital split (50/50) and a managing partner clause (Page 11, Line 15).'],
+        ['orch', 'Route: UBO math skipped. No holding chain. Control is recorded from the clause instead.'],
+        ['sub', 'Route: guardrail check. Draft contains no risk or clearance language. Pass.'],
+        ['human', 'Draft sent to the analyst. Control finding noted for review.']
+      ],
+      3: [
+        ['orch', 'Received Veloce_Holding_Register_2026.pdf. Splitting into numbered pages and lines.'],
+        ['sub', 'Route: citation scanner (always). Found a 70% holding (Page 4, Line 5) and a parent with one owner (Page 14).'],
+        ['orch', 'Route: UBO math (holding chain detected, 2 tiers). Calculating 100% × 70% = 70%.'],
+        ['sub', 'UBO math returned Henrik Lindqvist as the natural person at 70% effective holding.'],
+        ['sub', 'Route: guardrail check. Pass.'],
+        ['human', 'Draft sent to the analyst with both certificates cited.']
+      ],
+      4: [
+        ['orch', 'Received Nautilus_BVI_Incorporation_2025.pdf. Splitting into numbered pages and lines.'],
+        ['sub', 'Route: citation scanner (always). Found a nominee director and a bearer shares clause.'],
+        ['flag', 'Route: exception route. Page 19, Line 8 has 54% confidence, under the 70% threshold.'],
+        ['orch', 'Route: UBO math (4 tiers). The true natural person is not disclosed, so the result is marked unresolved.'],
+        ['sub', 'Route: guardrail check. Pass.'],
+        ['human', 'Draft sent to the analyst with 2 exception flags. The field is not accepted automatically.']
+      ]
+    };
+
+    const traceControls = document.getElementById('trace-controls');
+    const traceBox = document.getElementById('trace-box');
+    function showTrace(caseId) {
+      traceControls.querySelectorAll('.btn').forEach(b => b.classList.toggle('btn-primary', Number(b.dataset.case) === caseId));
+      traceBox.innerHTML = TRACES[caseId].map(([type, text]) => `<div class="t-${type}">[${type === 'orch' ? 'ORCHESTRATOR' : type === 'sub' ? 'SUBAGENT' : type === 'flag' ? 'EXCEPTION' : 'ANALYST'}] ${text}</div>`).join('');
+    }
+    [1, 2, 3, 4].forEach(id => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn';
+      b.dataset.case = id;
+      b.textContent = `Case ${id}`;
+      b.addEventListener('click', () => showTrace(id));
+      traceControls.appendChild(b);
+    });
+    showTrace(1);
+
+    /* ---------- Demo data ---------- */
+    const testCases = {
+      1: {
+        short: 'Apex Logistics Ltd', type: 'Single direct owner (75%)', tag: 'clean', tagLabel: 'Case 1 · Clean UK',
+        meta: 'Apex_Confirmation_Statement_2026.pdf',
+        explainer: '<strong>Case 1 · Apex Logistics Ltd.</strong> A standard company register with one owner. Expected result: all three fields are correct.<ul><li>Check that the owner is John Sterling and that the 75% matches the share count.</li><li>Click a citation to see the line in the source.</li></ul>',
+        raw: `[PAGE 1 - REGISTERED OFFICE & SUMMARY]
+Company Name: APEX LOGISTICS UK LIMITED
+Company Number: 09482104
+Incorporation Date: 14 February 2018
+
+[PAGE 2 - STATEMENT OF CAPITAL & SHAREHOLDINGS]
+Line 1: Capital Structure: Ordinary Shares of GBP 1.00 each.
+Line 2: Total Number of Shares: 1,000. Aggregate Nominal Value: GBP 1,000.
+Line 12: --- PERSONS WITH SIGNIFICANT CONTROL (PSC) ---
+Line 13: Full Legal Name: JOHN STERLING
+Line 14: <span class="doc-highlight">Ownership: Holds 750 Ordinary Shares (75.0% of total issued equity).</span>
+Line 15: <span class="doc-highlight">Voting Rights: Holds 75.0% of voting rights in company decisions.</span>
+Line 16: Right to Appoint/Remove Directors: Yes (Majority Board Control).
+Line 17: Service Address: 44 Baker Street, London, EC1 2AB, United Kingdom.`,
+        fields: [
+          { name: 'Legal owner', value: 'John Sterling', cite: 'Page 2, Line 13', conf: 99 },
+          { name: 'Shareholding', value: '75.0% ordinary shares', cite: 'Page 2, Line 14', conf: 98 },
+          { name: 'Control mechanism', value: 'Majority board rights (75%)', cite: 'Page 2, Line 16', conf: 96 }
+        ]
+      },
+      2: {
+        short: 'Meridian Green LLP', type: '50% capital, sole control', tag: 'complex', tagLabel: 'Case 2 · LLP deed',
+        meta: 'Meridian_Partnership_Deed_v4.pdf',
+        explainer: '<strong>Case 2 · Meridian Green LLP.</strong> Capital is split 50/50, but one partner controls the business.<ul><li>Check whether the controller is named even though they hold only half the capital.</li><li>Look at Clause 11 to see where control comes from.</li></ul>',
+        raw: `[PAGE 8 - SECTION 3: CAPITAL CONTRIBUTIONS]
+Line 1: 3.1 Initial Capital Commitment:
+Line 2: Partner A: Elena Vance - GBP 500,000 (50.0% Contribution)
+Line 3: Partner B: Marcus Thorne - GBP 500,000 (50.0% Contribution)
+
+[PAGE 11 - SECTION 6: MANAGEMENT POWERS & GOVERNANCE]
+Line 14: 6.2 Managing Partner Designation:
+Line 15: <span class="doc-highlight">Elena Vance is designated Sole Managing Partner with irrevocable authority</span>
+Line 16: <span class="doc-highlight">to bind the partnership, execute banking transactions, and appoint officers.</span>
+Line 17: Marcus Thorne remains a silent capital partner with no day-to-day managerial veto.`,
+        fields: [
+          { name: 'Partner A (capital)', value: 'Elena Vance (50%)', cite: 'Page 8, Line 2', conf: 95 },
+          { name: 'Partner B (capital)', value: 'Marcus Thorne (50%)', cite: 'Page 8, Line 3', conf: 95 },
+          { name: 'Decisive controller', value: 'Elena Vance (sole authority)', cite: 'Page 11, Line 15', conf: 92 }
+        ]
+      },
+      3: {
+        short: 'Veloce FinTech AG', type: 'Pass-through 70% (2 tiers)', tag: 'complex', tagLabel: 'Case 3 · Two layers',
+        meta: 'Veloce_Holding_Register_2026.pdf',
+        explainer: '<strong>Case 3 · Veloce FinTech AG.</strong> Two layers of ownership.<ul><li>Check the arithmetic: 100% × 70% = 70% effective holding.</li><li>Both share certificates are cited, so each layer can be verified.</li></ul>',
+        raw: `[PAGE 4 - OPERATING COMPANY SHARE REGISTER]
+Line 3: Issuer: Veloce FinTech Operating AG (Zurich)
+Line 4: Shareholder: Veloce Group Holdings Ltd (UK)
+Line 5: <span class="doc-highlight">Shares Held: 700,000 / 1,000,000 (70.0% of share capital)</span>
+
+[PAGE 14 - PARENT ENTITY OWNERSHIP (VELOCE GROUP HOLDINGS LTD)]
+Line 8: Total Issued Capital: 10,000 Ordinary Shares.
+Line 9: <span class="doc-highlight">Shareholder: Henrik Lindqvist (Swedish Citizen)</span>
+Line 10: <span class="doc-highlight">Holding: 10,000 Shares (100.0% of share capital and voting rights).</span>
+Line 11: Effective Beneficial Calculation: 100% × 70.0% = 70.0% Ultimate Economic Interest.`,
+        fields: [
+          { name: 'Immediate owner', value: 'Veloce Group Holdings Ltd (70%)', cite: 'Page 4, Line 5', conf: 96 },
+          { name: 'Ultimate UBO (person)', value: 'Henrik Lindqvist', cite: 'Page 14, Line 9', conf: 94 },
+          { name: 'Calculated pass-through', value: '70.0% effective holding', cite: 'Page 14, Line 11', conf: 91 }
+        ]
+      },
+      4: {
+        short: 'Nautilus Offshore BVI', type: 'Nominee and bearer trap', tag: 'fail', tagLabel: 'Case 4 · Failure case',
+        meta: 'Nautilus_BVI_Incorporation_2025.pdf',
+        explainer: '<strong>Case 4 · Nautilus Offshore BVI (failure case).</strong> Four layers, a nominee director, and bearer shares.<ul><li>The AI names a nominee company as the owner, with low confidence (54%).</li><li>Open Page 19, Line 10. Reject the field and log a red flag.</li></ul>',
+        warn: true,
+        raw: `[PAGE 3 - MEMORANDUM OF ASSOCIATION: TORTOLA, BVI]
+Line 1: Company: NAUTILUS INTERNATIONAL TRADING CORP (BVI #198231)
+Line 2: Registered Agent: TrustCorp Services Ltd, Road Town, Tortola.
+
+[PAGE 19 - REGISTER OF DIRECTORS & NOMINEE AGREEMENTS]
+Line 8: Appointed Director: Pacific Nominees Ltd (Samoa)
+Line 9: <span class="doc-highlight-fail">AI ERROR DETECTED: AI pulled 'Pacific Nominees Ltd' as Beneficial Owner</span>
+(Line 10 clearly states: 'Acting solely under Nominee Declaration for Principal')
+
+[PAGE 42 - BEARER SHARES CLAUSE (PROHIBITED RISK)]
+Line 12: <span class="doc-highlight-fail">Clause 42.1: The directors may issue Share Warrants to Bearer.</span>
+Line 13: (Regulatory Note: Bearer shares disguise true beneficial ownership).`,
+        fields: [
+          { name: 'Detected shareholder', value: 'Pacific Nominees Ltd (not the real owner)', cite: 'Page 19, Line 8', conf: 54, error: true },
+          { name: 'Offshore risk trigger', value: 'Bearer shares permitted', cite: 'Page 42, Line 12', conf: 89 },
+          { name: 'True natural person', value: '[Not disclosed in filing]', cite: 'Page 19, Line 10', conf: 30, error: true }
+        ]
+      }
+    };
+
+    let currentCaseId = 1;
+    let reviewState = {};
+
+    /* Render the source: group lines under their page and tag each line with its citation. */
+    function renderDoc(raw) {
+      const out = [];
+      let page = null;
+      raw.split('\n').forEach(line => {
+        const pageMatch = line.match(/^\[PAGE (\d+)/);
+        if (pageMatch) {
+          page = pageMatch[1];
+          out.push(`<div class="doc-page">${line}</div>`);
+          return;
+        }
+        const lineMatch = line.match(/^\(?Line (\d+)/);
+        if (page && lineMatch) {
+          out.push(`<div class="doc-line" data-ref="Page ${page}, Line ${lineMatch[1]}">${line}</div>`);
+        } else {
+          out.push(`<div class="doc-line">${line}</div>`);
+        }
+      });
+      return out.join('');
+    }
+
+    function flashLine(ref) {
+      const doc = document.getElementById('doc-display');
+      doc.querySelectorAll('.doc-line.flash').forEach(el => el.classList.remove('flash'));
+      const target = doc.querySelector(`[data-ref="${ref}"]`);
+      if (!target) { logAudit(`No line found for citation ${ref}.`); return; }
+      target.classList.add('flash');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      logAudit(`Analyst opened citation ${ref}.`);
+    }
+
+    function renderPicker() {
+      const grid = document.getElementById('case-picker');
+      grid.innerHTML = '';
+      Object.entries(testCases).forEach(([id, c]) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'case-btn' + (Number(id) === currentCaseId ? ' selected' : '');
+        b.innerHTML = `<span class="case-btn-tag tag-${c.tag}">${c.tagLabel}</span><div class="case-btn-title">${c.short}</div><div class="case-btn-type">${c.type}</div>`;
+        b.addEventListener('click', () => loadCase(Number(id)));
+        grid.appendChild(b);
+      });
+    }
+
+    function confLabel(conf) {
+      if (conf >= 90) return `<span class="conf high">${conf}% high</span>`;
+      if (conf >= 70) return `<span class="conf">${conf}% medium</span>`;
+      return `<span class="conf low">${conf}% low: check the source</span>`;
+    }
+
+    function loadCase(caseId) {
+      currentCaseId = caseId;
+      reviewState = {};
+      const c = testCases[caseId];
+      renderPicker();
+
+      document.getElementById('doc-metadata').textContent = c.meta;
+      document.getElementById('doc-display').innerHTML = renderDoc(c.raw);
+
+      const explainer = document.getElementById('case-explainer');
+      explainer.innerHTML = c.explainer;
+      explainer.classList.toggle('warn', !!c.warn);
+
+      const tbody = document.getElementById('ubo-table-body');
+      tbody.innerHTML = '';
+      c.fields.forEach((f, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'field-row' + (f.error ? ' error' : '');
+        tr.innerHTML = `
+          <td><strong>${f.name}</strong><br><span class="muted">Confidence: ${confLabel(f.conf)}</span></td>
+          <td id="val-${i}">${f.value}</td>
+          <td><button class="cite-btn" type="button" data-ref="${f.cite}">${f.cite}</button></td>
+          <td>
+            <div class="action-group">
+              <button class="btn-act btn-accept" type="button" data-i="${i}" data-act="Accepted">Accept</button>
+              <button class="btn-act btn-edit" type="button" data-i="${i}" data-act="Edited">Edit</button>
+              <button class="btn-act btn-reject" type="button" data-i="${i}" data-act="Rejected">Reject</button>
+            </div>
+            <span class="status-chip st-pending" id="chip-${i}">Not yet reviewed</span>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('audit-log').innerHTML = '';
+      logAudit(`Loaded ${c.short}. The orchestrator proposed ${c.fields.length} fields for review.`);
+      document.getElementById('mlro-risk').value = '';
+      updateProgress();
+    }
+
+    function setChip(i, cls, text) {
+      const chip = document.getElementById(`chip-${i}`);
+      chip.className = `status-chip ${cls}`;
+      chip.textContent = text;
+    }
+
+    function markAction(i, action) {
+      const c = testCases[currentCaseId];
+      const f = c.fields[i];
+      const cell = document.getElementById(`val-${i}`);
+
+      if (action === 'Accepted') {
+        reviewState[i] = 'Accepted';
+        cell.style.color = 'var(--success)';
+        cell.style.textDecoration = 'none';
+        setChip(i, 'st-accepted', 'Accepted');
+        logAudit(`[ANALYST] "${f.name}" accepted.`, true);
+      } else if (action === 'Rejected') {
+        reviewState[i] = 'Rejected';
+        cell.style.color = 'var(--danger)';
+        cell.style.textDecoration = 'line-through';
+        setChip(i, 'st-rejected', 'Rejected');
+        logAudit(`[ANALYST] "${f.name}" rejected. Flagged for secondary review.`, true);
+      } else if (action === 'Edited') {
+        const newVal = prompt(`Enter the corrected value for "${f.name}":`, cell.textContent.trim());
+        if (!newVal) return;
+        reviewState[i] = 'Edited';
+        cell.textContent = `${newVal} (analyst override)`;
+        cell.style.color = 'var(--warning)';
+        cell.style.textDecoration = 'none';
+        setChip(i, 'st-edited', 'Edited');
+        logAudit(`[ANALYST] "${f.name}" changed to "${newVal}". Logged for audit.`, true);
+      }
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const c = testCases[currentCaseId];
+      const total = c.fields.length;
+      const done = Object.keys(reviewState).length;
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('progress-text').textContent = `${done} of ${total} fields reviewed`;
+      document.getElementById('progress-pct').textContent = `${pct}%`;
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+
+      const risk = document.getElementById('mlro-risk').value;
+      document.getElementById('chk-fields').classList.toggle('done', done === total);
+      document.getElementById('chk-risk').classList.toggle('done', !!risk);
+      document.getElementById('sign-btn').disabled = !(done === total && risk);
+    }
+
+    document.getElementById('mlro-risk').addEventListener('change', (e) => {
+      logAudit(`[ANALYST] Risk rating set to ${e.target.value}.`, true);
+      updateProgress();
+    });
+
+    document.getElementById('sign-btn').addEventListener('click', () => {
+      const risk = document.getElementById('mlro-risk').value;
+      const c = testCases[currentCaseId];
+      const accepted = Object.values(reviewState).filter(v => v === 'Accepted').length;
+      const edited = Object.values(reviewState).filter(v => v === 'Edited').length;
+      const rejected = Object.values(reviewState).filter(v => v === 'Rejected').length;
+      logAudit(`[SIGN-OFF] ${c.short} submitted with rating ${risk}. Accepted ${accepted}, edited ${edited}, rejected ${rejected}.`, true);
+      alert(`Review submitted (demo only).\n\nCase: ${c.short}\nRisk rating (analyst): ${risk}\nAccepted: ${accepted}  Edited: ${edited}  Rejected: ${rejected}`);
+    });
+
+    /* Event delegation for table buttons and citations */
+    document.getElementById('ubo-table-body').addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-act');
+      if (!btn) return;
+      markAction(Number(btn.dataset.i), btn.dataset.act);
+    });
+    document.getElementById('ubo-table-body').addEventListener('click', (e) => {
+      const cite = e.target.closest('.cite-btn');
+      if (cite) flashLine(cite.dataset.ref);
+    });
+
+    function logAudit(msg, human) {
+      const box = document.getElementById('audit-log');
+      const time = new Date().toTimeString().split(' ')[0];
+      const entry = document.createElement('div');
+      entry.className = 'audit-entry' + (human ? ' human' : '');
+      entry.textContent = `[${time}] ${msg}`;
+      box.appendChild(entry);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    /* ---------- Value calculator ---------- */
+    function bindCalc() {
+      const ids = ['in-files', 'in-manual', 'in-assist'];
+      ids.forEach(id => document.getElementById(id).addEventListener('input', updateCalc));
+      updateCalc();
+    }
+    function updateCalc() {
+      const files = Number(document.getElementById('in-files').value);
+      const manual = Number(document.getElementById('in-manual').value);
+      const assist = Number(document.getElementById('in-assist').value);
+      const saved = Math.max(manual - assist, 0);
+      const hours = (files * saved) / 60;
+
+      document.getElementById('out-files').textContent = `${files} files`;
+      document.getElementById('out-manual').textContent = `${manual} minutes`;
+      document.getElementById('out-assist').textContent = `${assist} minutes`;
+      document.getElementById('result-hours').textContent = `${hours.toFixed(0)} hours`;
+      document.getElementById('result-detail').textContent = `${saved} minutes saved on each of ${files} files`;
+
+      const max = Math.max(manual, 1);
+      document.getElementById('bar-manual').style.width = `${(manual / max) * 100}%`;
+      document.getElementById('bar-assist').style.width = `${(assist / max) * 100}%`;
+      document.getElementById('bar-manual-val').textContent = `${manual} min`;
+      document.getElementById('bar-assist-val').textContent = `${assist} min`;
+    }
+
+    /* ---------- Init ---------- */
+    loadCase(1);
+    bindCalc();
+  </script>
+</body>
+</html>

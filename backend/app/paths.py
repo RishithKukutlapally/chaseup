@@ -41,3 +41,11 @@ ENV_CANDIDATES = [
     APP_DIR.parent / ".env",
     BUNDLE_DIR / ".env",
 ]
+
+ANALYST_ASSIST_CANDIDATES = [
+    FRONTEND_DIST_DIR / "analystassist" / "index.html",
+    FRONTEND_DIST_DIR / "analystassist" / "problem.html",
+    BUNDLE_DIR / "analystassist" / "problem.html",
+    APP_DIR.parent / "analystassist" / "problem.html",
+    APP_DIR / "analystassist" / "problem.html",
+]

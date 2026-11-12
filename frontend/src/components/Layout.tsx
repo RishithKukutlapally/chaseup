@@ -148,6 +148,21 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 UBO Blocked
               </span>
             </button>
+
+            <div className="h-5 w-[1px] bg-outline-variant/40 mx-space-2xs hidden xl:block" />
+
+            {/* Assignment 2 Switcher Link */}
+            <a
+              href="/analystassist"
+              title="Open Assignment 2: Analyst Assist UBO Extraction Desk"
+              className="px-space-md py-space-xs rounded bg-primary-container/10 hover:bg-primary-container/20 text-primary-container border border-primary-container/30 font-label-md text-label-md flex items-center gap-space-xs transition-all shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">psychology</span>
+              <span className="font-semibold">Analyst Assist</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-primary-container text-white px-space-xs py-space-2xs rounded font-bold">
+                Assignment 2 →
+              </span>
+            </a>
           </nav>
 
           {/* Right Controls: Search, Notifications, Audio, Profile */}
@@ -269,16 +284,28 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
 
         {/* Human-in-the-Loop Protocol Ribbon */}
-        <div className="bg-surface-container-low px-margin py-space-xs w-full flex items-center gap-space-sm border-t border-surface-container-high/40 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
-          <span className="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">
-            verified_user
-          </span>
-          <p className="font-body-sm text-body-sm text-on-surface-variant tracking-normal">
-            <strong className="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder
-            drafts are generated automatically from templates but{' '}
-            <span className="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>.
-            Timeline logs are immutably auditable under KYC Ops policy.
-          </p>
+        <div className="bg-surface-container-low px-margin py-space-xs w-full flex items-center justify-between gap-space-sm border-t border-surface-container-high/40 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center gap-space-sm">
+            <span className="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">
+              verified_user
+            </span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant tracking-normal">
+              <strong className="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder
+              drafts are generated automatically from templates but{' '}
+              <span className="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>.
+              Timeline logs are immutably auditable under KYC Ops policy.
+            </p>
+          </div>
+          <div className="hidden lg:flex items-center gap-space-xs shrink-0 pl-space-md border-l border-outline-variant/30">
+            <span className="text-on-surface-variant font-label-sm text-label-sm">Dual Assignment:</span>
+            <a
+              href="/analystassist"
+              className="px-2 py-0.5 rounded bg-primary-container/10 text-primary-container hover:bg-primary-container/20 font-label-sm text-label-sm font-semibold flex items-center gap-1 border border-primary-container/25 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+              <span>Open Assignment 2 (Analyst Assist Desk) →</span>
+            </a>
+          </div>
         </div>
       </header>
 

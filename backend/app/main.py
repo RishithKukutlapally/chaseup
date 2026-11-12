@@ -25,7 +25,7 @@ from app.agent_graph import (
 from app.database import AsyncSessionLocal, get_db, init_db
 from app.llm_config import get_llm_status, reload_env_files
 from app.models import AgentAction, KycCase, MissingDocument
-from app.paths import FRONTEND_DIST_DIR
+from app.paths import ANALYST_ASSIST_CANDIDATES, FRONTEND_DIST_DIR
 from app.schemas import (
     AgentActionOut,
     ApproveDispatchRequest,
@@ -690,6 +690,24 @@ async def get_dashboard_metrics(
     )
 
 
+def _find_analyst_assist_html() -> Path | None:
+    for candidate in ANALYST_ASSIST_CANDIDATES:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
+
+
+@app.get("/analystassist", include_in_schema=False)
+@app.get("/analystassist/", include_in_schema=False)
+@app.get("/analyst-assist", include_in_schema=False)
+@app.get("/analystassist/problem.html", include_in_schema=False)
+async def serve_analyst_assist():
+    target = _find_analyst_assist_html()
+    if target:
+        return FileResponse(target)
+    raise HTTPException(status_code=404, detail="Analyst Assist prototype not found")
+
+
 # Serve bundled Vite React production build (used by ChaseZero.exe and standalone backend runs)
 if FRONTEND_DIST_DIR.exists():
     assets_dir = FRONTEND_DIST_DIR / "assets"
@@ -700,7 +718,14 @@ if FRONTEND_DIST_DIR.exists():
     async def serve_spa(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not Found")
+        if full_path in ("analystassist", "analystassist/", "analyst-assist"):
+            target = _find_analyst_assist_html()
+            if target:
+                return FileResponse(target)
         candidate = FRONTEND_DIST_DIR / full_path
-        if full_path and candidate.exists() and candidate.is_file():
-            return FileResponse(candidate)
+        if full_path and candidate.exists():
+            if candidate.is_file():
+                return FileResponse(candidate)
+            if candidate.is_dir() and (candidate / "index.html").exists():
+                return FileResponse(candidate / "index.html")
         return FileResponse(FRONTEND_DIST_DIR / "index.html")

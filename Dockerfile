@@ -23,6 +23,7 @@ COPY backend/pyproject.toml backend/README.md ./
 RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY backend/app ./app
+COPY analystassist ./analystassist
 COPY --from=frontend-builder /app/frontend/dist ./frontend_dist
 
 EXPOSE 8080

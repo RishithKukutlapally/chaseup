@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Northgate Chase KYC Case Ops</title><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-background": "#0b1c30", "primary": "#000000", "on-tertiary": "#ffffff", "inverse-on-surface": "#eaf1ff", "primary-container": "#0e1c2f", "outline-variant": "#c5c6cd", "surface-dim": "#cbdbf5", "background": "#f8f9ff", "tertiary-fixed-dim": "#b4c5ff", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#3c475a", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#3a475c", "secondary-fixed": "#d8e3fb", "inverse-surface": "#213145", "primary-fixed-dim": "#bac7e1", "inverse-primary": "#bac7e1", "on-tertiary-container": "#497cff", "secondary-container": "#d5e0f8", "tertiary-fixed": "#dbe1ff", "surface-tint": "#525f75", "on-primary-container": "#77849c", "surface-container-highest": "#d3e4fe", "error": "#ba1a1a", "surface": "#f8f9ff", "on-secondary": "#ffffff", "on-error-container": "#93000a", "surface-variant": "#d3e4fe", "tertiary-container": "#00174b", "on-error": "#ffffff", "outline": "#75777d", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-container-high": "#dce9ff", "secondary-fixed-dim": "#bcc7de", "surface-container-low": "#eff4ff", "secondary": "#545f73", "primary-fixed": "#d6e3fe", "surface-container-lowest": "#ffffff", "on-surface-variant": "#44474c", "on-tertiary-fixed": "#00174b", "on-tertiary-fixed-variant": "#003ea8", "on-secondary-container": "#586377", "on-surface": "#0b1c30", "on-secondary-fixed": "#111c2d", "tertiary": "#000000", "on-primary-fixed": "#0e1c2f" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "gutter-compact": "0.5rem", "space-xl": "1.5rem", "gutter": "1rem", "space-2xs": "0.125rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-dense": "1rem", "space-md": "0.75rem", "space-lg": "1rem", "margin": "1.5rem", "space-2xl": "2rem" }, fontFamily: { "label-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "data-mono-md": ["JetBrains Mono"], "data-mono-sm": ["JetBrains Mono"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-sm": ["Inter"] }, fontSize: { "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-mono-md": ["13px", { "lineHeight": "18px", "fontWeight": "500" }], "data-mono-sm": ["11px", { "lineHeight": "14px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-md shrink-0"><img alt="Northgate Chase Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrAjzacBpTgTsg1V3-b7Zeaq12JKiGlV0MMc8-EYoxdfe1hJh-rwYUrjAuJgF1snOjEhcOrtG6ze_K2_ph-MPN_OJ05P0rD_S0cFW4Oy04vfutCx9mXvM-phGquJ4z1kJqWxmPFUIa1ebw9mNG2NqluokpFHETnyeYZvtGLgE2lYos0P_C0wB__PlGpI2d-AtThQUNFp6gwtEiSs9OGAJym0iTDGQ5YbMGeWEf90_txV"/><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">Northgate Chase</span><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded">Production Ops (v4.2)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">KYC Onboarding Chase Workspace</span></div></div><nav class="hidden xl:flex items-center gap-space-xs" data-active-classes="bg-surface-container text-on-surface font-semibold"><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="chase-queue" href="#">Chase Queue <span class="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">42 Open / 14 Overdue</span></a><a aria-current="page" class="px-space-md py-space-xs rounded transition-colors flex flex-col items-start leading-none gap-space-2xs bg-surface-container text-on-surface font-semibold" data-path="case-detail" href="#"><span>Case Detail</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">NG-2026-8812 - Helios Marine</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="reminder-composer" href="#">Reminder Composer <span class="font-data-mono-sm text-data-mono-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">3 Drafts</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex flex-col items-start leading-none gap-space-2xs" data-path="stage-analytics" href="#"><span>Stage Analytics</span><span class="font-label-sm text-label-sm text-on-surface-variant">COO Oversight</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="analyst-handoff" href="#">Analyst Handoff <span class="font-data-mono-sm text-data-mono-sm bg-surface-container-highest text-on-surface-variant px-space-xs py-space-2xs rounded">UBO Blocked</span></a></nav><div class="flex items-center gap-space-md shrink-0"><div class="relative hidden lg:flex items-center"><span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[18px]">search</span><input class="bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-space-2xl pr-space-md py-space-xs rounded w-64 focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container text-ellipsis" placeholder="Search Case ID, Client, or Tax ID... (Ctrl+K)" readonly="" type="text"/></div><button aria-label="Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="hidden md:flex flex-col text-right"><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-surface-variant px-space-xs py-space-2xs rounded">Corporate &amp; Institutional Banking</span></div><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYRIE6pd_XfNRieVvLoQ22Amd4exrWPHNQqJSr2445q4xgYIECIfL8o-AZnenQ0VbeIrLkF9MbHU0XPCpyX3tW5A3NvgagjNgtXNUxqcyHVxzIP0Z1sVSfxmtmiq7dFMAqfrEzweVNKO_I5W1JiTZsD60g6KPOVzhqnEhghCkAJPp1Ur0NvmTy7pBZFkRufpZsFOSwihho7TcRcxH5HNaKtfjUDKmXOpxS8z28Yes"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Alistair Vance</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant leading-tight">Senior RM - Global Industries</span></div></div></div></div><div class="bg-surface-container-low px-margin py-space-xs w-full flex items-center gap-space-sm shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><span class="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">verified_user</span><p class="font-body-sm text-body-sm text-on-surface-variant tracking-normal"><strong class="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder drafts are generated automatically from templates but <span class="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>. Timeline logs are auditable under KYC Ops policy.</p></div></header><main class="w-full pt-16 bg-surface"><div class="pt-space-xl pb-space-2xl px-margin mx-auto max-w-[1440px]"><div class="flex flex-col w-full">
+<!-- Top Sovereign Institutional Context Canvas -->
+<div class="relative w-full bg-surface-container-lowest shadow-sm rounded-lg p-space-lg mb-space-xl overflow-hidden">
+<div class="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-secondary-container/20 blur-3xl pointer-events-none"></div>
+<!-- Entity Master Tier Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg relative z-10 pb-space-md border-b border-surface-container-high/60">
+<div class="flex flex-wrap items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded bg-primary-container text-surface-container-lowest flex items-center justify-center shrink-0 font-data-mono-md text-data-mono-md shadow-sm">
+          HM
+        </div>
+<div class="flex flex-col min-w-0">
+<div class="flex flex-wrap items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold truncate">
+              Helios Marine Logistics Ltd
+            </h1>
+<span class="inline-flex items-center gap-space-2xs bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase">
+<span class="material-symbols-outlined text-[14px]">error</span>
+              Chasing Round 2 (Overdue)
+            </span>
+<span class="bg-surface-container-high text-on-surface-variant font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded">
+              High Risk Jurisdictional Multi-tier
+            </span>
+</div>
+<div class="flex flex-wrap items-center gap-x-space-md gap-y-space-xs mt-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+<span>Case ID: <strong class="text-on-surface">NG-2026-8812</strong></span>
+<span class="text-outline-variant">•</span>
+<span>LEI: <span class="tracking-wider">5493006M1KVF87Z19G44</span></span>
+<span class="text-outline-variant">•</span>
+<span>Entity: Private Limited Company</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[14px] text-secondary">public</span>
+              UK / Marshall Islands
+            </span>
+</div>
+</div>
+</div>
+<!-- Header Operations Actions -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-space-xs shadow-sm" id="btn-mark-contact">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span>Mark Contacted</span>
+</button>
+<button class="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+<span>Audit Trail PDF</span>
+</button>
+<button class="px-space-md py-space-xs rounded bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors flex items-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">playlist_add</span>
+<span>Add Ad-Hoc</span>
+</button>
+<a class="px-space-lg py-space-xs rounded bg-primary-container text-on-tertiary font-label-md text-label-md hover:bg-primary transition-all flex items-center gap-space-xs shadow-md" data-path="reminder-composer" href="#">
+<span class="material-symbols-outlined text-[16px]">outgoing_mail</span>
+<span class="font-semibold">Chase All Outstanding (3)</span>
+</a>
+</div>
+</div>
+<!-- Telemetry & Ownership Strip -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-space-md pt-space-md mt-space-2xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Assigned RM</span>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Corporate headshot of senior male relationship manager Alistair Vance, confident banking attire, navy studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhQ2nCxcFZYX7rhDE0qUQmJ-3f3Y2fND51JnebdWtFN03TjZ10Gbvz-l7MQMQbByivSsFCnFHpnxHAARm2FlpgBHALklaHhBYs5m3zwvKlSgkJy7JTcI3KGQiEiOXJunS9fktJGtCa-YPvVoh0yrV208sO0A0lZtwqTjz66ZMD18RstzuhgDb7yjCK7JWhKiUji-SWVFj2q1OCx5AIuhSXh1TQM55xl3N6uPLNSG4"/>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Alistair Vance</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Ops Coordinator</span>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Professional corporate portrait of female operations coordinator Clara Gomez in institutional office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSGyFbEKV0VVEIzIizYpAYkW-Mtdl0cbqIEpSBQsBf-Q_aXNJNfVWsuYxk0Tjp3144sWxUv5l3efC_wrQnUp2Y3haxR_SR3PzeOzSZTTCt__mQvnsSR-YevvcN0tupo7XaxZBlRrjVxYzAEZygbMt1XrKzu-0ITHrCbz83SxvpRIq9E839kAcnjX6TFxHxB3AE21KUGPdiDK49mk-70VbpOh_DPcO4dScuyrtN3ts"/>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Clara Gomez</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">KYC Lead Analyst</span>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<div class="w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-data-mono-sm text-data-mono-sm">DP</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Dev Patel</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Stage Duration</span>
+<div class="flex items-baseline gap-space-xs mt-space-2xs">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-error">21 Days</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">(Target: 7d)</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total Elapsed</span>
+<div class="flex items-baseline gap-space-xs mt-space-2xs">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">34 Days</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">SLA Limit: 45d</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Completion Metric</span>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<div class="w-full bg-surface-container-high rounded h-2 relative overflow-hidden">
+<div class="bg-primary-container h-full rounded" style="width: 55.5%"></div>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">5/9</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Dual Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-xl items-start">
+<!-- LEFT 60% COLUMN: Document Checklist Grouped by Category -->
+<div class="xl:col-span-7 flex flex-col gap-space-lg">
+<!-- Operational Header with Interactive Status Filters -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-lg py-space-md rounded-lg shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-on-surface">checklist</span>
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+            Regulatory Document Inventory
+          </h2>
+<span class="font-data-mono-sm text-data-mono-sm bg-surface-container text-on-surface-variant px-space-xs py-space-2xs rounded">
+            9 Items Mandated
+          </span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-xs py-space-2xs rounded bg-surface-container text-on-surface font-label-sm text-label-sm">All (9)</button>
+<button class="px-space-xs py-space-2xs rounded text-on-surface-variant hover:bg-surface-container transition font-label-sm text-label-sm">Deficient (3)</button>
+<button class="px-space-xs py-space-2xs rounded text-on-surface-variant hover:bg-surface-container transition font-label-sm text-label-sm">Approved (6)</button>
+</div>
+</div>
+<!-- Group 1: Constitutional Documents -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<div class="bg-surface-container-low px-space-lg py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wider">
+              1. Constitutional Documents
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">(2/2 Completed)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+</div>
+<div class="divide-y divide-surface-container-low">
+<!-- Item 1.1 -->
+<div class="p-space-md hover:bg-surface-container-lowest/50 transition-colors flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Certificate of Incorporation</span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Owner: Client</span>
+<span>•</span>
+<span>Received: 12 Jan 2026</span>
+<span>•</span>
+<span class="text-on-secondary-fixed-variant">Verified by Ops Clara Gomez</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Verified
+              </span>
+<button class="p-space-2xs text-on-surface-variant hover:text-on-surface rounded hover:bg-surface-container" title="Download Vault File">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+<!-- Item 1.2 -->
+<div class="p-space-md hover:bg-surface-container-lowest/50 transition-colors flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Articles of Association &amp; Memorandum</span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Owner: Client</span>
+<span>•</span>
+<span>Received: 14 Jan 2026</span>
+<span>•</span>
+<span class="text-on-secondary-fixed-variant">Verified by Ops Clara Gomez</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Verified
+              </span>
+<button class="p-space-2xs text-on-surface-variant hover:text-on-surface rounded hover:bg-surface-container" title="Download Vault File">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Group 2: Ownership and UBO -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<div class="bg-error-container/20 px-space-lg py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wider">
+              2. Ownership and UBO
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-error font-medium">(2 Actionable / 1 Critical Overdue)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-error">priority_high</span>
+</div>
+<div class="divide-y divide-surface-container-low">
+<!-- Item 2.1 - Critical Blocked UBO Structure -->
+<div class="p-space-md bg-surface-container-low/40 flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-error mt-0.5">report_problem</span>
+<div class="flex flex-col min-w-0">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">
+                    Certified Group Ownership Structure Chart
+                  </span>
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">
+                    ≥25% UBO Mandate
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Requested: 18 Jan 2026</span>
+<span>•</span>
+<span class="text-error font-semibold">Chase Round 2 (7 days overdue)</span>
+<span>•</span>
+<span>Owner: Client</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end md:self-center">
+<a class="px-space-sm py-space-xs rounded bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors flex items-center gap-space-2xs" data-path="analyst-handoff" href="#">
+<span class="material-symbols-outlined text-[14px]">link</span>
+<span>Handoff</span>
+</a>
+<a class="px-space-sm py-space-xs rounded bg-primary-container text-on-tertiary hover:bg-primary font-label-md text-label-md transition-colors flex items-center gap-space-2xs" data-path="reminder-composer" href="#">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+<span>Draft Chase</span>
+</a>
+</div>
+</div>
+<!-- Item 2.2 - Henrik Lindqvist Passport -->
+<div class="p-space-md flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Government ID / Passport (Henrik Lindqvist)</span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Owner: Client</span>
+<span>•</span>
+<span>Received: 22 Jan 2026</span>
+<span>•</span>
+<span class="text-on-surface">Doc Ref: SE-PAS-88192-A</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Verified
+              </span>
+<button class="p-space-2xs text-on-surface-variant hover:text-on-surface rounded hover:bg-surface-container" title="Download File">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+<!-- Item 2.3 - Henrik Lindqvist Proof of Address -->
+<div class="p-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-outline mt-0.5">schedule</span>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">
+                  Proof of Residential Address (Henrik Lindqvist)
+                </span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Utility bill &lt;3 months</span>
+<span>•</span>
+<span>Requested: 05 Feb 2026</span>
+<span>•</span>
+<span>Round 1</span>
+<span>•</span>
+<span>Owner: Client</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end md:self-center">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container-high text-on-surface font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+<span class="material-symbols-outlined text-[12px]">alarm</span>
+                Due Today
+              </span>
+<a class="p-space-xs text-on-surface-variant hover:text-on-surface rounded hover:bg-surface-container transition-colors" data-path="reminder-composer" href="#" title="Chase item">
+<span class="material-symbols-outlined text-[18px]">send</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Group 3: Registry Extracts -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<div class="bg-surface-container-low px-space-lg py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wider">
+              3. Registry Extracts
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-error font-medium">(1 Item Hard Blocker)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-error">lock</span>
+</div>
+<div class="divide-y divide-surface-container-low">
+<div class="p-space-md bg-surface-container-low/40 flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-error mt-0.5">block</span>
+<div class="flex flex-col min-w-0">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">
+                    Official Commercial Registry Extract
+                  </span>
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded flex items-center gap-space-2xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    Blocks UBO Extraction Stage
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Companies House / Marshall Islands Maritime Registry</span>
+<span>•</span>
+<span>Requested: 19 Jan 2026</span>
+<span>•</span>
+<span class="text-error font-semibold">Chase Round 2</span>
+<span>•</span>
+<span>Internal Registry Agent / Client</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end md:self-center">
+<a class="px-space-md py-space-xs rounded bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors flex items-center gap-space-2xs" data-path="analyst-handoff" href="#">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+<span>Open Analyst Handoff</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Group 4: Authorised Signatories -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<div class="bg-surface-container-low px-space-lg py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wider">
+              4. Authorised Signatories
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">(2/2 Completed / Waived)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+</div>
+<div class="divide-y divide-surface-container-low">
+<!-- Item 4.1 -->
+<div class="p-space-md flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Board Resolution Delegating Banking Powers</span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Owner: Client</span>
+<span>•</span>
+<span>Received: 15 Jan 2026</span>
+<span>•</span>
+<span class="text-on-secondary-fixed-variant">Executed under Corporate Seal</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Verified
+              </span>
+</div>
+</div>
+<!-- Item 4.2 -->
+<div class="p-space-md flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mt-0.5">shield</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-body-md text-body-md font-medium text-on-surface">Specimen Signature Card for 2 Directors</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant px-space-xs py-space-2xs rounded">Waived Policy Rule</span>
+</div>
+<div class="font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+                  Pre-existing signatory card on file for Northgate UK affiliate (Affiliate ref: NG-LON-4491). Approved 20 Jan 2026 by Legal Officer H. Reed.
+                </div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+                Waived
+              </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Group 5: Other Requirements -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden mb-space-lg">
+<div class="bg-surface-container-low px-space-lg py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wider">
+              5. Other Requirements
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">(1 In Progress)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-secondary">pending</span>
+</div>
+<div class="p-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">history_edu</span>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">
+                Source of Wealth / Fund Flow Declaration
+              </span>
+<div class="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+<span>Requested: 10 Feb 2026</span>
+<span>•</span>
+<span>Chase Round 1</span>
+<span>•</span>
+<span>Owner: Client</span>
+<span>•</span>
+<span class="text-on-secondary-fixed-variant">Next Chase Scheduled: 01 Mar 2026</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end md:self-center">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-space-xs py-space-2xs rounded">
+              Pending Next Cycle
+            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT 40% COLUMN: Blocked Stages Warning, Chase Audit Timeline, Client Contact Card -->
+<div class="xl:col-span-5 flex flex-col gap-space-lg">
+<!-- Panel 1: Blocked Stages Warning Panel (Top Alert) -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm p-space-lg overflow-hidden relative">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-error"></div>
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">gpp_bad</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-error tracking-wider">
+              Stage Blocked: UBO Extraction Cannot Proceed
+            </span>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-xs leading-relaxed">
+              KYC Analyst <strong>Dev Patel</strong> marked downstream stage blocked on <strong>24 Jan 2026</strong>. Missing prerequisite items:
+            </p>
+<div class="bg-surface-container-low rounded p-space-sm my-space-sm flex flex-col gap-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[14px] text-error">close</span>
+<span class="text-on-surface">Certified Group Ownership Structure Chart</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[14px] text-error">close</span>
+<span class="text-on-surface">Official Commercial Registry Extract</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-data-mono-sm text-data-mono-sm text-error font-medium">Estimated analyst delay: +9 business days</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm mt-space-md pt-space-sm border-t border-surface-container-high/60">
+<a class="px-space-md py-space-xs rounded bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md transition-colors flex items-center gap-space-xs" data-path="analyst-handoff" href="#">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span>
+<span>View Handoff Details</span>
+</a>
+<button class="px-space-md py-space-xs rounded bg-error-container text-on-error-container hover:bg-error/20 font-label-md text-label-md transition-colors flex items-center gap-space-xs" id="btn-escalate">
+<span class="material-symbols-outlined text-[16px]">campaign</span>
+<span>Escalate to Senior RM</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 2: Chase Timeline (Chronological Audit Log) -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm p-space-lg flex flex-col">
+<div class="flex items-center justify-between pb-space-sm mb-space-md border-b border-surface-container-high/60">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-on-surface">schedule</span>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+              Chase Audit Timeline
+            </h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">
+            Immutable Policy Log
+          </span>
+</div>
+<div class="relative pl-space-lg flex flex-col gap-space-lg before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-surface-container-high">
+<!-- Event 1: Draft waiting RM review -->
+<div class="relative flex items-start gap-space-sm">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-secondary-container border-2 border-surface-container-lowest shadow-sm"></span>
+<div class="flex flex-col w-full">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">24 Feb 2026 • 09:15</span>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">
+                  Draft in Composer
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                Reminder Round 2 generated by automated template; awaiting RM Vance review and sign-off.
+              </p>
+<div class="mt-space-2xs">
+<a class="font-label-sm text-label-sm text-on-tertiary-container hover:underline inline-flex items-center gap-space-2xs" data-path="reminder-composer" href="#">
+<span>Open Composer Draft</span>
+<span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Event 2: Sent Round 1 -->
+<div class="relative flex items-start gap-space-sm">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-primary-container border-2 border-surface-container-lowest shadow-sm"></span>
+<div class="flex flex-col w-full">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">17 Feb 2026 • 14:30</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-xs py-space-2xs rounded">
+                  Sent &amp; Logged
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                Reminder Round 1 sent via secure email by RM Vance to <code class="font-data-mono-sm text-data-mono-sm bg-surface-container px-1 py-0.5 rounded">cfo@heliosmarine.co.uk</code>. 3 outstanding items listed.
+              </p>
+</div>
+</div>
+<!-- Event 3: Document Received -->
+<div class="relative flex items-start gap-space-sm">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-secondary border-2 border-surface-container-lowest shadow-sm"></span>
+<div class="flex flex-col w-full">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">10 Feb 2026 • 11:20</span>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">
+                  Document Received
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                Client submitted Passport copy for H. Lindqvist via Institutional Portal. Formally verified by Ops Clara Gomez.
+              </p>
+</div>
+</div>
+<!-- Event 4: Handoff Flagged -->
+<div class="relative flex items-start gap-space-sm">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-error border-2 border-surface-container-lowest shadow-sm"></span>
+<div class="flex flex-col w-full">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">24 Jan 2026 • 16:45</span>
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">
+                  Handoff Flagged
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                Analyst Dev Patel flagged missing Org Chart as hard blocker preventing UBO extraction workflow initiation.
+              </p>
+</div>
+</div>
+<!-- Event 5: Initial Document Chase Package -->
+<div class="relative flex items-start gap-space-sm">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-on-surface-variant border-2 border-surface-container-lowest shadow-sm"></span>
+<div class="flex flex-col w-full">
+<div class="flex items-center justify-between">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">18 Jan 2026 • 10:00</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-xs py-space-2xs rounded">
+                  Initial Request
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                Initial Document Chase Package (6 required categories) dispatched by Ops Coordinator Clara Gomez.
+              </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 3: Client Outreach Contact Card -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm p-space-lg flex flex-col">
+<div class="flex items-center justify-between pb-space-sm mb-space-md border-b border-surface-container-high/60">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-on-surface">contact_mail</span>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+              Client Outreach Cadence
+            </h3>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface font-semibold px-space-xs py-space-2xs rounded">
+            VIP Tier 2
+          </span>
+</div>
+<div class="flex flex-col gap-space-md">
+<!-- Primary Contact -->
+<div class="bg-surface-container-low rounded p-space-md flex flex-col">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Corporate headshot of Marcus Sterling, Chief Financial Officer, professional male executive in corporate navy jacket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT_IrTemgTk42P6vUI97aEgnTCUG80R36gWUoxjELk36WYqNHvkYDqlJbOEdS3m3qmqvEQ1W0TKNLlDEKtvrKp9CLNRw1NUOG0B76zFxq4QgjBIx0o_s_I3P6sHEMqGqs_U9Ewpb1UA-QinVx2lx7vBFGzHnXV0U-bNZRPnt3VDIhHAJPRpG_WwXE5MEqdQb6xnSgZEtR1Xjg8bhuDk6y8kA8Cem44LkSgr4QYT9Q"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Marcus Sterling</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Chief Financial Officer (Primary Chase Recipient)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-secondary">star</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm mt-space-md pt-space-xs border-t border-surface-container-high/60">
+<a class="flex items-center gap-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface hover:text-primary-container truncate" href="mailto:m.sterling@heliosmarine.co.uk">
+<span class="material-symbols-outlined text-[16px] text-secondary">mail</span>
+<span class="truncate">m.sterling@heliosmarine.co.uk</span>
+</a>
+<a class="flex items-center gap-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface hover:text-primary-container" href="tel:+442079460912">
+<span class="material-symbols-outlined text-[16px] text-secondary">call</span>
+<span>+44 20 7946 0912</span>
+</a>
+</div>
+</div>
+<!-- Secondary Contact -->
+<div class="bg-surface-container-low rounded p-space-md flex flex-col">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-label-md text-label-md font-semibold">
+                  LW
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Linda Ward</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Corporate Secretary &amp; General Counsel</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Secondary</span>
+</div>
+<div class="mt-space-sm pt-space-xs border-t border-surface-container-high/60">
+<a class="flex items-center gap-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface hover:text-primary-container" href="mailto:legal@heliosmarine.co.uk">
+<span class="material-symbols-outlined text-[16px] text-secondary">mail</span>
+<span>legal@heliosmarine.co.uk</span>
+</a>
+</div>
+</div>
+<!-- Recent RM Interaction Log -->
+<div class="bg-surface-container-high/40 rounded p-space-sm flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mt-0.5">phone_callback</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-semibold uppercase text-on-surface-variant tracking-wider">
+                Last Client Interaction (16 Feb 2026)
+              </span>
+<p class="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                "RM Vance spoke directly with CFO Marcus Sterling; promised certified org chart by Friday. Registry extract requested from Channel Islands agent."
+              </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Toast Notification Element (Hidden by default) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 bg-primary-container text-on-tertiary px-space-lg py-space-md rounded-lg shadow-xl flex items-center gap-space-md pointer-events-none" id="toast-notify">
+<span class="material-symbols-outlined text-tertiary-fixed text-[20px]">check_circle</span>
+<span class="font-body-md text-body-md" id="toast-text">Action logged into Sovereign Case Record.</span>
+</div>
+</div>
+<script>
+  (function initCaseDetailMicroInteractions() {
+    const btnContact = document.getElementById('btn-mark-contact');
+    const btnEscalate = document.getElementById('btn-escalate');
+    const toast = document.getElementById('toast-notify');
+    const toastText = document.getElementById('toast-text');
+
+    function showNotification(msg) {
+      if (!toast) return;
+      toastText.textContent = msg;
+      toast.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    if (btnContact) {
+      btnContact.addEventListener('click', () => {
+        showNotification('Client Outreach touchpoint recorded for Helios Marine Logistics.');
+      });
+    }
+
+    if (btnEscalate) {
+      btnEscalate.addEventListener('click', () => {
+        showNotification('Case NG-2026-8812 escalated to Global Head of Relationship Banking.');
+      });
+    }
+  })();
+</script></div></main><footer class="w-full bg-surface-container-lowest mt-space-2xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-[1440px] mx-auto px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><span class="font-label-sm text-label-sm uppercase tracking-wide font-semibold text-on-surface">Northgate Chase &amp; Co.</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Institutional Division | Ops Terminal ID: CIB-LDN-8812</span></div><div class="flex items-center gap-space-lg font-body-sm text-body-sm text-on-surface-variant"><span class="flex items-center gap-space-2xs"><span class="w-2 h-2 rounded-full bg-secondary"></span> Real-Time Ledger Connected</span><span>Audit Log Policy ISO-27001</span><span>© 2026 Northgate Chase Sovereign Institutional Ops. All rights reserved.</span></div></div></footer></body></html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Northgate Chase KYC Case Ops</title><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-background": "#0b1c30", "primary": "#000000", "on-tertiary": "#ffffff", "inverse-on-surface": "#eaf1ff", "primary-container": "#0e1c2f", "outline-variant": "#c5c6cd", "surface-dim": "#cbdbf5", "background": "#f8f9ff", "tertiary-fixed-dim": "#b4c5ff", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#3c475a", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#3a475c", "secondary-fixed": "#d8e3fb", "inverse-surface": "#213145", "primary-fixed-dim": "#bac7e1", "inverse-primary": "#bac7e1", "on-tertiary-container": "#497cff", "secondary-container": "#d5e0f8", "tertiary-fixed": "#dbe1ff", "surface-tint": "#525f75", "on-primary-container": "#77849c", "surface-container-highest": "#d3e4fe", "error": "#ba1a1a", "surface": "#f8f9ff", "on-secondary": "#ffffff", "on-error-container": "#93000a", "surface-variant": "#d3e4fe", "tertiary-container": "#00174b", "on-error": "#ffffff", "outline": "#75777d", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-container-high": "#dce9ff", "secondary-fixed-dim": "#bcc7de", "surface-container-low": "#eff4ff", "secondary": "#545f73", "primary-fixed": "#d6e3fe", "surface-container-lowest": "#ffffff", "on-surface-variant": "#44474c", "on-tertiary-fixed": "#00174b", "on-tertiary-fixed-variant": "#003ea8", "on-secondary-container": "#586377", "on-surface": "#0b1c30", "on-secondary-fixed": "#111c2d", "tertiary": "#000000", "on-primary-fixed": "#0e1c2f" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "gutter-compact": "0.5rem", "space-xl": "1.5rem", "gutter": "1rem", "space-2xs": "0.125rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-dense": "1rem", "space-md": "0.75rem", "space-lg": "1rem", "margin": "1.5rem", "space-2xl": "2rem" }, fontFamily: { "label-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "data-mono-md": ["JetBrains Mono"], "data-mono-sm": ["JetBrains Mono"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-sm": ["Inter"] }, fontSize: { "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-mono-md": ["13px", { "lineHeight": "18px", "fontWeight": "500" }], "data-mono-sm": ["11px", { "lineHeight": "14px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-md shrink-0"><img alt="Northgate Chase Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrAjzacBpTgTsg1V3-b7Zeaq12JKiGlV0MMc8-EYoxdfe1hJh-rwYUrjAuJgF1snOjEhcOrtG6ze_K2_ph-MPN_OJ05P0rD_S0cFW4Oy04vfutCx9mXvM-phGquJ4z1kJqWxmPFUIa1ebw9mNG2NqluokpFHETnyeYZvtGLgE2lYos0P_C0wB__PlGpI2d-AtThQUNFp6gwtEiSs9OGAJym0iTDGQ5YbMGeWEf90_txV"/><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">Northgate Chase</span><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded">Production Ops (v4.2)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">KYC Onboarding Chase Workspace</span></div></div><nav class="hidden xl:flex items-center gap-space-xs" data-active-classes="bg-surface-container text-on-surface font-semibold"><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="chase-queue" href="#">Chase Queue <span class="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">42 Open / 14 Overdue</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex flex-col items-start leading-none gap-space-2xs" data-path="case-detail" href="#"><span>Case Detail</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">NG-2026-8812 - Helios Marine</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="reminder-composer" href="#">Reminder Composer <span class="font-data-mono-sm text-data-mono-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">3 Drafts</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex flex-col items-start leading-none gap-space-2xs" data-path="stage-analytics" href="#"><span>Stage Analytics</span><span class="font-label-sm text-label-sm text-on-surface-variant">COO Oversight</span></a><a aria-current="page" class="px-space-md py-space-xs rounded transition-colors flex items-center gap-space-xs bg-surface-container text-on-surface font-semibold" data-path="analyst-handoff" href="#">Analyst Handoff <span class="font-data-mono-sm text-data-mono-sm bg-surface-container-highest text-on-surface-variant px-space-xs py-space-2xs rounded">UBO Blocked</span></a></nav><div class="flex items-center gap-space-md shrink-0"><div class="relative hidden lg:flex items-center"><span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[18px]">search</span><input class="bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-space-2xl pr-space-md py-space-xs rounded w-64 focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container text-ellipsis" placeholder="Search Case ID, Client, or Tax ID... (Ctrl+K)" readonly="" type="text"/></div><button aria-label="Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="hidden md:flex flex-col text-right"><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-surface-variant px-space-xs py-space-2xs rounded">Corporate &amp; Institutional Banking</span></div><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYRIE6pd_XfNRieVvLoQ22Amd4exrWPHNQqJSr2445q4xgYIECIfL8o-AZnenQ0VbeIrLkF9MbHU0XPCpyX3tW5A3NvgagjNgtXNUxqcyHVxzIP0Z1sVSfxmtmiq7dFMAqfrEzweVNKO_I5W1JiTZsD60g6KPOVzhqnEhghCkAJPp1Ur0NvmTy7pBZFkRufpZsFOSwihho7TcRcxH5HNaKtfjUDKmXOpxS8z28Yes"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Alistair Vance</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant leading-tight">Senior RM - Global Industries</span></div></div></div></div><div class="bg-surface-container-low px-margin py-space-xs w-full flex items-center gap-space-sm shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><span class="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">verified_user</span><p class="font-body-sm text-body-sm text-on-surface-variant tracking-normal"><strong class="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder drafts are generated automatically from templates but <span class="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>. Timeline logs are auditable under KYC Ops policy.</p></div></header><main class="w-full pt-16 bg-surface"><div class="pt-space-xl pb-space-2xl px-margin mx-auto max-w-[1440px]"><div class="flex flex-col w-full">
+<!-- Top Operational Breadcrumb & Handoff Ticket Meta -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-lg gap-space-md">
+<div class="flex flex-wrap items-center gap-space-xs font-label-md text-label-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-space-2xs" href="#">
+<span class="material-symbols-outlined text-[16px]">folder_supervised</span>
+        KYC Queue
+      </a>
+<span class="text-outline-variant">/</span>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">NG-2026-8812 (Helios Marine)</a>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-semibold bg-surface-container-high px-space-xs py-space-2xs rounded">Analyst Handoff Desk</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container px-space-sm py-space-xs rounded">Handoff Ref: HND-UBO-8812-B</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container px-space-sm py-space-xs rounded flex items-center gap-space-2xs">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+        Desk: FCC London Floor 4
+      </span>
+</div>
+</div>
+<!-- 1. Critical Blocked Stage Banner -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg mb-space-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg pl-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">block</span>
+</div>
+<div class="flex flex-col gap-space-2xs">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-semibold tracking-wide">
+              Critical Blocker Active
+            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Gate 3.4 • Beneficial Ownership Verification</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
+            Stage Blocked: UBO Extraction &amp; Beneficial Ownership Verification
+          </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Blocked by Senior KYC Analyst <strong class="text-on-surface font-semibold">Dev Patel</strong> on 24 Feb 2026, 08:30 GMT • Regulatory standard requires explicit natural-person legal chain verification before account creation.
+          </p>
+</div>
+</div>
+<!-- SLA Paused Callout Box -->
+<div class="bg-surface-container-high rounded-lg p-space-md flex items-center gap-space-md shrink-0 lg:max-w-sm">
+<div class="w-9 h-9 rounded-md bg-surface-container-lowest text-on-surface flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px] text-error">pause_circle</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase text-on-surface font-semibold">Stage SLA Paused</span>
+<span class="font-data-mono-sm text-data-mono-sm text-error font-semibold">Clock Frozen</span>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold mt-space-2xs">4 days remaining</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">of 7-day target once unblocked by RM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Primary Workspace: 12-Column Responsive Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- Left Column (7 cols): Document Defects & Action Form -->
+<div class="lg:col-span-7 flex flex-col gap-space-xl">
+<!-- 2. Missing Prerequisite Document Cards -->
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Prerequisite Deficiencies</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">2 Unresolved</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Required by Marshall Islands MLC Reg 14</span>
+</div>
+<!-- Defect Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md transition-all hover:shadow-md">
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[22px] text-error mt-0.5 shrink-0">account_tree</span>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-space-2xs">
+<span class="font-label-sm text-label-sm uppercase bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-semibold">
+                    Overdue • Round 2 Chase Pending
+                  </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Doc Ref: DOC-ORG-8812</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+                  Certified Group Ownership Structure Chart (≥25% Threshold)
+                </h2>
+</div>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md px-space-sm py-space-xs rounded shrink-0 transition-colors flex items-center gap-space-2xs" onclick="toggleViewer('doc1')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+              View Defective Copy
+            </button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md text-on-surface">
+<div class="flex items-center gap-space-xs text-error font-label-sm text-label-sm uppercase mb-space-2xs">
+<span class="material-symbols-outlined text-[16px]">error</span>
+              Deficiency Assessment by Dev Patel (Analyst Notes)
+            </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              "Previous document submitted on 12 Jan was a basic operational organogram without equity percentages or natural person UBOs. Helios Marine has a Marshall Islands intermediate holding entity which requires formal certification by legal counsel or director. Ultimate economic interest for the Scandinavian trust must be quantified."
+            </p>
+</div>
+<div class="flex flex-wrap items-center justify-between text-on-surface-variant pt-space-xs gap-space-sm">
+<div class="flex items-center gap-space-md font-data-mono-sm text-data-mono-sm">
+<span class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[15px]">event</span>
+                Rejected: 14 Jan 2026
+              </span>
+<span class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[15px]">history</span>
+                2 Automated Reminders Sent
+              </span>
+</div>
+<span class="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">Action Needed: Legal Certified Chart</span>
+</div>
+</div>
+<!-- Defect Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md transition-all hover:shadow-md">
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[22px] text-error mt-0.5 shrink-0">badge</span>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-space-2xs">
+<span class="font-label-sm text-label-sm uppercase bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-semibold">
+                    Overdue • Registry Staleness
+                  </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Doc Ref: DOC-MHL-EXTR-401</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+                  Official Commercial Registry Extract (Marshall Islands Maritime &amp; Corporate Registry)
+                </h2>
+</div>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md px-space-sm py-space-xs rounded shrink-0 transition-colors flex items-center gap-space-2xs" onclick="toggleViewer('doc2')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+              View Stale Copy
+            </button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md text-on-surface">
+<div class="flex items-center gap-space-xs text-error font-label-sm text-label-sm uppercase mb-space-2xs">
+<span class="material-symbols-outlined text-[16px]">error</span>
+              Deficiency Assessment by Dev Patel (Analyst Notes)
+            </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              "Expired extract (&gt;12 months old, dated Oct 2024). Current certified extract needed to verify active good standing, valid maritime franchise, and active board composition. Northgate standard policy 4.1 forbids verification on registry extracts older than 90 days for offshore entities."
+            </p>
+</div>
+<div class="flex flex-wrap items-center justify-between text-on-surface-variant pt-space-xs gap-space-sm">
+<div class="flex items-center gap-space-md font-data-mono-sm text-data-mono-sm">
+<span class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[15px]">event</span>
+                Rejected: 18 Jan 2026
+              </span>
+<span class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[15px]">history</span>
+                1 Escalation Triggered
+              </span>
+</div>
+<span class="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">Action Needed: &lt;90d Registry Extract</span>
+</div>
+</div>
+</div>
+<!-- 4. "Request from RM" Action Workflow (Core Job to be Done) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-primary-container text-[20px]">forward_to_inbox</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">RM Coordination Hand-Off</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">
+            Raise Linked Chase Request to Relationship Manager
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Raising this request creates a prioritized, pre-filled reminder draft in RM Alistair Vance's queue with analyst-grade instructions so the client receives clear legal guidance without back-and-forth ambiguity.
+          </p>
+</div>
+<!-- RM Recipient Badge -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<img class="w-10 h-10 rounded-full object-cover shrink-0" data-alt="Corporate headshot of senior male relationship manager in crisp business attire, neutral studio lighting, banking executive style, soft navy background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv-TVwFYIoiEpkrt8WLMFayMeW4JMXaaoQrcPVEWkn-mEw9BZ4C8uuUgMFE-jX2k3dVMd_hi8cRgVStkLxHvKDH7C9hXvEm-owdPTC7NhEBLT1x8FnHwBLDTjhPepIdClcqY2a_kOEQ1iV5Ddt47lBH1YJAhnYUyrC22i9LnO41D5qnffHe9l497o83smJ2MOWAE2BAdiL699YCA3uCjFtfTwlVcpErp7ah548yl4"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Assigned Recipient: Alistair Vance (Senior RM)</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">ext 4402 • a.vance@northgatechase.com • Global Industries</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs self-start sm:self-center">
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container font-semibold px-space-sm py-space-xs rounded flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+              High / Stage Blocker (48h SLA)
+            </span>
+</div>
+</div>
+<!-- Guidance Form Input -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface font-semibold" for="analyst-guidance">
+              Specific Instructions for RM to convey to Client CFO
+            </label>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Included in Screen C draft</span>
+</div>
+<textarea class="w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-md rounded-lg focus:outline-none transition-all shadow-inner leading-relaxed resize-none" id="analyst-guidance" rows="4">Please advise CFO that the org chart must show the ultimate shareholding percentage for Mr. Henrik Lindqvist through the Guernsey trust structure, signed by a practicing barrister or legal director. For the Marshall Islands registry extract, electronic copies with verifiable digital apostille from the Maritime Administrator are accepted.</textarea>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[15px]">info</span>
+            Analyst notes will be automatically sanitized and formatted into institutional client reminder templates.
+          </span>
+</div>
+<!-- Additional Checklist Checkboxes -->
+<div class="bg-surface-container rounded-lg p-space-md flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface">Automation Parameters</span>
+<label class="flex items-start gap-space-sm cursor-pointer">
+<input checked="" class="mt-0.5 rounded text-on-surface focus:ring-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Flag client contact as "Urgent Onboarding Hold" in RM Mobile Suite</span>
+</label>
+<label class="flex items-start gap-space-sm cursor-pointer">
+<input checked="" class="mt-0.5 rounded text-on-surface focus:ring-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Route draft straight to "Ready for RM Sign-off" stage (bypassing intake review)</span>
+</label>
+<label class="flex items-start gap-space-sm cursor-pointer">
+<input class="mt-0.5 rounded text-on-surface focus:ring-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">CC Financial Crime Compliance Desk Lead (E. Zhao) on submission</span>
+</label>
+</div>
+<!-- Action Button Matrix -->
+<div class="flex flex-col gap-space-md pt-space-xs">
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
+<button class="flex-1 bg-on-background text-surface-container-lowest hover:bg-inverse-surface font-label-md text-label-md font-semibold px-space-lg py-space-md rounded shadow transition-all flex items-center justify-center gap-space-sm" id="submitHandoffBtn" onclick="handlePrimarySubmit()">
+<span class="material-symbols-outlined text-[18px]">send</span>
+              Submit Linked Request to RM Vance
+            </button>
+<button class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md font-medium px-space-md py-space-md rounded transition-colors flex items-center justify-center gap-space-xs" onclick="handleInternalOverride()">
+<span class="material-symbols-outlined text-[18px]">search_insights</span>
+              Override &amp; Search Internal Registry
+            </button>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-on-surface-variant hover:text-error font-label-md text-label-md transition-colors flex items-center gap-space-2xs" onclick="handleLegalWaiver()">
+<span class="material-symbols-outlined text-[16px]">gavel</span>
+              Request Legal Officer Review for Document Waiver
+            </button>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Policy: AML-WVR-2025-v2</span>
+</div>
+</div>
+<!-- Success Toast Container (Hidden by default) -->
+<div class="hidden bg-surface-container-highest text-on-surface p-space-md rounded-lg flex items-center justify-between gap-space-md animate-fade-in" id="actionToast">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-on-surface">check_circle</span>
+<span class="font-body-sm text-body-sm font-semibold">Priority Chase Draft created in Screen C. Notification ping dispatched to Alistair Vance (Slack &amp; Email).</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="document.getElementById('actionToast').classList.add('hidden')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column (5 cols): Case Context Dossier & Audit History -->
+<div class="lg:col-span-5 flex flex-col gap-space-xl">
+<!-- 3. Full Case Context Summary Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-on-surface">corporate_fare</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Entity Dossier</span>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm bg-surface-container-high px-space-xs py-space-2xs rounded font-semibold">
+            NG-2026-8812
+          </span>
+</div>
+<div class="flex items-start gap-space-md pt-space-xs">
+<img class="w-16 h-16 rounded-lg object-cover shrink-0 shadow-sm" data-alt="Commercial cargo vessel at deep water terminal loading freight containers under gray sky, precision architectural industrial photography, subtle cold blue palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjrCdgesK71pVQ-p2yivBmGo-EIeDt0n6l3Pliy7zKj7yarhLRrMmNCEJwNIJ3H7W3zOI24cS9DbPYYOIXcVcbXEG2t0TZHRMNwBb53-FMZsA3Gn4qR3a8xYsNwGo3aR7qtidXLoCSs83C5V1D60su_Rmk2ckVMWSEBGBYT5gDXqJDlgIHyGxaBCb7fBGjQVFoYI51XED6uteYRNkXEvNZehk5eRe6NoUzBWWOQKQ"/>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug">Helios Marine Logistics Ltd</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sector: Maritime Freight &amp; Tanker Logistics</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface font-semibold mt-space-2xs">LEI: 549300V7911K64354228</span>
+</div>
+</div>
+<!-- Entity Risk & Financial Vectors -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Expected Turnover</span>
+<span class="font-data-mono-md text-data-mono-md font-bold text-on-surface mt-space-2xs">$140,000,000 / yr</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">USD Clearing Tier 2</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Risk Classification</span>
+<span class="font-data-mono-md text-data-mono-md font-bold text-error mt-space-2xs flex items-center gap-space-2xs">
+<span class="w-2 h-2 rounded-full bg-error"></span> High Risk
+            </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dual-jurisdiction trade</span>
+</div>
+</div>
+<!-- Assigned Operations Pod -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface tracking-wide">Assigned Onboarding Pod</span>
+<div class="flex items-center justify-between py-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">shield_person</span>
+<span class="font-body-sm text-body-sm text-on-surface">Assigned KYC Analyst</span>
+</div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Dev Patel (Desk 3)</span>
+</div>
+<div class="flex items-center justify-between py-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">assignment_ind</span>
+<span class="font-body-sm text-body-sm text-on-surface">Assigned Ops Specialist</span>
+</div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Clara Gomez</span>
+</div>
+<div class="flex items-center justify-between py-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">contact_mail</span>
+<span class="font-body-sm text-body-sm text-on-surface">Assigned RM</span>
+</div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Alistair Vance (CIB-LDN)</span>
+</div>
+</div>
+<!-- Inline Visual: Onboarding Completion Progress Ring -->
+<div class="bg-surface-container-high rounded-lg p-space-md flex items-center justify-between gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface">Stage Pipeline</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-space-2xs">3 of 6 Cleared</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Waiting on UBO validation</span>
+</div>
+<div class="relative w-14 h-14 shrink-0 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+<path class="text-on-background" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="50, 100" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<span class="absolute font-data-mono-sm text-data-mono-sm font-bold text-on-surface">50%</span>
+</div>
+</div>
+</div>
+<!-- 5. Audit History of Handoffs & Action Log -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-on-surface">receipt_long</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Handoff &amp; Audit History</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">ISO-27001 Stamped</span>
+</div>
+<!-- Vertical Timeline Activity -->
+<div class="relative pl-space-lg flex flex-col gap-space-lg mt-space-xs">
+<!-- Timeline Guide Line -->
+<div class="absolute left-2.5 top-2 bottom-2 w-0.5 bg-surface-container-high"></div>
+<!-- Entry 1 -->
+<div class="relative flex flex-col gap-space-2xs">
+<div class="absolute -left-[23px] top-1 w-3 h-3 rounded-full bg-error ring-4 ring-surface-container-lowest"></div>
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-label-md text-label-md font-bold text-on-surface">Dev Patel raised Stage Blocker</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">24 Feb • 08:30</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Identified deficiency in Marshall Islands chain. Stalled Gate 3.4 pending certified share register &amp; UBO attestation.
+            </p>
+<span class="font-data-mono-sm text-data-mono-sm text-error bg-error-container self-start px-space-xs py-space-2xs rounded mt-space-2xs">
+              Ticket: HND-UBO-8812-B
+            </span>
+</div>
+<!-- Entry 2 -->
+<div class="relative flex flex-col gap-space-2xs">
+<div class="absolute -left-[23px] top-1 w-3 h-3 rounded-full bg-on-background ring-4 ring-surface-container-lowest"></div>
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Certificate of Incorporation Verified</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">19 Jan • 14:15</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Dev Patel completed primary entity check against Marshall Islands public index. Marked Satisfactory.
+            </p>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container self-start px-space-xs py-space-2xs rounded mt-space-2xs">
+              Ref: VER-COI-092
+            </span>
+</div>
+<!-- Entry 3 -->
+<div class="relative flex flex-col gap-space-2xs">
+<div class="absolute -left-[23px] top-1 w-3 h-3 rounded-full bg-secondary ring-4 ring-surface-container-lowest"></div>
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">File Intake Initiated</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">15 Jan • 10:04</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Ops Coordinator Clara Gomez ingested prospective corporate payload received from Relationship Desk.
+            </p>
+</div>
+</div>
+<button class="bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md py-space-xs rounded text-center transition-colors mt-space-xs">
+          View Complete System Log (18 Events)
+        </button>
+</div>
+<!-- Quick Regulatory Reference Box -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-on-surface shrink-0 mt-0.5">verified</span>
+<div class="flex flex-col font-body-sm text-body-sm">
+<span class="font-semibold text-on-surface">Institutional Compliance Standard 2026.3</span>
+<span>Beneficial owners holding ≥25% equity or direct effective control must have verifiable proof of address, legal structure attribution, and sanctions clearance prior to account provisioning.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro Modal for Document Inspection Quick Drawer -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm flex items-center justify-center p-space-lg" id="quickDocModal">
+<div class="bg-surface-container-lowest max-w-2xl w-full rounded-xl shadow-xl p-space-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-error text-[24px]">description</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold" id="modalTitle">Document Inspection</h3>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="toggleViewer()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-space-lg rounded-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between text-on-surface-variant font-data-mono-sm text-data-mono-sm">
+<span>Uploaded: 12 Jan 2026 11:22 UTC</span>
+<span class="text-error font-semibold">Rejected by Dev Patel</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed" id="modalDesc">
+          Defect preview details will appear here.
+        </p>
+</div>
+<div class="flex justify-end gap-space-sm">
+<button class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md px-space-md py-space-xs rounded transition-colors" onclick="toggleViewer()">
+          Close Inspection
+        </button>
+</div>
+</div>
+</div>
+<script>
+    function toggleViewer(docId) {
+      const modal = document.getElementById('quickDocModal');
+      const title = document.getElementById('modalTitle');
+      const desc = document.getElementById('modalDesc');
+
+      if (!modal.classList.contains('hidden')) {
+        modal.classList.add('hidden');
+        return;
+      }
+
+      if (docId === 'doc1') {
+        title.innerText = 'Defective Document: Group Org Chart (12 Jan Submission)';
+        desc.innerText = 'Document shows 3 corporate entities with no ownership percentages listed. Intermediate holding entity "Helios Maritime Holdings RMI Inc" does not identify the natural persons controlling Scandinavian Maritime Trust. Lacks legal counsel certification.';
+      } else {
+        title.innerText = 'Defective Document: Marshall Islands Registry Extract';
+        desc.innerText = 'Extract issued 14 October 2024. Fails the 90-day currency requirement for high-risk offshore logistics entities. Current good standing status cannot be certified without an updated stamp.';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function handlePrimarySubmit() {
+      const btn = document.getElementById('submitHandoffBtn');
+      const toast = document.getElementById('actionToast');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span> Dispatching Draft to RM...';
+      btn.classList.add('opacity-75');
+
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span> Linked Request Active';
+        btn.classList.remove('opacity-75');
+        toast.classList.remove('hidden');
+      }, 700);
+    }
+
+    function handleInternalOverride() {
+      alert('Internal Registry Lookup: Querying Bureau of Maritime Affairs API for cached extracts...');
+    }
+
+    function handleLegalWaiver() {
+      alert('Opening Legal Waiver Workflow (AML-WVR-2025). Routing request to Senior Compliance Counsel.');
+    }
+  </script>
+</div></div></main><footer class="w-full bg-surface-container-lowest mt-space-2xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-[1440px] mx-auto px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><span class="font-label-sm text-label-sm uppercase tracking-wide font-semibold text-on-surface">Northgate Chase &amp; Co.</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Institutional Division | Ops Terminal ID: CIB-LDN-8812</span></div><div class="flex items-center gap-space-lg font-body-sm text-body-sm text-on-surface-variant"><span class="flex items-center gap-space-2xs"><span class="w-2 h-2 rounded-full bg-secondary"></span> Real-Time Ledger Connected</span><span>Audit Log Policy ISO-27001</span><span>© 2026 Northgate Chase Sovereign Institutional Ops. All rights reserved.</span></div></div></footer></body></html>

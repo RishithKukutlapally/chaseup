@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Northgate Chase KYC Case Ops</title><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-background": "#0b1c30", "primary": "#000000", "on-tertiary": "#ffffff", "inverse-on-surface": "#eaf1ff", "primary-container": "#0e1c2f", "outline-variant": "#c5c6cd", "surface-dim": "#cbdbf5", "background": "#f8f9ff", "tertiary-fixed-dim": "#b4c5ff", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#3c475a", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#3a475c", "secondary-fixed": "#d8e3fb", "inverse-surface": "#213145", "primary-fixed-dim": "#bac7e1", "inverse-primary": "#bac7e1", "on-tertiary-container": "#497cff", "secondary-container": "#d5e0f8", "tertiary-fixed": "#dbe1ff", "surface-tint": "#525f75", "on-primary-container": "#77849c", "surface-container-highest": "#d3e4fe", "error": "#ba1a1a", "surface": "#f8f9ff", "on-secondary": "#ffffff", "on-error-container": "#93000a", "surface-variant": "#d3e4fe", "tertiary-container": "#00174b", "on-error": "#ffffff", "outline": "#75777d", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-container-high": "#dce9ff", "secondary-fixed-dim": "#bcc7de", "surface-container-low": "#eff4ff", "secondary": "#545f73", "primary-fixed": "#d6e3fe", "surface-container-lowest": "#ffffff", "on-surface-variant": "#44474c", "on-tertiary-fixed": "#00174b", "on-tertiary-fixed-variant": "#003ea8", "on-secondary-container": "#586377", "on-surface": "#0b1c30", "on-secondary-fixed": "#111c2d", "tertiary": "#000000", "on-primary-fixed": "#0e1c2f" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "gutter-compact": "0.5rem", "space-xl": "1.5rem", "gutter": "1rem", "space-2xs": "0.125rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-dense": "1rem", "space-md": "0.75rem", "space-lg": "1rem", "margin": "1.5rem", "space-2xl": "2rem" }, fontFamily: { "label-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "data-mono-md": ["JetBrains Mono"], "data-mono-sm": ["JetBrains Mono"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-sm": ["Inter"] }, fontSize: { "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-mono-md": ["13px", { "lineHeight": "18px", "fontWeight": "500" }], "data-mono-sm": ["11px", { "lineHeight": "14px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-md shrink-0"><img alt="Northgate Chase Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrAjzacBpTgTsg1V3-b7Zeaq12JKiGlV0MMc8-EYoxdfe1hJh-rwYUrjAuJgF1snOjEhcOrtG6ze_K2_ph-MPN_OJ05P0rD_S0cFW4Oy04vfutCx9mXvM-phGquJ4z1kJqWxmPFUIa1ebw9mNG2NqluokpFHETnyeYZvtGLgE2lYos0P_C0wB__PlGpI2d-AtThQUNFp6gwtEiSs9OGAJym0iTDGQ5YbMGeWEf90_txV"/><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">Northgate Chase</span><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded">Production Ops (v4.2)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">KYC Onboarding Chase Workspace</span></div></div><nav class="hidden xl:flex items-center gap-space-xs" data-active-classes="bg-surface-container text-on-surface font-semibold"><a aria-current="page" class="px-space-md py-space-xs rounded transition-colors flex items-center gap-space-xs bg-surface-container text-on-surface font-semibold" data-path="chase-queue" href="#">Chase Queue <span class="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">42 Open / 14 Overdue</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex flex-col items-start leading-none gap-space-2xs" data-path="case-detail" href="#"><span>Case Detail</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">NG-2026-8812 - Helios Marine</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="reminder-composer" href="#">Reminder Composer <span class="font-data-mono-sm text-data-mono-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">3 Drafts</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex flex-col items-start leading-none gap-space-2xs" data-path="stage-analytics" href="#"><span>Stage Analytics</span><span class="font-label-sm text-label-sm text-on-surface-variant">COO Oversight</span></a><a class="px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="analyst-handoff" href="#">Analyst Handoff <span class="font-data-mono-sm text-data-mono-sm bg-surface-container-highest text-on-surface-variant px-space-xs py-space-2xs rounded">UBO Blocked</span></a></nav><div class="flex items-center gap-space-md shrink-0"><div class="relative hidden lg:flex items-center"><span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[18px]">search</span><input class="bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-space-2xl pr-space-md py-space-xs rounded w-64 focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container text-ellipsis" placeholder="Search Case ID, Client, or Tax ID... (Ctrl+K)" readonly="" type="text"/></div><button aria-label="Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="hidden md:flex flex-col text-right"><span class="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-surface-variant px-space-xs py-space-2xs rounded">Corporate &amp; Institutional Banking</span></div><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYRIE6pd_XfNRieVvLoQ22Amd4exrWPHNQqJSr2445q4xgYIECIfL8o-AZnenQ0VbeIrLkF9MbHU0XPCpyX3tW5A3NvgagjNgtXNUxqcyHVxzIP0Z1sVSfxmtmiq7dFMAqfrEzweVNKO_I5W1JiTZsD60g6KPOVzhqnEhghCkAJPp1Ur0NvmTy7pBZFkRufpZsFOSwihho7TcRcxH5HNaKtfjUDKmXOpxS8z28Yes"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Alistair Vance</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant leading-tight">Senior RM - Global Industries</span></div></div></div></div><div class="bg-surface-container-low px-margin py-space-xs w-full flex items-center gap-space-sm shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><span class="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">verified_user</span><p class="font-body-sm text-body-sm text-on-surface-variant tracking-normal"><strong class="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder drafts are generated automatically from templates but <span class="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>. Timeline logs are auditable under KYC Ops policy.</p></div></header><main class="w-full pt-16 bg-surface"><div class="pt-space-xl pb-space-2xl px-margin mx-auto max-w-[1440px]"><div class="flex flex-col w-full">
+<!-- Operational Context Header (Compact, Non-redundant) -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-data-mono-sm text-data-mono-sm uppercase text-on-surface-variant tracking-wider">Desk: Institutional Corporate Onboarding</span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-secondary-container">Cycle Window: Q1 2026 Audit Run</span>
+</div>
+<div class="flex items-baseline gap-space-sm mt-space-2xs">
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Active KYC Chase Workbench</h2>
+<span class="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">Live Telemetry</span>
+</div>
+</div>
+<!-- Quick Ops Actions -->
+<div class="flex items-center gap-space-xs self-start lg:self-auto">
+<button class="px-space-md py-space-xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">tune</span>
+        Density: Dense (40px)
+      </button>
+<button class="px-space-md py-space-xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">history</span>
+        Audit Log
+      </button>
+<button class="px-space-md py-space-xs rounded bg-primary text-on-primary hover:bg-on-primary-fixed-variant font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+        Manual Intake Entry
+      </button>
+</div>
+</div>
+<!-- Operational Summary Metric Strip -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md mb-space-lg">
+<!-- Active Cases -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Active Cases in Chase</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync_saved_locally</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">418</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">entities</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>400 new corporate entries / mo</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-secondary-container">98.2% S&amp;P rated</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-[3px] bg-secondary-container"></div>
+</div>
+<!-- Overdue Cases (Urgent) -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-error">Cases Overdue for Chase</span>
+<span class="material-symbols-outlined text-[18px] text-error" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-error">38</span>
+<span class="font-label-sm text-label-sm font-semibold text-error bg-error-container/50 px-space-xs py-space-2xs rounded">+4 vs yesterday</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>SLA breach breach risk: High</span>
+<span class="font-data-mono-sm text-data-mono-sm text-error">9.1% portfolio</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-[3px] bg-error"></div>
+</div>
+<!-- Due Today -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface">Cases Due Today</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">schedule</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">24</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-secondary-container">reminders slated</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>Scheduled batch runs: 14:00</span>
+<span class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-fixed/50 px-space-xs py-space-2xs rounded">18 Ready</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-[3px] bg-outline-variant"></div>
+</div>
+<!-- Median Days in Chase -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Median Days in Chase</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">timelapse</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">17.4</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Days</span>
+<span class="font-data-mono-sm text-data-mono-sm text-error ml-space-2xs">(+3.4d vs KPI)</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>Institutional Target: 14.0d</span>
+<div class="w-16 h-2 bg-surface-container-high rounded overflow-hidden">
+<div class="h-full bg-error" style="width: 80%;"></div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-[3px] bg-outline-variant"></div>
+</div>
+<!-- Unreviewed Draft Reminders -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Unreviewed Draft Reminders</span>
+<span class="material-symbols-outlined text-[18px] text-on-tertiary-container">rate_review</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">7</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">drafts pending</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Requires RM Sign-off</span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container bg-surface-container px-space-xs py-space-2xs rounded">3 High Priority</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-[3px] bg-on-tertiary-container"></div>
+</div>
+</section>
+<!-- Filter & Action Command Strip -->
+<section class="bg-surface-container-lowest rounded shadow-sm p-space-md mb-space-md flex flex-col gap-space-md">
+<!-- Filter Tabs (Segmented Control) -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex flex-wrap items-center bg-surface-container-low p-space-2xs rounded gap-space-2xs" role="tablist">
+<button aria-selected="true" class="px-space-md py-space-xs rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm flex items-center gap-space-xs" role="tab">
+<span>All Open Cases</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-surface-container px-space-xs rounded">418</span>
+</button>
+<button aria-selected="false" class="px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md flex items-center gap-space-xs transition-colors" role="tab">
+<span>Overdue Items</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs rounded">38</span>
+</button>
+<button aria-selected="false" class="px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md flex items-center gap-space-xs transition-colors" role="tab">
+<span>Due Today</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-secondary-container text-on-secondary-container px-space-xs rounded">24</span>
+</button>
+<button aria-selected="false" class="px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md flex items-center gap-space-xs transition-colors" role="tab">
+<span>My Assigned Portfolio</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-surface-container px-space-xs rounded">54</span>
+</button>
+<button aria-selected="false" class="px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md flex items-center gap-space-xs transition-colors" role="tab">
+<span>Blocked Downstream</span>
+<span class="font-data-mono-sm text-data-mono-sm bg-surface-container px-space-xs rounded">19</span>
+</button>
+</div>
+<!-- Action Buttons Right -->
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-xs rounded bg-surface-container text-outline font-label-md text-label-md flex items-center gap-space-xs cursor-not-allowed transition-all" disabled="" id="batchChaseBtn">
+<span class="material-symbols-outlined text-[16px]">forward_to_inbox</span>
+<span>Batch Chase Action</span>
+<span class="hidden font-data-mono-sm text-data-mono-sm bg-primary text-on-primary px-space-xs rounded" id="batchCountBadge">0</span>
+</button>
+<button class="px-space-md py-space-xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">download</span>
+          Export CSV Report
+        </button>
+</div>
+</div>
+<!-- Dropdowns + Search Filter Bar -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-sm pt-space-xs">
+<!-- Search Input -->
+<div class="md:col-span-5 relative">
+<span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-space-2xl pr-space-md py-space-xs rounded focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant" id="caseSearchInput" placeholder="Filter by client name, NG case ID, or LEI..." type="text"/>
+</div>
+<!-- RM Dropdown -->
+<div class="md:col-span-2">
+<select class="w-full bg-surface-container-low text-on-surface font-body-sm text-body-sm px-space-sm py-space-xs rounded focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+<option value="all">RM: All RMs (Global Desk)</option>
+<option selected="" value="vance">RM: Alistair Vance (54)</option>
+<option value="jenkins">RM: Sarah Jenkins (62)</option>
+<option value="chen">RM: Marcus Chen (48)</option>
+<option value="rostova">RM: Elena Rostova (41)</option>
+</select>
+</div>
+<!-- Stage Dropdown -->
+<div class="md:col-span-2">
+<select class="w-full bg-surface-container-low text-on-surface font-body-sm text-body-sm px-space-sm py-space-xs rounded focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+<option value="all">Stage: All Stages</option>
+<option value="missing_docs">Chasing Missing Docs</option>
+<option value="ubo_block">UBO Verification</option>
+<option value="sanctions_pep">Sanctions &amp; PEP Review</option>
+<option value="legal">Legal &amp; Tax Opinion</option>
+</select>
+</div>
+<!-- Aging Bucket Dropdown -->
+<div class="md:col-span-2">
+<select class="w-full bg-surface-container-low text-on-surface font-body-sm text-body-sm px-space-sm py-space-xs rounded focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer">
+<option value="all">Aging: All Aging Buckets</option>
+<option value="gt21">&gt; 21 Days (Critical SLA)</option>
+<option value="14-21">14 - 21 Days (Overdue)</option>
+<option value="7-14">7 - 14 Days (Warning)</option>
+<option value="lt7">&lt; 7 Days (Fresh)</option>
+</select>
+</div>
+<!-- Sort Reset -->
+<div class="md:col-span-1 flex items-center justify-end">
+<button class="w-full h-full bg-surface-container-low hover:bg-surface-container-high rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors py-space-xs" title="Sort: Oldest Waiting Item (Default Descending)">
+<span class="material-symbols-outlined text-[18px]">sort</span>
+<span class="sr-only">Sort Oldest</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Primary Tabular High-Density Workbench -->
+<div class="w-full bg-surface-container-lowest rounded shadow-sm overflow-hidden mb-space-md">
+<div class="overflow-x-auto max-h-[640px] relative">
+<table class="w-full text-left border-collapse min-w-[1340px]">
+<!-- Sticky Header -->
+<thead class="sticky top-0 z-20 bg-surface-container text-on-surface font-label-sm text-label-sm uppercase tracking-wider select-none shadow-[0_1px_0_rgba(0,0,0,0.08)]">
+<tr class="h-10">
+<th class="w-10 px-space-sm text-center">
+<input class="w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" id="selectAllCheckbox" type="checkbox"/>
+</th>
+<th class="px-space-md min-w-[240px]">Client Name &amp; Entity Type</th>
+<th class="px-space-sm min-w-[130px]">Case ID</th>
+<th class="px-space-sm min-w-[130px]">Assigned RM</th>
+<th class="px-space-sm min-w-[90px] text-center">Days Open</th>
+<th class="px-space-md min-w-[210px]">Current Stage</th>
+<th class="px-space-sm min-w-[110px] text-center">Missing Docs</th>
+<th class="px-space-sm min-w-[140px]">Oldest Item Age</th>
+<th class="px-space-sm min-w-[140px]">Next Follow-Up</th>
+<th class="px-space-sm min-w-[130px]">Status</th>
+<th class="px-space-md min-w-[180px] text-right pr-space-md">Quick Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-body-sm font-body-sm">
+<!-- Row 1: Helios Marine Logistics Ltd (KEY OVERDUE FOCUS CASE) -->
+<tr class="bg-error-container/20 hover:bg-error-container/30 transition-colors group cursor-pointer relative" onclick="highlightRow(this)">
+<td class="px-space-sm text-center relative" onclick="event.stopPropagation()">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md font-bold text-on-surface group-hover:text-primary tracking-tight truncate">Helios Marine Logistics Ltd</span>
+<span class="font-data-mono-sm text-data-mono-sm text-error bg-surface-container-lowest px-space-xs py-space-2xs rounded font-bold">CRITICAL</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span>Private Ltd (Cyprus / Maritime)</span>
+<span class="text-outline-variant">•</span>
+<span class="font-data-mono-sm text-data-mono-sm">LEI: 549300HML0991208</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">NG-2026-8812</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">AV</div>
+<span class="font-label-md text-label-md text-on-surface">Alistair Vance</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-error text-on-error px-space-xs py-space-2xs rounded font-bold">34d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-error">Chasing missing documents</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">UBO Org Chart &amp; Incumbency</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-semibold">4 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-2xs text-error font-data-mono-md text-data-mono-md font-bold">
+<span class="material-symbols-outlined text-[14px]">history_toggle_off</span>
+<span>21d overdue</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-label-sm text-label-sm font-bold text-error uppercase bg-error-container px-space-xs py-space-2xs rounded">Overdue (24 Feb)</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-bold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+<span>Overdue</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-error text-on-error hover:bg-on-error-container font-label-sm text-label-sm flex items-center gap-space-2xs font-semibold shadow-xs" data-path="reminder-composer" href="#">
+<span class="material-symbols-outlined text-[14px]">outgoing_mail</span>
+                  Quick Chase
+                </a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">
+                  View Detail
+                </a>
+</div>
+</td>
+</tr>
+<!-- Row 2: Apex Vanguard Capital Inc -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Apex Vanguard Capital Inc</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Delaware Regulated Fund (LP)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-7491</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm flex items-center justify-center font-bold">MC</div>
+<span class="font-label-md text-label-md text-on-surface">Marcus Chen</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">28d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">UBO extraction blocked</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">3 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-error">18d overdue</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Today, 14:00</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+<span>Due Today</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm" data-path="analyst-handoff" href="#">Handoff</a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 3: Orion Biotech Global SE -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Orion Biotech Global SE</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Societas Europaea (Munich)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-9204</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-outline text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">ER</div>
+<span class="font-label-md text-label-md text-on-surface">Elena Rostova</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">26d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Document intake &amp; checks</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">2 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-error">14d overdue</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">Tomorrow, 10:00</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>Overdue</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm" data-path="reminder-composer" href="#">Draft Chase</a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 4: Trident Ferroalloys B.V. -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Trident Ferroalloys B.V.</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Private BV (Rotterdam, NL)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-6188</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">AV</div>
+<span class="font-label-md text-label-md text-on-surface">Alistair Vance</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">22d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Chasing missing documents</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">3 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">11d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">Today, 16:30</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+<span>Due Today</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm" data-path="reminder-composer" href="#">Quick Chase</a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 5: Solaria Renewable Infrastructure Ltd -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Solaria Renewable Infrastructure Ltd</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Project SPV (UK &amp; Ireland)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-5502</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm flex items-center justify-center font-bold">SJ</div>
+<span class="font-label-md text-label-md text-on-surface">Sarah Jenkins</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">19d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Signatory verification</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">1 item</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">8d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">28 Feb 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 6: Vesper Maritime Partners LLP -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Vesper Maritime Partners LLP</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Partnership (London, City)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-4419</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">AV</div>
+<span class="font-label-md text-label-md text-on-surface">Alistair Vance</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">17d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">UBO extraction blocked</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">2 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-error">9d overdue</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">Today, 11:30</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+<span>Due Today</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm" data-path="analyst-handoff" href="#">Handoff</a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 7: Kestrel Avionics Systems AG -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Kestrel Avionics Systems AG</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Aktiengesellschaft (Zurich)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-3820</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm flex items-center justify-center font-bold">MC</div>
+<span class="font-label-md text-label-md text-on-surface">Marcus Chen</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">15d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Chasing missing documents</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">1 item</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">5d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">02 Mar 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 8: Zephyr Chemical Logistics SA -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Zephyr Chemical Logistics SA</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Sociedad Anónima (Madrid)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-2911</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-outline text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">ER</div>
+<span class="font-label-md text-label-md text-on-surface">Elena Rostova</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">12d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Sanctions &amp; PEP clearance</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">2 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">4d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">Today, 17:00</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+<span>Due Today</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-label-sm" data-path="reminder-composer" href="#">Quick Chase</a>
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 9: Cobalt Meridian Holdings LLC -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Cobalt Meridian Holdings LLC</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">HoldCo (Cayman Islands)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-1944</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">AV</div>
+<span class="font-label-md text-label-md text-on-surface">Alistair Vance</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">9d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Chasing missing documents</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">1 item</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">3d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">03 Mar 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 10: Borealis Agritech Ventures Inc -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Borealis Agritech Ventures Inc</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Corp (Toronto, TSX Listed)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-1803</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm flex items-center justify-center font-bold">SJ</div>
+<span class="font-label-md text-label-md text-on-surface">Sarah Jenkins</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">7d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Document intake &amp; checks</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">2 items</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">2d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">04 Mar 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 11: Valo Hydro Systems Oy -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Valo Hydro Systems Oy</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Osakeyhtiö (Helsinki, FI)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-1092</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm flex items-center justify-center font-bold">MC</div>
+<span class="font-label-md text-label-md text-on-surface">Marcus Chen</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">5d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Signatory verification</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">1 item</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">1d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">05 Mar 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+<!-- Row 12: Thorne & Sterling Commodity Brokers -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="highlightRow(this)">
+<td class="px-space-sm text-center" onclick="event.stopPropagation()">
+<input class="row-checkbox w-3.5 h-3.5 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary tracking-tight truncate">Thorne &amp; Sterling Commodity Brokers</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Regulated Broker (Singapore)</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">NG-2026-0847</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-5 h-5 rounded-full bg-outline text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">ER</div>
+<span class="font-label-md text-label-md text-on-surface">Elena Rostova</span>
+</div>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded font-medium">3d</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="font-label-md text-label-md text-on-surface">Chasing missing documents</span>
+</td>
+<td class="px-space-sm py-space-sm text-center">
+<span class="font-data-mono-md text-data-mono-md bg-surface-container-high text-on-surface px-space-xs py-space-2xs rounded">1 item</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-md text-data-mono-md text-on-surface">1d waiting</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">06 Mar 2026</span>
+</td>
+<td class="px-space-sm py-space-sm">
+<span class="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold uppercase">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>On Track</span>
+</span>
+</td>
+<td class="px-space-md py-space-sm text-right pr-space-md" onclick="event.stopPropagation()">
+<div class="flex items-center justify-end gap-space-xs">
+<a class="px-space-xs py-space-2xs rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm" data-path="case-detail" href="#">Detail</a>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Operational Pagination & Audit Strip -->
+<div class="bg-surface-container-lowest rounded shadow-sm px-space-md py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md font-body-sm text-body-sm text-on-surface-variant">
+<span>Showing <strong class="text-on-surface font-semibold">1-12</strong> of <strong class="text-on-surface font-semibold">418</strong> cases</span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<div class="flex items-center gap-space-xs">
+<span>Rows per page:</span>
+<select class="bg-surface-container-low text-on-surface font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded focus:outline-none">
+<option>12</option>
+<option selected="">25</option>
+<option>50</option>
+<option>100</option>
+</select>
+</div>
+<span class="hidden md:inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="hidden md:inline text-on-secondary-container font-data-mono-sm text-data-mono-sm">Database Sync: 22s ago (Cluster LON-PROD-01)</span>
+</div>
+<!-- Page Controls -->
+<div class="flex items-center gap-space-xs font-label-md text-label-md">
+<button class="w-8 h-8 rounded bg-surface-container-low text-on-surface-variant hover:bg-surface-container flex items-center justify-center transition-colors disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[16px]">first_page</span>
+</button>
+<button class="w-8 h-8 rounded bg-surface-container-low text-on-surface-variant hover:bg-surface-container flex items-center justify-center transition-colors disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-space-sm py-space-2xs rounded bg-primary text-on-primary font-data-mono-sm text-data-mono-sm font-semibold">1</span>
+<button class="w-8 h-8 rounded hover:bg-surface-container text-on-surface font-data-mono-sm text-data-mono-sm transition-colors">2</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container text-on-surface font-data-mono-sm text-data-mono-sm transition-colors">3</button>
+<span class="text-on-surface-variant px-space-2xs font-data-mono-sm text-data-mono-sm">...</span>
+<button class="w-8 h-8 rounded hover:bg-surface-container text-on-surface font-data-mono-sm text-data-mono-sm transition-colors">35</button>
+<button class="w-8 h-8 rounded bg-surface-container-low text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+<button class="w-8 h-8 rounded bg-surface-container-low text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">last_page</span>
+</button>
+<div class="flex items-center gap-space-xs pl-space-sm border-l border-surface-container">
+<span class="text-on-surface-variant font-body-sm text-body-sm">Jump:</span>
+<input class="w-10 h-8 text-center bg-surface-container-low font-data-mono-sm text-data-mono-sm rounded text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" type="text" value="1"/>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Dynamic Batch Selection Handling
+  const selectAll = document.getElementById('selectAllCheckbox');
+  const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+  const batchBtn = document.getElementById('batchChaseBtn');
+  const batchCountBadge = document.getElementById('batchCountBadge');
+
+  function updateBatchButton() {
+    const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+    if (checkedCount > 0) {
+      batchBtn.removeAttribute('disabled');
+      batchBtn.classList.remove('bg-surface-container', 'text-outline', 'cursor-not-allowed');
+      batchBtn.classList.add('bg-primary', 'text-on-primary', 'hover:bg-on-primary-fixed-variant', 'cursor-pointer');
+      batchCountBadge.textContent = checkedCount;
+      batchCountBadge.classList.remove('hidden');
+    } else {
+      batchBtn.setAttribute('disabled', 'true');
+      batchBtn.classList.remove('bg-primary', 'text-on-primary', 'hover:bg-on-primary-fixed-variant', 'cursor-pointer');
+      batchBtn.classList.add('bg-surface-container', 'text-outline', 'cursor-not-allowed');
+      batchCountBadge.classList.add('hidden');
+    }
+  }
+
+  selectAll.addEventListener('change', (e) => {
+    rowCheckboxes.forEach(cb => {
+      cb.checked = e.target.checked;
+    });
+    updateBatchButton();
+  });
+
+  rowCheckboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
+      selectAll.checked = allChecked;
+      updateBatchButton();
+    });
+  });
+
+  // Client-side row highlighting on click without breaking action triggers
+  window.highlightRow = function(rowElement) {
+    document.querySelectorAll('tbody tr').forEach(r => {
+      r.classList.remove('ring-1', 'ring-primary');
+    });
+    rowElement.classList.add('ring-1', 'ring-primary');
+  };
+
+  // Instant real-time filtering mockup for Case ID / Client Name
+  const searchInput = document.getElementById('caseSearchInput');
+  searchInput.addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (text.includes(val)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+</script></div></main><footer class="w-full bg-surface-container-lowest mt-space-2xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-[1440px] mx-auto px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><span class="font-label-sm text-label-sm uppercase tracking-wide font-semibold text-on-surface">Northgate Chase &amp; Co.</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Institutional Division | Ops Terminal ID: CIB-LDN-8812</span></div><div class="flex items-center gap-space-lg font-body-sm text-body-sm text-on-surface-variant"><span class="flex items-center gap-space-2xs"><span class="w-2 h-2 rounded-full bg-secondary"></span> Real-Time Ledger Connected</span><span>Audit Log Policy ISO-27001</span><span>© 2026 Northgate Chase Sovereign Institutional Ops. All rights reserved.</span></div></div></footer></body></html>

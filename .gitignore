@@ -1,0 +1,10 @@
+.env
+*.sqlite3
+__pycache__/
+.pytest_cache/
+.deepeval/
+.venv/
+venv/
+*.json
+!package.json
+!tsconfig.json

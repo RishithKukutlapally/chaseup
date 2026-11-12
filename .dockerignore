@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.deepeval
+tests
+.env
+.env.example
+architecture_and_jtbd.md
+README.md

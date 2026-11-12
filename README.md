@@ -1,55 +1,17 @@
-# Northgate Chase prototype
+# Northgate ChaseZero — Autonomous Enterprise KYC Chasing Platform
 
-Northgate Chase is a synthetic-data prototype for tracking missing corporate KYC onboarding documents. It uses FastAPI, SQLite, server-rendered Stitch HTML, and small vanilla JavaScript bindings.
+Functional multi-agent AI proto-demo automating KYC document chasing for **Northgate Bank**, built with **FastAPI**, **Async SQLAlchemy 2.0 + SQLite**, **LangGraph (`StateGraph`)**, **React 18 + Vite**, **Tailwind CSS v4**, **lucide-react**, and **Zustand**.
 
-## Requirements
+## Single Executable Launcher (`ChaseZero.bat`)
 
-- Python 3.11 or newer
+Double-click **[ChaseZero.bat](ChaseZero.bat)** (or run `.\ChaseZero.bat` in PowerShell/CMD) to launch the complete application — FastAPI, LangGraph, SQLite, and the React UI — on `http://127.0.0.1:8000` and open your browser automatically.
 
-## Setup
+## LLM API Keys (`.env`)
 
-From the project directory:
+Put your LLM API key in **[.env](.env)** at the project root (`c:\Users\v69-labuser445619\Desktop\prototype\.env`):
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
+- **OpenAI / OpenAI-compatible (Ollama, OpenRouter, Groq)**: `OPENAI_API_KEY`, `OPENAI_MODEL`, optional `OPENAI_BASE_URL`
+- **Anthropic Claude**: `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`
+- **Google Gemini**: `GOOGLE_API_KEY`, `GEMINI_MODEL`
 
-The app loads `.env` from the project directory. Copy `.env.example` to `.env` if needed. The prototype works without `GEMINI_API_KEY`; template drafts remain available. **Gemini drafting and subject classification are not implemented yet**, so adding a key does not enable AI behavior.
-
-## Seed synthetic data
-
-```powershell
-python -m seed
-```
-
-The seed operation is safe to rerun and creates 12 fictitious cases and synthetic document/event history in `northgate_chase.sqlite3`.
-
-## Run
-
-```powershell
-python -m uvicorn app:app --host 127.0.0.1 --port 8000
-```
-
-Open `http://127.0.0.1:8000/`. The five screens are served at:
-
-- `/screens/chase-queue`
-- `/screens/case-detail`
-- `/screens/reminder-composer`
-- `/screens/stage-analytics`
-- `/screens/analyst-handoff`
-
-## Tests
-
-```powershell
-python -m pytest -q
-```
-
-## Prototype and deployment limits
-
-- Draft approval is enforced by the API. A draft cannot be sent through the API without explicit approval.
-- “Send” and scheduled send currently record a send event in SQLite; no email gateway is configured, so no message is delivered.
-- Gemini is not wired into draft rewriting or an ingestion script. The presence of an API key alone has no effect; AI must remain off.
-- This prototype has no authentication or role-based access control and is not production-ready for real bank/client data. Keep it limited to synthetic data until security, access controls, operational deployment, and delivery integrations are implemented and reviewed.
-- The due-date rule (due on the due date and overdue after two full days past due) is an assumption for Ops to confirm.
+When any key is present, both the LangGraph **Drafter Node** (live token streaming over SSE) and **Critic Node** (compliance audit) execute against that LLM. Without a key, ChaseZero uses a deterministic grounded synthesizer so the demo works offline. You can hot-reload `.env` anytime via the refresh button in the **AI Drafting Agent** view without restarting.

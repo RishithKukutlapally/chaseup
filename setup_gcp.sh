@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # One-time GCP setup script for Northgate Chase CI/CD deployment
-# Run this in Google Cloud Shell for project: slabspro-slabsuser24
+# Configured for project slabspro-slabsuser24 in region asia-south1
 
 set -euo pipefail
 
 PROJECT_ID="slabspro-slabsuser24"
-REGION="us-central1"
+REGION="asia-south1"
 GAR_REPO="northgate-chase-repo"
 SA_NAME="github-deployer"
 KEY_FILE="gcp-key.json"
@@ -20,35 +20,38 @@ gcloud services enable run.googleapis.com \
     iam.googleapis.com \
     --project="$PROJECT_ID"
 
-# 2. Create Artifact Registry Docker repository if not exists
-echo "Creating Artifact Registry repository '$GAR_REPO'..."
+# 2. Create Artifact Registry Docker repository in allowed region
+echo "Creating Artifact Registry repository '$GAR_REPO' in $REGION..."
 gcloud artifacts repositories create "$GAR_REPO" \
     --repository-format=docker \
     --location="$REGION" \
     --description="Docker repository for Northgate Chase" \
     --project="$PROJECT_ID" || true
 
-# 3. Create Service Account
+# 3. Create Service Account if it does not already exist
 echo "Creating Service Account '$SA_NAME'..."
 gcloud iam service-accounts create "$SA_NAME" \
     --display-name="GitHub Actions Deployer" \
-    --project="$PROJECT_ID" || true
+    --project="$PROJECT_ID" 2>/dev/null || true
 
 SA_EMAIL="$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
 
-# 4. Grant required IAM roles
+# 4. Grant required IAM roles with brief pauses to avoid rate limits
 echo "Assigning IAM roles to $SA_EMAIL..."
+sleep 3
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$SA_EMAIL" \
-    --role="roles/run.admin"
+    --role="roles/run.admin" --quiet
 
+sleep 3
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$SA_EMAIL" \
-    --role="roles/artifactregistry.writer"
+    --role="roles/artifactregistry.writer" --quiet
 
+sleep 3
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$SA_EMAIL" \
-    --role="roles/iam.serviceAccountUser"
+    --role="roles/iam.serviceAccountUser" --quiet
 
 # 5. Generate Service Account Key
 echo "Generating Service Account key file: $KEY_FILE..."
@@ -57,13 +60,12 @@ gcloud iam service-accounts keys create "$KEY_FILE" \
     --project="$PROJECT_ID"
 
 echo "=========================================================="
-echo "GCP Setup Complete for Project: $PROJECT_ID!"
+echo "GCP Setup Complete for Project: $PROJECT_ID in Region: $REGION!"
 echo ""
 echo "NEXT STEP:"
-echo "1. Go to https://github.com/RishithKukutlapally/chaseup/settings/secrets/actions"
-echo "2. Add secret: GCP_PROJECT_ID  =>  $PROJECT_ID"
-echo "3. Add secret: GCP_SA_KEY      =>  Copy everything printed below:"
+echo "Copy everything printed below and paste it back into our chat:"
 echo "----------------------------------------------------------"
 cat "$KEY_FILE"
+echo ""
 echo "----------------------------------------------------------"
 echo "=========================================================="

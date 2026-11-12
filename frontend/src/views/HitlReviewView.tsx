@@ -188,7 +188,7 @@ export const HitlReviewView: React.FC = () => {
                   </span>
                 </div>
                 <p className="font-body-sm text-body-sm text-text-secondary max-w-4xl">
-                  ChaseZero never dispatches external client communications autonomously. You are
+                  ChaseUp never dispatches external client communications autonomously. You are
                   reviewing, customizing, and transmitting this outreach as the designated
                   Relationship Manager under Northgate Conduct Risk Guidelines.
                 </p>

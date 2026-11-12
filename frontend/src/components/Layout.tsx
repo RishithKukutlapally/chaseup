@@ -69,20 +69,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="min-h-screen bg-canvas-base text-on-surface">
       {/* Shared Fixed Top Header + HITL Governance Ribbon */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_16px_rgba(11,9,20,0.6)]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/40 shadow-[0_1px_20px_rgba(5,8,17,0.8)]">
         <div className="h-20 w-full px-margin flex items-center justify-between gap-gutter">
           <div className="flex items-center gap-space-lg min-w-max">
             <button
               type="button"
               onClick={() => setActiveView('orchestrator-inbox')}
-              className="flex items-center gap-space-sm text-left"
+              className="flex items-center gap-space-sm text-left group"
             >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-container to-brand-accent flex items-center justify-center shadow-[0_0_16px_rgba(154,132,248,0.35)]">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-brand-accent flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.4)] group-hover:scale-105 transition-transform">
                 <ShieldCheck className="w-5 h-5 text-canvas-base" />
               </div>
               <div className="flex flex-col">
                 <span className="font-headline-sm text-headline-sm tracking-tight text-text-primary">
-                  Northgate <span className="text-primary">ChaseZero</span>
+                  Northgate <span className="text-primary font-bold">ChaseUp</span>
                 </span>
                 <span className="font-mono-sm text-mono-sm text-text-muted">
                   ENTERPRISE KYC PLATFORM

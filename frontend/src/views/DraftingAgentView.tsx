@@ -80,7 +80,7 @@ export const DraftingAgentView: React.FC = () => {
               )}
             </div>
             <h1 className="font-headline-lg text-headline-lg text-text-primary tracking-tight">
-              ChaseZero AI Drafting Agent
+              ChaseUp AI Drafting Agent
             </h1>
             <p className="font-body-md text-body-md text-text-secondary">
               Synthesizing institutional context &amp; drafting personalized escalation for{' '}
@@ -106,7 +106,7 @@ export const DraftingAgentView: React.FC = () => {
                 </span>
               </div>
               <span className="font-mono-data text-mono-data text-text-primary font-bold">
-                {llmStatus?.llm_model ?? 'ChaseZero-Grounded-Engine'} •{' '}
+                {llmStatus?.llm_model ?? 'ChaseUp-Grounded-Engine'} •{' '}
                 {llmStatus?.llm_provider ?? 'deterministic-fallback'}
               </span>
               {llmStatus?.env_file && (

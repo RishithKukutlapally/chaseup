@@ -80,7 +80,7 @@ export const ExecutiveDashboard: React.FC = () => {
               Executive Success &amp; 2-Week Pilot Review
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              ChaseZero Automated Orchestration Impact Report • Live SQLite{' '}
+              ChaseUp Automated Orchestration Impact Report • Live SQLite{' '}
               <code className="text-brand-accent font-mono-sm">agent_actions</code> Telemetry
             </p>
           </div>
@@ -313,7 +313,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <div className="space-y-1.5">
               <div className="flex justify-between items-center font-label-sm text-label-sm">
                 <span className="text-primary flex items-center gap-1.5 font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> ChaseZero
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> ChaseUp
                   Pilot
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -391,7 +391,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
             <div className="p-3 rounded-lg bg-surface-highlight flex flex-col justify-between">
               <span className="font-label-sm text-label-sm text-brand-accent">
-                ChaseZero Live
+                ChaseUp Live
               </span>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="font-headline-md text-headline-md text-status-success font-bold">

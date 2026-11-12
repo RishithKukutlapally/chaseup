@@ -180,7 +180,7 @@ export const CaseTracker: React.FC = () => {
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-text-secondary leading-relaxed">
-              ChaseZero monitors communication cadence and autonomously drafts follow-up requests.{' '}
+              ChaseUp monitors communication cadence and autonomously drafts follow-up requests.{' '}
               <span className="text-text-primary font-medium">
                 Document authenticity, PEP sanctions checks, and final verification are strictly
                 owned and executed by Senior Compliance Analysts.
@@ -379,7 +379,7 @@ export const CaseTracker: React.FC = () => {
                   </span>
                 </div>
                 <p className="font-body-sm text-body-sm text-text-primary leading-snug">
-                  Queued for ChaseZero LangGraph Orchestrator -&gt; Drafter -&gt; Critic pipeline.
+                  Queued for ChaseUp LangGraph Orchestrator -&gt; Drafter -&gt; Critic pipeline.
                 </p>
                 <span className="font-mono-sm text-mono-sm text-brand-accent mt-1">
                   Awaiting RM Launch

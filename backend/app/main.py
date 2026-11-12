@@ -54,9 +54,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Northgate ChaseZero API",
-    version="0.1.0",
-    description="Multi-agent KYC document chasing backend powered by LangGraph & Async SQLAlchemy 2.0",
+    title="Northgate ChaseUp API",
+    version="1.0.0",
+    description="Autonomous Enterprise KYC Document Chasing Platform powered by LangGraph & React 18",
     lifespan=lifespan,
 )
 

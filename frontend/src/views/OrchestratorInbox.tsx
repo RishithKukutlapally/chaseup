@@ -272,7 +272,7 @@ export const OrchestratorInbox: React.FC = () => {
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-space-xs flex-wrap">
                 <span className="font-label-md text-label-md text-text-primary">
-                  ChaseZero Intelligence Agent
+                  ChaseUp Intelligence Agent
                 </span>
                 <span className="font-mono-sm text-mono-sm px-space-xs rounded bg-surface-deep text-text-secondary">
                   SCAN: 08:00 EST
@@ -569,7 +569,7 @@ export const OrchestratorInbox: React.FC = () => {
               <div className="p-space-sm rounded-lg bg-surface-deep">
                 <span className="text-brand-accent font-mono-sm block">RULE 01 • SLA TRIGGER</span>
                 Cases with <code className="text-text-primary">last_contact_date &gt; 3 days</code>{' '}
-                and status != Completed are automatically flagged for ChaseZero orchestration.
+                and status != Completed are automatically flagged for ChaseUp orchestration.
               </div>
               <div className="p-space-sm rounded-lg bg-surface-deep">
                 <span className="text-brand-accent font-mono-sm block">RULE 02 • CRITIC GATE</span>

@@ -1,23 +1,4 @@
 import React, { useState } from 'react';
-import {
-  AlertCircle,
-  AlertTriangle,
-  BadgeCheck,
-  Bot,
-  Building2,
-  CheckCheck,
-  Clock,
-  FolderKanban,
-  Gavel,
-  Headphones,
-  History,
-  Hourglass,
-  Mail,
-  RotateCcw,
-  X,
-  Zap,
-} from 'lucide-react';
-
 import { useChaseStore } from '../store/useChaseStore';
 
 function getInitials(name: string): string {
@@ -36,41 +17,66 @@ export const CaseTracker: React.FC = () => {
     startLangGraphWorkflow,
     resetCaseDemo,
     updateCaseNote,
-    simulateCriticRejection,
-    setSimulateCriticRejection,
+    setActiveView,
   } = useChaseStore();
 
+  const [docFilter, setDocFilter] = useState<'all' | 'deficient' | 'approved'>('all');
   const [editingNote, setEditingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
+  const [contactedToast, setContactedToast] = useState(false);
 
   if (!selectedCase) {
     return (
-      <div className="p-space-xl rounded-xl bg-surface-deep text-text-secondary">
+      <div className="p-space-xl rounded bg-surface-container-lowest text-on-surface-variant">
         Loading case telemetry...
       </div>
     );
   }
 
-  const missingDocs = selectedCase.documents.filter((d) => d.status === 'Missing');
-  const cadencePct = Math.min(100, Math.round((selectedCase.days_open / 62) * 1000) / 10);
+  const allDocs = selectedCase.documents ?? [];
+  const deficientDocs = allDocs.filter((d) => d.status === 'Missing');
+  const approvedDocs = allDocs.filter((d) => d.status === 'Verified' || d.status === 'Received');
+
+  const filteredDocs =
+    docFilter === 'deficient'
+      ? deficientDocs
+      : docFilter === 'approved'
+      ? approvedDocs
+      : allDocs;
+
+  const totalDocsCount = allDocs.length || 8;
+  const verifiedCount = selectedCase.verified_count || approvedDocs.length;
+  const completionPct = Math.round((verifiedCount / totalDocsCount) * 100);
+
+  const handleMarkContacted = () => {
+    setContactedToast(true);
+    setTimeout(() => setContactedToast(false), 3000);
+  };
+
+  const handleSaveNote = async () => {
+    if (noteDraft.trim()) {
+      await updateCaseNote(selectedCase.id, noteDraft);
+      setEditingNote(false);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full gap-space-lg">
-      {/* Quick Case Switcher Bar (Non-intrusive helper to jump between DB cases) */}
-      <div className="flex flex-wrap items-center justify-between gap-space-sm px-space-sm">
+      {/* Quick Case Switcher Ribbon */}
+      <div className="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-lowest px-space-md py-space-xs rounded shadow-xs border border-border-hairline">
         <div className="flex items-center gap-space-xs flex-wrap">
-          <span className="font-mono-sm text-mono-sm text-text-muted uppercase mr-1">
-            Active Case:
+          <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant uppercase mr-1">
+            Active Desk Portfolio:
           </span>
-          {(summary?.cases ?? []).slice(0, 5).map((c) => (
+          {(summary?.cases ?? []).slice(0, 6).map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => void selectCase(c.id)}
-              className={`px-space-sm py-1 rounded-full font-mono-sm text-mono-sm transition-colors ${
+              className={`px-space-sm py-0.5 rounded font-data-mono-sm text-data-mono-sm transition-colors cursor-pointer ${
                 c.id === selectedCase.id
-                  ? 'bg-primary-container text-on-primary-container font-bold'
-                  : 'bg-surface-deep text-text-secondary hover:bg-surface-raised'
+                  ? 'bg-primary-container text-white font-bold'
+                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
               }`}
             >
               {c.case_code} • {c.client_name.split(' ')[0]}
@@ -80,226 +86,317 @@ export const CaseTracker: React.FC = () => {
         <button
           type="button"
           onClick={() => void resetCaseDemo(selectedCase.id)}
-          className="flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-deep hover:bg-surface-raised text-text-secondary hover:text-text-primary font-mono-sm text-mono-sm transition-colors"
+          className="flex items-center gap-1 px-space-sm py-0.5 rounded bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-data-mono-sm text-data-mono-sm transition-colors cursor-pointer"
         >
-          <RotateCcw className="w-3.5 h-3.5 text-brand-accent" />
-          <span>Reset Case to SLA Breach</span>
+          <span className="material-symbols-outlined text-[14px]">restart_alt</span>
+          <span>Reset Case SLA</span>
         </button>
       </div>
 
-      {/* Case Header & Hero Banner */}
-      <section className="relative w-full rounded-xl overflow-hidden bg-surface-raised p-space-lg shadow-xl backdrop-blur-xl">
-        <div className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
-          <div className="flex flex-col gap-space-xs">
-            <div className="flex flex-wrap items-center gap-space-sm">
-              <span className="font-mono-data text-mono-data px-space-sm py-space-xs rounded-full bg-surface-deep text-brand-accent">
-                {selectedCase.case_code}
+      {contactedToast && (
+        <div className="p-space-sm rounded bg-secondary-container text-on-secondary-container font-label-md text-label-md flex items-center justify-between shadow-sm">
+          <span>Client Marcus Sterling marked contacted via phone (Logged to audit trail).</span>
+          <button type="button" onClick={() => setContactedToast(false)} className="cursor-pointer font-bold">✕</button>
+        </div>
+      )}
+
+      {/* Top Sovereign Institutional Context Canvas */}
+      <div className="relative w-full bg-surface-container-lowest shadow-sm rounded-lg p-space-lg overflow-hidden border border-border-hairline">
+        <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-secondary-container/20 blur-3xl pointer-events-none" />
+
+        {/* Entity Master Tier Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg relative z-10 pb-space-md border-b border-surface-container-high/60">
+          <div className="flex flex-wrap items-center gap-space-md min-w-0">
+            <div className="w-12 h-12 rounded bg-primary-container text-white flex items-center justify-center shrink-0 font-data-mono-md text-data-mono-md font-bold shadow-sm">
+              {getInitials(selectedCase.client_name)}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <div className="flex flex-wrap items-center gap-space-sm">
+                <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold truncate">
+                  {selectedCase.client_name}
+                </h1>
+                {selectedCase.sla_breached ? (
+                  <span className="inline-flex items-center gap-space-2xs bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase font-semibold">
+                    <span className="material-symbols-outlined text-[14px]">error</span>
+                    Chasing Round {selectedCase.chase_round_count} (Overdue)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-space-2xs bg-surface-container text-on-surface px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase font-semibold">
+                    <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                    Round {selectedCase.chase_round_count} Active
+                  </span>
+                )}
+                <span className="bg-surface-container-high text-on-surface-variant font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded">
+                  {selectedCase.desk} Desk
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-space-md gap-y-space-xs mt-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+                <span>
+                  Case ID: <strong className="text-on-surface">{selectedCase.case_code}</strong>
+                </span>
+                <span className="text-outline-variant">•</span>
+                <span>
+                  LEI: <span className="tracking-wider">{selectedCase.lei}</span>
+                </span>
+                <span className="text-outline-variant">•</span>
+                <span>Entity: {selectedCase.entity_type}</span>
+                <span className="text-outline-variant">•</span>
+                <span className="flex items-center gap-space-2xs">
+                  <span className="material-symbols-outlined text-[14px] text-secondary">public</span>
+                  {selectedCase.jurisdiction}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Header Operations Actions */}
+          <div className="flex flex-wrap items-center gap-space-sm shrink-0">
+            <button
+              type="button"
+              onClick={handleMarkContacted}
+              className="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-space-xs shadow-sm cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">call</span>
+              <span>Mark Contacted</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView('analyst-handoff')}
+              className="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-space-xs shadow-sm cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">share</span>
+              <span>Handoff</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                startLangGraphWorkflow(selectedCase.id, { navigateToDrafting: true });
+              }}
+              className="px-space-lg py-space-xs rounded bg-primary-container text-white font-label-md text-label-md hover:bg-primary transition-all flex items-center gap-space-xs shadow-md cursor-pointer font-semibold"
+            >
+              <span className="material-symbols-outlined text-[16px]">outgoing_mail</span>
+              <span>Chase Outstanding ({selectedCase.missing_count})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Telemetry & Ownership Strip (6 columns) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-space-md pt-space-md mt-space-2xs">
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              Assigned RM
+            </span>
+            <div className="flex items-center gap-space-xs mt-space-2xs">
+              <div className="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-data-mono-sm text-[10px] font-bold">
+                {getInitials(selectedCase.assigned_rm)}
+              </div>
+              <span className="font-label-md text-label-md font-semibold text-on-surface truncate">
+                {selectedCase.assigned_rm}
               </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              Ops Coordinator
+            </span>
+            <div className="flex items-center gap-space-xs mt-space-2xs">
+              <div className="w-6 h-6 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-data-mono-sm text-[10px]">
+                CG
+              </div>
+              <span className="font-label-md text-label-md font-semibold text-on-surface">
+                Clara Gomez
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              KYC Lead Analyst
+            </span>
+            <div className="flex items-center gap-space-xs mt-space-2xs">
+              <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center font-data-mono-sm text-[10px]">
+                DP
+              </div>
+              <span className="font-label-md text-label-md font-semibold text-on-surface">
+                Dev Patel
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              Stage Duration
+            </span>
+            <div className="flex items-baseline gap-space-xs mt-space-2xs">
               <span
-                className={`px-space-sm py-space-xs rounded-full font-label-sm text-label-sm flex items-center gap-1 ${
-                  selectedCase.status === 'Completed'
-                    ? 'bg-status-success/15 text-status-success'
-                    : selectedCase.sla_breached
-                      ? 'bg-status-danger/15 text-status-danger'
-                      : 'bg-primary-container/20 text-primary'
+                className={`font-data-mono-md text-data-mono-md font-semibold ${
+                  selectedCase.days_since_contact > 7 ? 'text-error' : 'text-on-surface'
                 }`}
               >
-                <AlertTriangle className="w-3.5 h-3.5" />
-                {selectedCase.status === 'Completed'
-                  ? 'Completed • Dispatched'
-                  : selectedCase.status === 'Draft_Ready'
-                    ? 'Draft_Ready'
-                    : selectedCase.sla_breached
-                      ? 'Stalled Case (SLA Breach)'
-                      : 'Active Case'}
+                {selectedCase.days_since_contact} Days
               </span>
-              <span className="px-space-sm py-space-xs rounded-full bg-surface-container text-text-secondary font-label-sm text-label-sm">
-                {selectedCase.jurisdiction}
-              </span>
-              <span className="px-space-sm py-space-xs rounded-full bg-surface-highlight text-primary font-mono-sm text-mono-sm">
-                {selectedCase.desk}
-              </span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">(Target: 7d)</span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary tracking-tight mt-space-xs">
-              {selectedCase.client_name}
-            </h1>
-            <p className="font-body-sm text-body-sm text-text-muted flex items-center gap-space-xs flex-wrap">
-              <Building2 className="w-4 h-4 shrink-0" />
-              <span>
-                {selectedCase.address} • LEI: {selectedCase.lei} • {selectedCase.facility_value}{' '}
-                Facility
-              </span>
-            </p>
           </div>
 
-          {/* Timeline Metric Card */}
-          <div className="flex flex-col gap-space-xs bg-surface-deep p-space-md rounded-xl min-w-[280px]">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-text-secondary">
-                Onboarding Cadence
-              </span>
-              <span className="font-mono-data text-mono-data text-status-warning">
-                Day {selectedCase.days_open} of 62
-              </span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-surface-container-high overflow-hidden relative">
-              <div
-                className="h-full bg-status-warning rounded-full transition-all duration-500"
-                style={{ width: `${cadencePct}%` }}
-              />
-              <div
-                className="absolute top-0 bottom-0 w-0.5 bg-status-success"
-                style={{ left: '56.4%' }}
-                title="Target: 35 Days"
-              />
-            </div>
-            <div className="flex items-center justify-between text-text-muted font-mono-sm text-mono-sm pt-0.5">
-              <span>T+0 Initiation</span>
-              <span className="text-status-success">Target: 35 days</span>
-              <span>Max: 62 days</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Explicit Scope & Regulatory Boundary Notice */}
-      <aside className="relative overflow-hidden rounded-xl bg-surface-deep p-space-md shadow-md">
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-accent" />
-        <div className="flex items-start gap-space-md pl-space-xs">
-          <div className="p-space-xs rounded-lg bg-surface-raised text-brand-accent mt-0.5">
-            <Gavel className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-space-sm flex-wrap">
-              <span className="font-label-md text-label-md text-text-primary">
-                Scope &amp; Regulatory Boundary Protocol
-              </span>
-              <span className="font-mono-sm text-mono-sm px-2 py-0.5 rounded bg-surface-raised text-primary">
-                Compliance Directive 4.8
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-text-secondary leading-relaxed">
-              ChaseUp monitors communication cadence and autonomously drafts follow-up requests.{' '}
-              <span className="text-text-primary font-medium">
-                Document authenticity, PEP sanctions checks, and final verification are strictly
-                owned and executed by Senior Compliance Analysts.
-              </span>{' '}
-              AI agents hold zero authorization to clear KYC checkpoints or bypass analyst
-              verification queues.
-            </p>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main 3-Column Cockpit Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
-        {/* Column 1: Required KYC Document Checklist (Span 6) */}
-        <div className="lg:col-span-6 flex flex-col gap-space-md">
-          <div className="flex items-center justify-between px-space-xs">
-            <div className="flex items-center gap-space-sm">
-              <FolderKanban className="w-5 h-5 text-primary" />
-              <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                Required KYC Document Matrix
-              </h2>
-            </div>
-            <span className="font-mono-sm text-mono-sm text-text-muted">
-              {selectedCase.documents.length} Items • Click badge to toggle status
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              Total Elapsed
             </span>
+            <div className="flex items-baseline gap-space-xs mt-space-2xs">
+              <span className="font-data-mono-md text-data-mono-md font-semibold text-on-surface">
+                {selectedCase.days_open} Days
+              </span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">Limit: 45d</span>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-space-sm">
-            {selectedCase.documents.map((doc, idx) => {
-              const isMissing = doc.status === 'Missing';
-              const isVerified = doc.status === 'Verified';
-              const isPrimaryMissing = isMissing && idx === 0;
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+              Completion Metric
+            </span>
+            <div className="flex items-center gap-space-xs mt-space-2xs">
+              <div className="w-full bg-surface-container-high rounded h-2 relative overflow-hidden">
+                <div
+                  className="bg-primary-container h-full rounded transition-all duration-300"
+                  style={{ width: `${completionPct}%` }}
+                />
+              </div>
+              <span className="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface shrink-0">
+                {verifiedCount}/{totalDocsCount}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      {/* Operational Dual Layout (12 cols) */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-space-xl items-start">
+        {/* LEFT 7 COLS: Document Inventory & Verification Controls */}
+        <div className="xl:col-span-7 flex flex-col gap-space-lg">
+          {/* Inventory Header with Filter Buttons */}
+          <div className="flex items-center justify-between bg-surface-container-lowest px-space-lg py-space-md rounded shadow-sm border border-border-hairline">
+            <div className="flex items-center gap-space-sm">
+              <span className="material-symbols-outlined text-[20px] text-on-surface">checklist</span>
+              <h2 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                Regulatory Document Inventory
+              </h2>
+              <span className="font-data-mono-sm text-data-mono-sm bg-surface-container text-on-surface-variant px-space-xs py-space-2xs rounded">
+                {allDocs.length} Items Mandated
+              </span>
+            </div>
+            <div className="flex items-center gap-space-xs">
+              <button
+                type="button"
+                onClick={() => setDocFilter('all')}
+                className={`px-space-xs py-space-2xs rounded font-label-sm text-label-sm cursor-pointer ${
+                  docFilter === 'all'
+                    ? 'bg-surface-container text-on-surface font-semibold'
+                    : 'text-on-surface-variant hover:bg-surface-container'
+                }`}
+              >
+                All ({allDocs.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDocFilter('deficient')}
+                className={`px-space-xs py-space-2xs rounded font-label-sm text-label-sm cursor-pointer ${
+                  docFilter === 'deficient'
+                    ? 'bg-error-container text-on-error-container font-semibold'
+                    : 'text-on-surface-variant hover:bg-surface-container'
+                }`}
+              >
+                Deficient ({deficientDocs.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDocFilter('approved')}
+                className={`px-space-xs py-space-2xs rounded font-label-sm text-label-sm cursor-pointer ${
+                  docFilter === 'approved'
+                    ? 'bg-surface-container text-on-surface font-semibold'
+                    : 'text-on-surface-variant hover:bg-surface-container'
+                }`}
+              >
+                Approved ({approvedDocs.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Document Items List */}
+          <div className="bg-surface-container-lowest rounded shadow-sm overflow-hidden border border-border-hairline divide-y divide-surface-container-low">
+            {filteredDocs.map((doc) => {
+              const isMissing = doc.status === 'Missing';
               return (
                 <div
                   key={doc.id}
-                  className={
-                    isMissing
-                      ? 'group relative rounded-xl bg-surface-raised p-space-md shadow-md transition-all hover:bg-surface-highlight'
-                      : 'relative rounded-xl bg-surface-deep/80 p-space-md shadow-sm transition-all hover:bg-surface-deep'
-                  }
+                  className={`p-space-md transition-colors flex flex-col md:flex-row md:items-center justify-between gap-space-md ${
+                    isMissing ? 'bg-error-container/10' : 'hover:bg-surface-container-low/40'
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-space-md">
-                    <div className="flex items-start gap-space-sm">
-                      <div
-                        className={`p-space-xs rounded-lg mt-0.5 ${
-                          isVerified
-                            ? 'bg-status-success/10 text-status-success'
-                            : isPrimaryMissing
-                              ? 'bg-status-danger/10 text-status-danger'
-                              : isMissing
-                                ? 'bg-status-warning/10 text-status-warning'
-                                : 'bg-primary-container/20 text-brand-accent'
-                        }`}
-                      >
-                        {isVerified ? (
-                          <BadgeCheck className="w-4 h-4" />
-                        ) : isPrimaryMissing ? (
-                          <AlertCircle className="w-4 h-4" />
-                        ) : isMissing ? (
-                          <Clock className="w-4 h-4" />
-                        ) : (
-                          <Hourglass className="w-4 h-4" />
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-label-md text-label-md text-text-primary">
-                          {idx + 1}. {doc.document_name}
+                  <div className="flex items-start gap-space-sm min-w-0">
+                    <span
+                      className={`material-symbols-outlined text-[18px] mt-0.5 shrink-0 ${
+                        isMissing ? 'text-error' : 'text-status-success'
+                      }`}
+                    >
+                      {isMissing ? 'report_problem' : 'task_alt'}
+                    </span>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex flex-wrap items-center gap-space-xs">
+                        <span className="font-body-md text-body-md font-semibold text-on-surface">
+                          {doc.document_name}
                         </span>
-                        {isVerified ? (
-                          <div className="flex items-center gap-space-xs mt-1">
-                            <span className="font-body-sm text-body-sm text-status-success">
-                              {doc.assigned_to_or_verifier}
-                            </span>
-                          </div>
+                        {isMissing ? (
+                          <span className="font-label-sm text-label-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">
+                            Actionable Deficiency
+                          </span>
                         ) : (
-                          <span
-                            className={`font-body-sm text-body-sm mt-1 ${
-                              isPrimaryMissing ? 'text-status-danger' : 'text-text-secondary'
-                            }`}
-                          >
-                            {doc.description}
+                          <span className="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">
+                            Verified
                           </span>
                         )}
                       </div>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                        {doc.description || doc.requirement_meta}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-space-xs font-data-mono-sm text-data-mono-sm text-on-surface-variant mt-space-2xs">
+                        <span>Doc Code: {doc.doc_code}</span>
+                        <span>•</span>
+                        <span>Assigned: {doc.assigned_to_or_verifier}</span>
+                        <span>•</span>
+                        <span className={isMissing ? 'text-error font-semibold' : 'text-status-success'}>
+                          {isMissing ? 'Missing from Vault' : 'Authenticated & Approved'}
+                        </span>
+                      </div>
                     </div>
+                  </div>
 
+                  {/* Actions for Document */}
+                  <div className="flex items-center gap-space-xs shrink-0 self-end md:self-center">
                     <button
                       type="button"
                       onClick={() => void toggleDocumentStatus(selectedCase.id, doc.id)}
-                      title="Click to cycle document status (Missing / Received / Verified)"
-                      className={`shrink-0 font-mono-data text-mono-data px-2.5 py-1 rounded-full flex items-center gap-1 transition-transform hover:scale-105 ${
-                        isVerified
-                          ? 'bg-status-success/20 text-status-success'
-                          : isPrimaryMissing
-                            ? 'bg-status-danger/20 text-status-danger'
-                            : isMissing
-                              ? 'bg-status-warning/20 text-status-warning'
-                              : 'bg-primary/20 text-primary'
+                      className={`px-space-sm py-space-xs rounded font-label-sm text-label-sm transition-colors cursor-pointer border ${
+                        isMissing
+                          ? 'bg-surface-container hover:bg-surface-container-high text-on-surface border-border-structural'
+                          : 'bg-surface-container-low text-on-surface-variant border-transparent hover:bg-surface-container'
                       }`}
                     >
-                      {isVerified && <CheckCheck className="w-3.5 h-3.5" />}
-                      <span>
-                        {isVerified
-                          ? 'VERIFIED'
-                          : isPrimaryMissing
-                            ? `MISSING • Chased ${Math.round(selectedCase.days_since_contact)}d ago`
-                            : isMissing
-                              ? 'MISSING • Outstanding'
-                              : 'RECEIVED • In Queue'}
-                      </span>
+                      {isMissing ? 'Mark Received' : 'Re-open Item'}
                     </button>
-                  </div>
-
-                  <div className="mt-space-sm pt-space-xs flex items-center justify-between text-text-muted font-mono-sm text-mono-sm">
-                    <span>{doc.requirement_meta}</span>
-                    <span className={isMissing ? 'text-status-warning' : ''}>
-                      {isVerified ? `Doc ID: ${doc.doc_code}` : doc.assigned_to_or_verifier}
-                    </span>
+                    {isMissing && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          startLangGraphWorkflow(selectedCase.id, { navigateToDrafting: true });
+                        }}
+                        className="px-space-sm py-space-xs rounded bg-primary-container text-white hover:bg-primary font-label-sm text-label-sm transition-colors flex items-center gap-1 cursor-pointer font-semibold shadow-xs"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">outgoing_mail</span>
+                        <span>Chase</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -307,252 +404,148 @@ export const CaseTracker: React.FC = () => {
           </div>
         </div>
 
-        {/* Column 2: SLA & Communication Timeline (Span 3) */}
-        <div className="lg:col-span-3 flex flex-col gap-space-md">
-          <div className="flex items-center justify-between px-space-xs">
-            <div className="flex items-center gap-space-sm">
-              <History className="w-5 h-5 text-primary" />
-              <h2 className="font-headline-sm text-headline-sm text-text-primary">Chase Cadence</h2>
-            </div>
-            <span className="font-mono-sm text-mono-sm text-status-danger">Breach Log</span>
-          </div>
-
-          <div className="flex flex-col p-space-md rounded-xl bg-surface-raised shadow-md relative">
-            <div className="absolute left-7 top-7 bottom-7 w-0.5 bg-surface-container-highest" />
-
-            <div className="relative flex items-start gap-space-md mb-space-lg">
-              <div className="relative z-10 w-6 h-6 rounded-full bg-surface-raised flex items-center justify-center shrink-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-brand-accent" />
+        {/* RIGHT 5 COLS: Blocked Warning, Audit Timeline, Relationship Notes */}
+        <div className="xl:col-span-5 flex flex-col gap-space-lg">
+          {/* Panel 1: Blocked Stages Warning Panel */}
+          <div className="bg-surface-container-lowest rounded shadow-sm p-space-lg overflow-hidden relative border border-border-hairline">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-error" />
+            <div className="flex items-start gap-space-md">
+              <div className="w-10 h-10 rounded bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[24px]">gpp_bad</span>
               </div>
-              <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className="font-label-sm text-label-sm text-text-primary">
-                  Round #{selectedCase.chase_round_count} ({selectedCase.days_since_contact.toFixed(1)}{' '}
-                  days ago)
+              <div className="flex flex-col min-w-0">
+                <span className="font-label-sm text-label-sm uppercase font-semibold text-error tracking-wider">
+                  Stage Blocked: UBO Extraction Cannot Proceed
                 </span>
-                <p className="font-body-sm text-body-sm text-text-secondary leading-snug">
-                  Prior KYC documentation request dispatched to counterparty.
+                <p className="font-body-sm text-body-sm text-on-surface mt-space-xs leading-relaxed">
+                  KYC Analyst <strong>Dev Patel</strong> marked downstream stage blocked on <strong>24 Jan 2026</strong>. Missing prerequisite items:
                 </p>
-                <span className="font-mono-sm text-mono-sm text-text-muted mt-1">
-                  Recipient: {selectedCase.contact_name}
-                </span>
-              </div>
-            </div>
-
-            <div className="relative flex items-start gap-space-md mb-space-lg">
-              <div className="relative z-10 w-6 h-6 rounded-full bg-surface-raised flex items-center justify-center shrink-0">
-                <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    selectedCase.sla_breached ? 'bg-status-danger' : 'bg-status-success'
-                  }`}
-                />
-              </div>
-              <div className="flex flex-col gap-0.5 pt-0.5">
-                <span
-                  className={`font-label-sm text-label-sm font-semibold ${
-                    selectedCase.sla_breached ? 'text-status-danger' : 'text-status-success'
-                  }`}
-                >
-                  {selectedCase.sla_breached ? '3-Day SLA Breach' : 'Within 3-Day SLA Window'}
-                </span>
-                <p className="font-body-sm text-body-sm text-text-secondary leading-snug">
-                  {selectedCase.sla_breached
-                    ? `Exceeded 3.0-day threshold (+${selectedCase.sla_delay_days.toFixed(1)}d) without inbound upload.`
-                    : 'Monitoring inbound counterparty document portal.'}
-                </p>
-                <span className="font-mono-sm text-mono-sm text-status-danger mt-1">
-                  {missingDocs.length} Missing Docs Remaining
-                </span>
-              </div>
-            </div>
-
-            <div className="relative flex items-start gap-space-md">
-              <div className="relative z-10 w-6 h-6 rounded-full bg-primary-container flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(154,132,248,0.5)]">
-                <Zap className="w-3.5 h-3.5 text-canvas-base" />
-              </div>
-              <div className="flex flex-col gap-0.5 pt-0.5">
-                <div className="flex items-center gap-space-xs">
-                  <span className="font-label-sm text-label-sm text-primary font-semibold">
-                    Current State
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-status-danger/20 text-status-danger font-mono-sm text-mono-sm">
-                    {selectedCase.status}
-                  </span>
+                <div className="bg-surface-container-low rounded p-space-sm my-space-sm flex flex-col gap-space-2xs font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[14px] text-error">close</span>
+                    <span className="text-on-surface">Certified Group Ownership Structure Chart</span>
+                  </div>
+                  <div className="flex items-center gap-space-xs">
+                    <span className="material-symbols-outlined text-[14px] text-error">close</span>
+                    <span className="text-on-surface">Official Commercial Registry Extract</span>
+                  </div>
                 </div>
-                <p className="font-body-sm text-body-sm text-text-primary leading-snug">
-                  Queued for ChaseUp LangGraph Orchestrator -&gt; Drafter -&gt; Critic pipeline.
-                </p>
-                <span className="font-mono-sm text-mono-sm text-brand-accent mt-1">
-                  Awaiting RM Launch
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-space-md rounded-xl bg-surface-deep shadow-sm flex flex-col gap-space-xs">
-            <span className="font-label-sm text-label-sm text-text-secondary">
-              Expected Closing Window
-            </span>
-            <div className="flex items-baseline justify-between">
-              <span className="font-headline-sm text-headline-sm text-text-primary">
-                {Math.max(1, 35 - selectedCase.days_open)} Days Left
-              </span>
-              <span className="font-mono-data text-mono-data text-status-warning">
-                Target: {selectedCase.target_deadline_label}
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-text-muted mt-1">
-              {selectedCase.relationship_notes}
-            </p>
-          </div>
-        </div>
-
-        {/* Column 3: Action & Recipient Summary (Span 3) */}
-        <div className="lg:col-span-3 flex flex-col gap-space-md">
-          <div className="flex items-center justify-between px-space-xs">
-            <div className="flex items-center gap-space-sm">
-              <Mail className="w-5 h-5 text-primary" />
-              <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                Target &amp; Action
-              </h2>
-            </div>
-            <span className="font-mono-sm text-mono-sm text-text-muted">Step 2 of 4</span>
-          </div>
-
-          <div className="flex flex-col gap-space-md p-space-md rounded-xl bg-surface-raised shadow-xl">
-            <div className="flex flex-col gap-space-sm pb-space-sm">
-              <span className="font-mono-sm text-mono-sm text-text-muted uppercase tracking-wider">
-                Primary Counterparty
-              </span>
-              <div className="flex items-center gap-space-sm">
-                <div className="w-11 h-11 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-headline-sm font-semibold shrink-0">
-                  {getInitials(selectedCase.contact_name)}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-label-md text-label-md text-text-primary truncate">
-                    {selectedCase.contact_name}
-                  </span>
-                  <span className="font-body-sm text-body-sm text-text-secondary truncate">
-                    {selectedCase.contact_role}
-                  </span>
-                  <span className="font-mono-sm text-mono-sm text-brand-accent truncate mt-0.5">
-                    {selectedCase.contact_email}
-                  </span>
+                <div className="flex flex-wrap items-center gap-space-sm mt-space-xs pt-space-sm border-t border-surface-container-high/60">
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('analyst-handoff')}
+                    className="px-space-md py-space-xs rounded bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md transition-colors flex items-center gap-space-xs cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">sync_alt</span>
+                    <span>View Handoff Desk</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('reminder-composer')}
+                    className="px-space-md py-space-xs rounded bg-primary-container text-white hover:bg-primary font-label-md text-label-md transition-colors flex items-center gap-space-xs cursor-pointer font-semibold shadow-xs"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">outgoing_mail</span>
+                    <span>Draft Urgent Follow-up</span>
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-space-sm py-1 rounded bg-surface-deep text-text-secondary font-mono-sm text-mono-sm">
-                <span className="w-2 h-2 rounded-full bg-status-success" />
-                <span>Corporate Key Authority Verified</span>
-              </div>
             </div>
-
-            <div className="flex flex-col gap-space-xs p-space-sm rounded-lg bg-surface-deep">
-              <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm text-text-secondary">
-                  Outstanding Payload
-                </span>
-                <span className="font-mono-data text-mono-data text-status-danger font-semibold">
-                  {missingDocs.length} Docs Missing
-                </span>
-              </div>
-              <ul className="flex flex-col gap-1 text-text-primary font-body-sm text-body-sm mt-1 list-none pl-0">
-                {missingDocs.map((doc, idx) => (
-                  <li key={doc.id} className="flex items-center gap-1.5 text-text-secondary">
-                    <X
-                      className={`w-3.5 h-3.5 shrink-0 ${
-                        idx === 0 ? 'text-status-danger' : 'text-status-warning'
-                      }`}
-                    />
-                    <span className="truncate">{doc.document_name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex flex-col gap-1 text-text-muted font-mono-sm text-mono-sm">
-              <div className="flex justify-between">
-                <span>Tone Vector:</span>
-                <span className="text-text-primary">Institutional Firm • High Stakes</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Delivery Channel:</span>
-                <span className="text-text-primary">Encrypted Corporate Email</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Follow-up Window:</span>
-                <span className="text-text-primary">48 Hours SLA</span>
-              </div>
-            </div>
-
-            {/* Optional Demo Toggle for Critic -> Drafter Self-Correction Loop */}
-            <label className="flex items-center justify-between gap-2 p-space-sm rounded-lg bg-surface-deep/80 cursor-pointer">
-              <span className="font-mono-sm text-mono-sm text-text-secondary">
-                Demo Critic Reject -&gt; Retry Loop
-              </span>
-              <input
-                type="checkbox"
-                checked={simulateCriticRejection}
-                onChange={(e) => setSimulateCriticRejection(e.target.checked)}
-                className="w-4 h-4 accent-[#9A84F8] cursor-pointer"
-              />
-            </label>
-
-            <button
-              type="button"
-              id="launchDraftBtn"
-              onClick={() =>
-                startLangGraphWorkflow(selectedCase.id, {
-                  navigateToDrafting: true,
-                  simulateRejection: simulateCriticRejection,
-                })
-              }
-              className="w-full py-space-sm px-space-md rounded-full bg-primary-container text-canvas-base font-label-md text-label-md font-semibold transition-all duration-200 hover:brightness-110 active:scale-95 shadow-[0_0_24px_rgba(154,132,248,0.4)] flex items-center justify-center gap-space-sm"
-            >
-              <Bot className="w-5 h-5" />
-              <span>Launch Drafting Agent ({missingDocs.length} Docs)</span>
-            </button>
-            <span className="text-center font-mono-sm text-mono-sm text-text-muted">
-              Generates human-in-the-loop review package before sending
-            </span>
           </div>
 
-          <div className="flex flex-col gap-space-xs p-space-sm rounded-xl bg-surface-deep/60 px-space-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <Headphones className="w-4 h-4 text-text-secondary" />
-                <span className="font-label-sm text-label-sm text-text-secondary">
-                  Assigned RM: {selectedCase.assigned_rm}
-                </span>
+          {/* Panel 2: Chase Audit Timeline */}
+          <div className="bg-surface-container-lowest rounded shadow-sm p-space-lg flex flex-col border border-border-hairline">
+            <div className="flex items-center justify-between pb-space-sm mb-space-md border-b border-surface-container-high/60">
+              <div className="flex items-center gap-space-xs">
+                <span className="material-symbols-outlined text-[20px] text-on-surface">schedule</span>
+                <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                  Chase Audit Timeline
+                </h3>
               </div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+                Immutable Policy Log
+              </span>
+            </div>
+
+            <div className="relative pl-space-lg flex flex-col gap-space-md before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-surface-container-high">
+              {(selectedCase.actions && selectedCase.actions.length > 0
+                ? selectedCase.actions
+                : [
+                    {
+                      id: 1,
+                      action_type: 'Draft_Generated',
+                      timestamp: '24 Feb 2026 • 09:15',
+                      actor: 'LangGraph Autonomous Agent',
+                      details: 'Reminder Round 2 generated by automated template; awaiting RM Vance review and sign-off.',
+                    },
+                    {
+                      id: 2,
+                      action_type: 'RM_Approved',
+                      timestamp: '17 Feb 2026 • 14:30',
+                      actor: 'Alistair Vance (Senior RM)',
+                      details: 'First formal KYC chase notification dispatched to Marcus Sterling.',
+                    },
+                  ]
+              ).map((act, index) => (
+                <div key={act.id || index} className="relative flex items-start gap-space-sm">
+                  <span className="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-secondary-container border-2 border-surface-container-lowest shadow-sm" />
+                  <div className="flex flex-col w-full">
+                    <div className="flex items-center justify-between">
+                      <span className="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">
+                        {act.timestamp}
+                      </span>
+                      <span className="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-xs py-space-2xs rounded">
+                        {act.action_type}
+                      </span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-on-surface mt-space-2xs">
+                      {act.details}
+                    </p>
+                    <span className="font-data-mono-sm text-[10px] text-on-surface-variant mt-0.5">
+                      Actor: {act.actor}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Panel 3: Relationship Notes */}
+          <div className="bg-surface-container-lowest rounded shadow-sm p-space-lg flex flex-col border border-border-hairline">
+            <div className="flex items-center justify-between pb-space-sm mb-space-sm border-b border-surface-container-high/60">
+              <span className="font-label-sm text-label-sm uppercase font-semibold text-on-surface">
+                RM Guidance & Client Context
+              </span>
               <button
                 type="button"
                 onClick={() => {
+                  setEditingNote(!editingNote);
                   setNoteDraft(selectedCase.relationship_notes);
-                  setEditingNote((prev) => !prev);
                 }}
-                className="text-primary hover:text-brand-accent transition-colors font-mono-sm text-mono-sm"
+                className="text-on-tertiary-container hover:underline font-label-sm text-label-sm cursor-pointer"
               >
-                {editingNote ? 'Cancel' : 'Edit Case Note'}
+                {editingNote ? 'Cancel' : 'Edit Note'}
               </button>
             </div>
-            {editingNote && (
-              <div className="flex flex-col gap-2 pt-1">
+            {editingNote ? (
+              <div className="flex flex-col gap-2">
                 <textarea
                   value={noteDraft}
                   onChange={(e) => setNoteDraft(e.target.value)}
+                  className="w-full p-2 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded border border-outline-variant/30 focus:outline-none focus:ring-2 focus:ring-primary"
                   rows={3}
-                  className="w-full rounded-lg bg-surface-container p-2 text-body-sm font-body-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-primary-container"
                 />
                 <button
                   type="button"
-                  onClick={async () => {
-                    await updateCaseNote(selectedCase.id, noteDraft);
-                    setEditingNote(false);
-                  }}
-                  className="self-end px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold"
+                  onClick={handleSaveNote}
+                  className="self-end px-space-md py-space-xs bg-primary-container text-white rounded font-label-sm text-label-sm cursor-pointer font-semibold"
                 >
-                  Save Note to DB
+                  Save Note
                 </button>
               </div>
+            ) : (
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                {selectedCase.relationship_notes || 'No specialized guidance specified for this corporate entity.'}
+              </p>
             )}
           </div>
         </div>

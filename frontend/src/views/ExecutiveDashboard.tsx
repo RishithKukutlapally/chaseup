@@ -1,29 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Activity,
-  BadgeCheck,
-  CheckCircle2,
-  Coins,
-  Flag,
-  Gavel,
-  Globe,
-  Minimize2,
-  PiggyBank,
-  Rocket,
-  Share,
-  Shield,
-  SlidersHorizontal,
-  Timer,
-  TrendingDown,
-} from 'lucide-react';
-
 import { useChaseStore } from '../store/useChaseStore';
 
 export const ExecutiveDashboard: React.FC = () => {
   const { dashboardMetrics, fetchDashboardMetrics } = useChaseStore();
-  const [exportStatus, setExportStatus] = useState<'idle' | 'compiling' | 'done'>('idle');
-  const [apacQueued, setApacQueued] = useState(false);
-  const [showDetailCallout, setShowDetailCallout] = useState(true);
+  const [activeCadence, setActiveCadence] = useState<'mtd' | 'q1' | 'trailing'>('mtd');
 
   useEffect(() => {
     void fetchDashboardMetrics();
@@ -32,556 +12,437 @@ export const ExecutiveDashboard: React.FC = () => {
   const m = dashboardMetrics;
   const daysPerRound = m?.days_per_chase_round ?? 3.1;
   const velocityDelta = m?.velocity_delta_pct ?? -43.6;
-  const caseDaysSaved = m?.case_days_saved_month ?? 2880;
-  const adoptionRate = m?.rm_adoption_rate_pct ?? 94.7;
-  const totalDrafts = m?.total_drafts_generated ?? 19;
-  const totalApproved = m?.total_rm_approved ?? 18;
-  const totalRejections = m?.total_critic_rejections ?? 2;
-  const baselineChasing = m?.baseline_chasing_days ?? 17.0;
-  const pilotChasing = m?.pilot_chasing_days ?? 7.8;
-  const pilotOnboarding = m?.pilot_onboarding_days ?? 52.8;
+  const pilotChasingDays = m?.pilot_chasing_days ?? 7.8;
+  const baselineChasingDays = m?.baseline_chasing_days ?? 17.0;
 
-  const progressRatio = Math.max(
-    15,
-    Math.min(100, Math.round(((5.5 - daysPerRound) / (5.5 - 3.0)) * 100))
-  );
-
-  const handleExportSummary = () => {
-    setExportStatus('compiling');
-    window.setTimeout(() => {
-      const payload = m ?? {};
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `northgate-chasezero-coo-pilot-summary.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      setExportStatus('done');
-      window.setTimeout(() => setExportStatus('idle'), 2200);
-    }, 600);
+  const handleExportPDF = () => {
+    window.print();
   };
 
   return (
-    <div className="flex flex-col w-full space-y-space-md max-w-[1440px] mx-auto">
-      {/* Report Header Section (from executive_success_dashboard_mobile/code.html) */}
-      <div className="relative overflow-hidden rounded-xl bg-surface-container-low p-space-lg shadow-xl">
-        <div className="absolute -right-10 -top-10 w-52 h-52 bg-primary-container/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          <div>
-            <div className="flex items-center gap-space-sm mb-space-xs">
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary text-label-sm font-label-sm">
-                <BadgeCheck className="w-3.5 h-3.5" />
-                <span>Verified Synthesis</span>
-              </div>
-              <span className="font-mono-sm text-mono-sm text-text-muted">W2·PILOT-REPORT</span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary tracking-tight">
-              Executive Success &amp; 2-Week Pilot Review
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              ChaseUp Automated Orchestration Impact Report • Live SQLite{' '}
-              <code className="text-brand-accent font-mono-sm">agent_actions</code> Telemetry
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-raised text-on-surface text-label-sm font-label-sm shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
-              400 Corporate Accounts
+    <div className="flex flex-col w-full">
+      {/* Operational Oversight Context Banner */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-space-lg gap-space-md">
+        <div className="flex flex-col gap-space-2xs">
+          <div className="flex items-center gap-space-xs flex-wrap">
+            <span className="font-data-mono-sm text-data-mono-sm uppercase bg-primary-container text-white px-space-xs py-space-2xs rounded">
+              CIB-EXEC-OPS-77A
             </span>
-            <span className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-raised text-status-success text-label-sm font-label-sm shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-status-success animate-ping" />
-              Week 2 Pilot (Live)
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              COO & FinCrime Oversight Cockpit
             </span>
-            <span className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-raised text-on-surface text-label-sm font-label-sm shadow-sm">
-              <Globe className="w-3.5 h-3.5 text-text-secondary" />
-              EMEA &amp; Americas
+            <span className="w-1.5 h-1.5 rounded-full bg-error" />
+            <span className="font-data-mono-sm text-data-mono-sm text-error font-semibold">
+              Stage 2 Congestion Critical
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Top 3 KPI Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-        {/* KPI 1: Operational Velocity (Days per Chase Round dropping) */}
-        <div className="rounded-xl bg-surface-deep p-space-lg shadow-lg space-y-space-sm relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono-sm text-mono-sm tracking-wider uppercase text-text-secondary">
-                Operational Velocity
-              </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="font-display-hero-mobile text-display-hero-mobile text-text-primary font-bold">
-                  {daysPerRound.toFixed(1)}
-                </span>
-                <span className="font-body-md text-body-md text-text-secondary">
-                  Days / Chase Round
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-status-success/15 text-status-success font-mono-data text-mono-data">
-              <TrendingDown className="w-4 h-4" />
-              <span>{velocityDelta.toFixed(1)}%</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-lg bg-surface-container-low/70 space-y-2">
-            <div className="flex justify-between font-label-sm text-label-sm text-text-muted">
-              <span>Baseline</span>
-              <span className="text-text-primary font-semibold">Current (Live)</span>
-              <span>Target</span>
-            </div>
-            <div className="relative w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
-              <div className="absolute left-0 top-0 h-full bg-text-muted/30 w-full rounded-full" />
-              <div
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary-container to-brand-accent rounded-full transition-all duration-700"
-                style={{ width: `${progressRatio}%` }}
-              />
-            </div>
-            <div className="flex justify-between font-mono-sm text-mono-sm text-text-secondary">
-              <span>5.5d</span>
-              <span className="text-primary font-semibold">{daysPerRound.toFixed(1)}d</span>
-              <span className="text-text-muted">3.0d</span>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2: Quantified Pilot Value (Case-Days Saved) */}
-        <div className="rounded-xl bg-surface-deep p-space-lg shadow-lg space-y-space-sm relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-mono-sm text-mono-sm tracking-wider uppercase text-text-secondary">
-                  Quantified Pilot Value
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-tertiary-container/20 text-tertiary font-mono-sm text-[10px] font-semibold">
-                  96% OF GOAL
-                </span>
-              </div>
-              <div className="mt-1">
-                <span className="font-display-hero-mobile text-display-hero-mobile text-text-primary font-bold">
-                  {caseDaysSaved.toLocaleString()}
-                </span>
-                <span className="font-body-md text-body-md text-on-surface-variant block">
-                  Case-Days Saved / Month
-                </span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-surface-highlight flex items-center justify-center text-primary-container shadow-inner">
-              <PiggyBank className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-surface-container-low/70 p-3 space-y-2">
-            <p className="font-mono-sm text-mono-sm text-text-secondary leading-relaxed">
-              <span className="text-text-primary font-semibold">400</span> clients ×{' '}
-              <span className="text-text-primary font-semibold">3</span> rounds ×{' '}
-              <span className="text-primary font-semibold">
-                {(m?.days_saved_per_round ?? 2.4).toFixed(1)}d
-              </span>{' '}
-              saved ={' '}
-              <span className="text-status-success font-semibold">
-                {caseDaysSaved.toLocaleString()} unlocked days
-              </span>
-            </p>
-            <div className="flex items-center gap-2 pt-1 text-text-primary">
-              <Coins className="w-4 h-4 text-tertiary shrink-0" />
-              <span className="font-label-sm text-label-sm font-semibold text-text-primary">
-                Pipeline Acceleration:{' '}
-                <span className="text-tertiary font-bold">
-                  £{(m?.capital_enabled_gbp_m ?? 14.2).toFixed(1)}M
-                </span>{' '}
-                capital enabled
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 3: Governance & RM Alignment (Calculated from agent_actions) */}
-        <div className="rounded-xl bg-surface-deep p-space-lg shadow-lg space-y-space-sm relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-mono-sm text-mono-sm tracking-wider uppercase text-text-secondary">
-                  Governance &amp; RM Alignment
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-status-success/20 text-status-success font-mono-sm text-[10px] font-semibold">
-                  ZERO BYPASS
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="font-display-hero-mobile text-display-hero-mobile text-text-primary font-bold">
-                  {adoptionRate.toFixed(1)}%
-                </span>
-                <span className="font-body-md text-body-md text-text-secondary">
-                  RM Adoption Rate
-                </span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-surface-highlight flex items-center justify-center text-status-success shadow-inner">
-              <Gavel className="w-5 h-5" />
-            </div>
-          </div>
-
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            <strong className="text-text-primary font-semibold">
-              {totalApproved} of {totalDrafts}
-            </strong>{' '}
-            AI-synthesized drafts authorized via 1-click RM sign-off in{' '}
-            <code className="text-brand-accent font-mono-sm">agent_actions</code>.
+          <h1 className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">
+            Institutional KYC Onboarding Pipeline Velocity & Chase Impact
+          </h1>
+          <p className="font-body-sm text-body-sm text-on-surface-variant max-w-4xl">
+            Monthly quantitative cycle analytics evaluating operational latency, carrying cost exposure, and client friction across 402 Corporate & Institutional Banking intake cases.
           </p>
+        </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <div className="p-2.5 rounded-lg bg-surface-container-low flex items-center gap-2">
-              <Timer className="w-5 h-5 text-primary shrink-0" />
-              <div>
-                <span className="font-mono-data text-mono-data text-text-primary block font-bold">
-                  {m?.avg_rm_review_seconds ?? 48} Sec
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted">Avg RM Review</span>
-              </div>
+        {/* Filter & Cadence Controls */}
+        <div className="flex items-center gap-space-xs self-start lg:self-center shrink-0 bg-surface-container-low p-space-2xs rounded shadow-xs border border-border-hairline">
+          <button
+            type="button"
+            onClick={() => setActiveCadence('mtd')}
+            className={`px-space-md py-space-xs rounded font-label-md text-label-md transition-colors cursor-pointer ${
+              activeCadence === 'mtd'
+                ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            MTD (April 2026)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCadence('q1')}
+            className={`px-space-md py-space-xs rounded font-label-md text-label-md transition-colors cursor-pointer ${
+              activeCadence === 'q1'
+                ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Q1 Consolidated
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCadence('trailing')}
+            className={`px-space-md py-space-xs rounded font-label-md text-label-md transition-colors cursor-pointer ${
+              activeCadence === 'trailing'
+                ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Trailing 12M
+          </button>
+          <div className="w-px h-5 bg-outline-variant mx-space-2xs" />
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-md text-label-md cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">file_download</span>
+            <span>Executive PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* SECTION 1: Executive KPI Cards Mosaic (4 cards) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter mb-space-xl">
+        {/* KPI 1 */}
+        <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between border border-border-hairline">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Pipeline Duration</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">
+                {velocityDelta > 0 ? `+${velocityDelta}%` : `${velocityDelta}%`} Delta ({daysPerRound.toFixed(1)}d / Round)
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-surface-container-low flex items-center gap-2">
-              <Shield className="w-5 h-5 text-status-success shrink-0" />
-              <div>
-                <span className="font-mono-data text-mono-data text-status-success block font-bold">
-                  {totalRejections} Caught
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted">
-                  Critic Intercepts
-                </span>
-              </div>
+            <div className="mt-space-sm flex items-baseline gap-space-xs">
+              <span className="font-headline-lg text-headline-lg font-bold text-on-surface text-[32px] leading-tight">
+                62
+              </span>
+              <span className="font-label-md text-label-md text-on-surface-variant font-medium">
+                Days (Median Total)
+              </span>
             </div>
+          </div>
+          <div className="mt-space-md pt-space-sm bg-surface-container-low p-space-xs rounded flex items-center justify-between font-data-mono-sm text-data-mono-sm">
+            <span className="text-on-surface-variant">Benchmark SLA Target:</span>
+            <span className="font-semibold text-on-surface">35.0 Days</span>
+          </div>
+        </div>
+
+        {/* KPI 2 (Primary Drag Stage Hero) */}
+        <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm relative overflow-hidden flex flex-col justify-between border border-border-hairline">
+          <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-error-container opacity-40 rounded-full blur-xl pointer-events-none" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase text-error font-semibold flex items-center gap-space-2xs">
+                <span className="material-symbols-outlined text-[14px]">warning</span> Primary Drag Stage
+              </span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded font-semibold">
+                27.4% Pipeline
+              </span>
+            </div>
+            <div className="mt-space-sm flex items-baseline gap-space-xs">
+              <span className="font-headline-lg text-headline-lg font-bold text-error text-[32px] leading-tight">
+                {baselineChasingDays.toFixed(1)}
+              </span>
+              <span className="font-label-md text-label-md text-on-surface font-medium">
+                Days in Chase (vs {pilotChasingDays.toFixed(1)}d Pilot)
+              </span>
+            </div>
+          </div>
+          <div className="mt-space-md pt-space-sm bg-error-container/40 p-space-xs rounded flex items-center justify-between font-data-mono-sm text-data-mono-sm text-on-error-container">
+            <span>Longest Stage Pipeline Rank:</span>
+            <span className="font-bold">#1 Bottleneck (Stage 2)</span>
+          </div>
+        </div>
+
+        {/* KPI 3 */}
+        <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between border border-border-hairline">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Carrying Cost Exposure</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded">
+                Analyst + RM Hours
+              </span>
+            </div>
+            <div className="mt-space-sm flex items-baseline gap-space-xs">
+              <span className="font-headline-lg text-headline-lg font-bold text-on-surface text-[32px] leading-tight">
+                $4,850
+              </span>
+              <span className="font-label-md text-label-md text-on-surface-variant font-medium">Ops Cost / Case</span>
+            </div>
+          </div>
+          <div className="mt-space-md pt-space-sm bg-surface-container-low p-space-xs rounded flex items-center justify-between font-data-mono-sm text-data-mono-sm">
+            <span className="text-on-surface-variant">Annualized Carrying Drag:</span>
+            <span className="font-semibold text-on-surface">$1.95M / Year</span>
+          </div>
+        </div>
+
+        {/* KPI 4 */}
+        <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between border border-border-hairline">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Intake Capacity</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-surface-container-highest text-on-surface-variant px-space-xs py-space-2xs rounded">
+                Queue Health: 104%
+              </span>
+            </div>
+            <div className="mt-space-sm flex items-baseline gap-space-xs">
+              <span className="font-headline-lg text-headline-lg font-bold text-on-surface text-[32px] leading-tight">
+                402
+              </span>
+              <span className="font-label-md text-label-md text-on-surface-variant font-medium">New Entities / Mo</span>
+            </div>
+          </div>
+          <div className="mt-space-md pt-space-sm bg-surface-container-low p-space-xs rounded flex items-center justify-between font-data-mono-sm text-data-mono-sm">
+            <span className="text-on-surface-variant">Active Pipeline In-Flight:</span>
+            <span className="font-semibold text-on-surface">418 Active Files</span>
           </div>
         </div>
       </div>
 
-      {/* Middle Row: Timeline Compression & SLA Inertia Collapse */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        {/* Interactive Timeline Comparison */}
-        <div className="lg:col-span-7 rounded-xl bg-surface-container p-space-lg shadow-xl space-y-space-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                Timeline Compression
-              </h2>
-              <span className="font-mono-sm text-mono-sm text-text-muted">
-                Overall KYC Onboarding (Days 0 to 62)
+      {/* SECTION 2: Pipeline Stage Flowchart & Latency Breakdown (6 Stages) */}
+      <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm mb-space-xl border border-border-hairline">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-lg">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-space-xs">
+              <span className="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">
+                End-to-End Waterfall
+              </span>
+              <span className="font-label-md text-label-md font-semibold text-on-surface">
+                Median Stage Progression Architecture
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowDetailCallout((prev) => !prev)}
-              aria-label="Toggle Metric Details"
-              className="p-2 rounded-lg bg-surface-raised text-primary hover:bg-surface-highlight transition-all active:scale-95"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
+            <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Total cumulative pipeline cycle: 62.0 Median Days across all 6 verified regulatory gates.
+            </span>
           </div>
+          <div className="flex items-center gap-space-md font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+            <span className="flex items-center gap-space-2xs">
+              <span className="w-3 h-3 rounded-sm bg-surface-container-high" /> Standard Velocity Gate
+            </span>
+            <span className="flex items-center gap-space-2xs">
+              <span className="w-3 h-3 rounded-sm bg-primary-container" /> Severe Friction / Bottleneck
+            </span>
+          </div>
+        </div>
 
-          <div className="space-y-4 pt-1">
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center font-label-sm text-label-sm">
-                <span className="text-text-secondary flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-text-muted" /> Pre-Pilot Baseline
-                </span>
-                <span className="font-mono-data text-mono-data text-on-surface">62.0 Days</span>
+        {/* 6 Stage Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-space-sm items-stretch">
+          {/* Stage 1 */}
+          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between transition-all hover:bg-surface-container border border-outline-variant/20">
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">STAGE 01</span>
+                <span className="font-label-sm text-label-sm bg-surface-container-highest px-space-2xs py-space-2xs rounded font-semibold">14.5%</span>
               </div>
-              <div className="h-6 w-full rounded-lg bg-surface-raised flex overflow-hidden p-0.5 gap-0.5">
-                <div
-                  className="h-full bg-secondary-container rounded-l flex items-center justify-center font-mono-sm text-[10px] text-text-primary"
-                  style={{ width: '25.8%' }}
-                >
-                  16d
-                </div>
-                <div
-                  className="h-full bg-error/70 flex items-center justify-center font-mono-sm text-[10px] text-on-surface font-semibold"
-                  style={{ width: '27.4%' }}
-                >
-                  Chasing {baselineChasing.toFixed(1)}d
-                </div>
-                <div
-                  className="h-full bg-surface-container-highest rounded-r flex items-center justify-center font-mono-sm text-[10px] text-text-secondary"
-                  style={{ width: '46.8%' }}
-                >
-                  UW 29d
-                </div>
-              </div>
+              <p className="font-label-md text-label-md font-semibold text-on-surface leading-tight">Document Intake & Triage</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Submission receipt, indexing, preliminary validation.</p>
             </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center font-label-sm text-label-sm">
-                <span className="text-primary flex items-center gap-1.5 font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> ChaseUp
-                  Pilot
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono-data text-mono-data text-text-primary font-bold">
-                    {pilotOnboarding.toFixed(1)} Days
-                  </span>
-                  <span className="font-mono-sm text-mono-sm text-status-success font-semibold">
-                    (-{(((62 - pilotOnboarding) / 62) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="h-6 w-full rounded-lg bg-surface-raised flex overflow-hidden p-0.5 gap-0.5">
-                <div
-                  className="h-full bg-secondary-container rounded-l flex items-center justify-center font-mono-sm text-[10px] text-text-primary"
-                  style={{ width: '25.8%' }}
-                >
-                  16d
-                </div>
-                <div
-                  className="h-full bg-status-success/80 flex items-center justify-center font-mono-sm text-[10px] text-canvas-base font-bold shadow-sm transition-all"
-                  style={{ width: `${Math.max(10, Math.round((pilotChasing / 62) * 100))}%` }}
-                >
-                  {pilotChasing.toFixed(1)}d
-                </div>
-                <div
-                  className="h-full bg-surface-container-highest rounded-r flex items-center justify-center font-mono-sm text-[10px] text-text-secondary"
-                  style={{ width: '46.8%' }}
-                >
-                  UW 29d
-                </div>
-              </div>
+            <div className="mt-space-md pt-space-sm bg-surface-container-lowest/80 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-on-surface">9.0 Days</span>
             </div>
           </div>
 
-          {showDetailCallout && (
-            <div className="p-3 rounded-lg bg-surface-container-low flex items-start gap-2.5 transition-all">
-              <Minimize2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Document chasing period compressed from{' '}
-                <span className="line-through text-text-muted">17.0 days</span> to{' '}
-                <strong className="text-status-success font-semibold">
-                  {pilotChasing.toFixed(1)} days
-                </strong>
-                , eliminating {(17.0 - pilotChasing).toFixed(1)} net calendar days of stalled
-                capital per onboarding client.
+          {/* Stage 2: HERO BOTTLENECK */}
+          <div className="bg-primary-container text-white p-space-md rounded shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2 w-16 h-16 bg-error/30 rounded-full blur-md" />
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-white/70">STAGE 02</span>
+                <span className="font-label-sm text-label-sm bg-error text-white px-space-2xs py-space-2xs rounded font-bold">27.4% DRAG</span>
+              </div>
+              <p className="font-label-md text-label-md font-bold text-white leading-tight">Document Chasing & Follow-ups</p>
+              <p className="font-body-sm text-body-sm text-white/80 mt-space-xs">
+                Automated multi-round chasing, deficient re-submissions, RM escalation.
               </p>
             </div>
-          )}
+            <div className="mt-space-md pt-space-sm bg-black/30 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-white/70">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-error">17.0 Days</span>
+            </div>
+          </div>
+
+          {/* Stage 3 */}
+          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between transition-all hover:bg-surface-container border border-outline-variant/20">
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">STAGE 03</span>
+                <span className="font-label-sm text-label-sm bg-surface-container-highest px-space-2xs py-space-2xs rounded font-semibold">22.6%</span>
+              </div>
+              <p className="font-label-md text-label-md font-semibold text-on-surface leading-tight">UBO Extraction & Analysis</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Beneficial ownership mapping, natural person verification.</p>
+            </div>
+            <div className="mt-space-md pt-space-sm bg-surface-container-lowest/80 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-on-surface">14.0 Days</span>
+            </div>
+          </div>
+
+          {/* Stage 4 */}
+          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between transition-all hover:bg-surface-container border border-outline-variant/20">
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">STAGE 04</span>
+                <span className="font-label-sm text-label-sm bg-surface-container-highest px-space-2xs py-space-2xs rounded font-semibold">9.7%</span>
+              </div>
+              <p className="font-label-md text-label-md font-semibold text-on-surface leading-tight">Screening & Sanctions</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">PEP, adverse media, sanctions lists, legal screening.</p>
+            </div>
+            <div className="mt-space-md pt-space-sm bg-surface-container-lowest/80 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-on-surface">6.0 Days</span>
+            </div>
+          </div>
+
+          {/* Stage 5 */}
+          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between transition-all hover:bg-surface-container border border-outline-variant/20">
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">STAGE 05</span>
+                <span className="font-label-sm text-label-sm bg-surface-container-highest px-space-2xs py-space-2xs rounded font-semibold">14.5%</span>
+              </div>
+              <p className="font-label-md text-label-md font-semibold text-on-surface leading-tight">Risk & Sign-off Approval</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Risk committee review, senior AML approval.</p>
+            </div>
+            <div className="mt-space-md pt-space-sm bg-surface-container-lowest/80 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-on-surface">9.0 Days</span>
+            </div>
+          </div>
+
+          {/* Stage 6 */}
+          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between transition-all hover:bg-surface-container border border-outline-variant/20">
+            <div>
+              <div className="flex items-center justify-between mb-space-2xs">
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">STAGE 06</span>
+                <span className="font-label-sm text-label-sm bg-surface-container-highest px-space-2xs py-space-2xs rounded font-semibold">11.3%</span>
+              </div>
+              <p className="font-label-md text-label-md font-semibold text-on-surface leading-tight">Account Opening & Settlement</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Core-banking ledger provisioning & SWIFT setup.</p>
+            </div>
+            <div className="mt-space-md pt-space-sm bg-surface-container-lowest/80 p-space-xs rounded flex items-center justify-between">
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant">Duration:</span>
+              <span className="font-headline-sm text-headline-sm font-bold text-on-surface">7.0 Days</span>
+            </div>
+          </div>
         </div>
 
-        {/* SLA Breach & Client Inertia Mitigation */}
-        <div className="lg:col-span-5 rounded-xl bg-surface-deep p-space-lg shadow-xl space-y-space-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <h2 className="font-headline-sm text-headline-sm text-text-primary">
-              SLA Inertia Collapse
-            </h2>
-            <span className="px-2 py-0.5 rounded-full bg-status-success/20 text-status-success font-mono-sm text-mono-sm font-semibold">
-              -59.0% Delta
+        {/* Bottleneck Callout */}
+        <div className="mt-space-md p-space-md bg-error-container/30 rounded flex flex-col md:flex-row md:items-center justify-between gap-space-md border border-error/20">
+          <div className="flex items-start gap-space-sm">
+            <span className="material-symbols-outlined text-error text-[24px] mt-space-2xs shrink-0">
+              emergency
             </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <div className="p-3 rounded-lg bg-surface-container-low flex flex-col justify-between">
-              <span className="font-label-sm text-label-sm text-text-muted">
-                Baseline Unresponsive
-              </span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="font-headline-md text-headline-md text-status-danger font-bold">
-                  68.0%
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted">cases</span>
-              </div>
-              <span className="font-mono-sm text-mono-sm text-text-muted mt-1">Manual Chasing</span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-surface-highlight flex flex-col justify-between">
-              <span className="font-label-sm text-label-sm text-brand-accent">
-                ChaseUp Live
-              </span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="font-headline-md text-headline-md text-status-success font-bold">
-                  {(m?.pilot_unresponsive_pct ?? 9.0).toFixed(1)}%
-                </span>
-                <span className="font-mono-sm text-mono-sm text-on-surface">cases</span>
-              </div>
-              <span className="font-mono-sm text-mono-sm text-status-success font-semibold mt-1">
-                Target Met (&lt;10%)
-              </span>
+            <div>
+              <h4 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                Direct Operational Cascade: Stage 2 Stalls Downstream Verification Workflows
+              </h4>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-2xs max-w-4xl leading-relaxed">
+                Document chasing at Stage 2 accounts for <strong className="text-error font-semibold">68% of downstream idle analyst hours</strong> in Stage 3 (UBO extraction). Specialists sit idle waiting for Apostilled articles and verified trust deeds, compounding file age before compliance review can commence.
+              </p>
             </div>
           </div>
-
-          <div className="p-3 rounded-lg bg-surface-container-low/60 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-surface-raised flex items-center justify-center text-status-warning">
-                <Flag className="w-4 h-4" />
-              </div>
-              <span className="font-body-sm text-body-sm text-text-primary">
-                Escalations Avoided
-              </span>
-            </div>
-            <span className="font-mono-data text-mono-data text-brand-accent font-bold">
-              {m?.escalations_avoided ?? 236} RM Tasks
-            </span>
+          <div className="bg-surface-container-lowest px-space-md py-space-xs rounded shadow-xs text-right border border-border-hairline shrink-0">
+            <span className="font-label-sm text-label-sm uppercase text-on-surface-variant block">Analyst Idle Hours Lost</span>
+            <span className="font-data-mono-md text-data-mono-md font-bold text-error">1,420 Hours / Mo</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Row: Participating Desks + Live SQLite Agent Actions Telemetry */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        {/* Participating Desks & Pilot Actions */}
-        <div className="lg:col-span-5 flex flex-col gap-space-md">
-          <div className="rounded-xl bg-surface-container p-space-lg shadow-xl space-y-space-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                  Participating Desks
-                </h2>
-                <span className="font-mono-sm text-mono-sm text-text-muted">
-                  Live Cohort Breakdown
-                </span>
-              </div>
-              <span className="font-mono-sm text-mono-sm text-brand-accent">3 Active Units</span>
-            </div>
-
-            <div className="space-y-2 pt-1">
-              {(m?.desks ?? []).map((desk) => (
-                <div
-                  key={desk.desk_name}
-                  className="p-3 rounded-lg bg-surface-deep flex items-center justify-between"
-                >
-                  <div className="min-w-0 pr-2">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          desk.status === 'healthy' ? 'bg-status-success' : 'bg-status-warning'
-                        }`}
-                      />
-                      <span className="font-label-md text-label-md text-text-primary font-semibold truncate">
-                        {desk.desk_name}
-                      </span>
-                    </div>
-                    <span className="font-mono-sm text-mono-sm text-text-muted block mt-0.5">
-                      {desk.accounts} Accounts · {desk.adoption_rate.toFixed(1)}% Adoption
-                    </span>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <span
-                      className={`font-mono-data text-mono-data font-bold ${
-                        desk.status === 'healthy' ? 'text-status-success' : 'text-primary'
-                      }`}
-                    >
-                      {desk.round_avg_days.toFixed(1)}d
-                    </span>
-                    <span className="font-mono-sm text-mono-sm text-text-muted block">
-                      Round Avg
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pilot Action Suite */}
-          <div className="space-y-space-sm">
-            <button
-              type="button"
-              id="export-summary-btn"
-              onClick={handleExportSummary}
-              className="w-full py-3.5 px-space-md rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-lg active:scale-98 transition-transform"
-            >
-              {exportStatus === 'done' ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Board Pack Dispatched!</span>
-                </>
-              ) : (
-                <>
-                  <Share className="w-5 h-5" />
-                  <span>
-                    {exportStatus === 'compiling'
-                      ? 'Compiling JSON Board Pack...'
-                      : 'Export Board-Ready Summary'}
-                  </span>
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              id="scale-apac-btn"
-              onClick={() => setApacQueued(true)}
-              className="w-full py-3 px-space-md rounded-full bg-surface-raised text-text-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-surface-highlight active:scale-98 transition-all"
-            >
-              <Rocket className="w-5 h-5 text-brand-accent" />
-              <span>
-                {apacQueued ? 'APAC Rollout Blueprint Queued' : 'Scale Pilot to APAC Desks'}
+      {/* SECTION 3: Chase Rounds Distribution & Volume Table */}
+      <div className="bg-surface-container-lowest p-space-lg rounded shadow-sm mb-space-xl overflow-hidden border border-border-hairline">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-md">
+          <div>
+            <div className="flex items-center gap-space-xs">
+              <span className="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">
+                Iteration Analysis
               </span>
-            </button>
+              <h3 className="font-headline-md text-headline-md font-semibold text-on-surface">
+                Chase Rounds Distribution & Volume Tiering
+              </h3>
+            </div>
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Breakdown of 402 completed corporate onboardings by client responsiveness and required RM interventions.
+            </p>
+          </div>
+          <div className="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container-low px-space-sm py-space-xs rounded border border-border-hairline">
+            Dataset: 402 Verified Entity Files Analyzed
           </div>
         </div>
 
-        {/* Live SQLite agent_actions Telemetry Feed */}
-        <div className="lg:col-span-7 rounded-xl bg-surface-deep p-space-lg shadow-xl flex flex-col gap-space-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-brand-accent" />
-              <div>
-                <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                  Live Agentic Telemetry Ledger
-                </h2>
-                <span className="font-mono-sm text-mono-sm text-text-muted">
-                  Real-time records from SQLite <code className="text-primary">agent_actions</code>{' '}
-                  table
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-mono-sm text-mono-sm">
-              <span className="px-2 py-0.5 rounded bg-primary-container/15 text-primary">
-                Drafts: {totalDrafts}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-status-danger/15 text-status-danger">
-                Rejected: {totalRejections}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-status-success/15 text-status-success">
-                Approved: {totalApproved}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 max-h-[370px] overflow-y-auto pr-1 mt-space-xs">
-            {(m?.recent_actions ?? []).map((act) => {
-              const badgeStyle =
-                act.action_type === 'RM_Approved'
-                  ? 'bg-status-success/15 text-status-success'
-                  : act.action_type === 'Critic_Rejected'
-                    ? 'bg-status-danger/15 text-status-danger'
-                    : 'bg-primary-container/20 text-brand-accent';
-
-              return (
-                <div
-                  key={act.id}
-                  className="p-3 rounded-lg bg-surface-container-low flex items-start justify-between gap-space-md"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className={`px-2 py-0.5 rounded-full font-mono-sm text-mono-sm font-semibold ${badgeStyle}`}
-                      >
-                        {act.action_type}
-                      </span>
-                      <span className="font-label-sm text-label-sm text-text-primary">
-                        {act.client_name || `Case #${act.case_id}`}
-                      </span>
-                      <span className="font-mono-sm text-mono-sm text-text-muted">
-                        ({act.case_code})
-                      </span>
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-container-low text-on-surface font-label-sm text-label-sm uppercase tracking-wider">
+                <th className="py-space-sm px-space-md">Chase Round Tier</th>
+                <th className="py-space-sm px-space-md">Cases (This Month)</th>
+                <th className="py-space-sm px-space-md">% of Total Intake</th>
+                <th className="py-space-sm px-space-md">Median Days to Resolution</th>
+                <th className="py-space-sm px-space-md">Downstream Operational Impact</th>
+                <th className="py-space-sm px-space-md">Standard Remediation Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-container-low font-body-sm text-body-sm text-on-surface">
+              <tr className="hover:bg-surface-container-low/50 transition-colors">
+                <td className="py-space-sm px-space-md font-medium flex items-center gap-space-xs">
+                  <span className="w-2 h-2 rounded-full bg-secondary" />
+                  <span>Round 1 (Single Reminder Resolved)</span>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold">184 Cases</td>
+                <td className="py-space-sm px-space-md">
+                  <div className="flex items-center gap-space-xs">
+                    <div className="w-16 h-2 bg-surface-container-high rounded overflow-hidden">
+                      <div className="h-full bg-secondary" style={{ width: '46%' }} />
                     </div>
-                    <p className="font-body-sm text-body-sm text-text-secondary mt-1">
-                      {act.details}
-                    </p>
+                    <span className="font-data-mono-sm text-data-mono-sm font-semibold">46%</span>
                   </div>
-                  <div className="text-right shrink-0 font-mono-sm text-mono-sm text-text-muted">
-                    <div className="text-text-secondary">{act.actor}</div>
-                    <div>{new Date(act.timestamp).toLocaleTimeString()}</div>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary font-bold">6.0 Days</td>
+                <td className="py-space-sm px-space-md text-on-surface-variant">Zero downstream delay; within operational buffer</td>
+                <td className="py-space-sm px-space-md">
+                  <span className="font-label-sm text-label-sm uppercase bg-surface-container text-on-surface px-space-xs py-space-2xs rounded">
+                    Automated nudge effective
+                  </span>
+                </td>
+              </tr>
+
+              <tr className="hover:bg-surface-container-low/50 transition-colors bg-surface-container-lowest">
+                <td className="py-space-sm px-space-md font-medium flex items-center gap-space-xs">
+                  <span className="w-2 h-2 rounded-full bg-outline" />
+                  <span>Round 2 (Secondary Escalation Required)</span>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold">142 Cases</td>
+                <td className="py-space-sm px-space-md">
+                  <div className="flex items-center gap-space-xs">
+                    <div className="w-16 h-2 bg-surface-container-high rounded overflow-hidden">
+                      <div className="h-full bg-outline" style={{ width: '35%' }} />
+                    </div>
+                    <span className="font-data-mono-sm text-data-mono-sm font-semibold">35%</span>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-on-surface font-bold">15.0 Days</td>
+                <td className="py-space-sm px-space-md text-on-surface-variant">UBO analyst idle avg 4.2 days; queue re-prioritization</td>
+                <td className="py-space-sm px-space-md">
+                  <span className="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded font-medium">
+                    RM phone follow-up triggered
+                  </span>
+                </td>
+              </tr>
+
+              <tr className="bg-error-container/20 hover:bg-error-container/30 transition-colors">
+                <td className="py-space-sm px-space-md font-medium flex items-center gap-space-xs">
+                  <span className="w-2 h-2 rounded-full bg-error" />
+                  <span className="text-error font-semibold">Round 3+ (Severe Delinquency / Senior Intervention)</span>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-bold text-error">76 Cases</td>
+                <td className="py-space-sm px-space-md">
+                  <div className="flex items-center gap-space-xs">
+                    <div className="w-16 h-2 bg-surface-container-high rounded overflow-hidden">
+                      <div className="h-full bg-error" style={{ width: '19%' }} />
+                    </div>
+                    <span className="font-data-mono-sm text-data-mono-sm font-bold text-error">19%</span>
+                  </div>
+                </td>
+                <td className="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-error font-bold">28.0 Days</td>
+                <td className="py-space-sm px-space-md text-error font-medium">Blocked downstream stages in 82% of files; severe capacity drain</td>
+                <td className="py-space-sm px-space-md">
+                  <span className="font-label-sm text-label-sm uppercase bg-error text-white px-space-xs py-space-2xs rounded font-bold">
+                    Requires Division Head Notice
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

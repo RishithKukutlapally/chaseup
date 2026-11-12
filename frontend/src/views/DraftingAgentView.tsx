@@ -1,644 +1,414 @@
-import React from 'react';
-import {
-  AlertTriangle,
-  ArrowRight,
-  Brain,
-  Building2,
-  CheckCircle2,
-  Clock,
-  Cpu,
-  Edit3,
-  Gauge,
-  Lock,
-  Mail,
-  RefreshCw,
-  Shield,
-  SlidersHorizontal,
-  Sparkles,
-} from 'lucide-react';
-
+import React, { useState, useEffect } from 'react';
 import { useChaseStore } from '../store/useChaseStore';
 
 export const DraftingAgentView: React.FC = () => {
   const {
     selectedCase,
     workflow,
-    llmStatus,
-    simulateCriticRejection,
-    setSimulateCriticRejection,
     startLangGraphWorkflow,
-    reloadEnvStatus,
+    adjustTone,
+    approveAndSend,
     setActiveView,
+    lastDispatchResult,
+    clearLastDispatch,
   } = useChaseStore();
+
+  const [subjectInput, setSubjectInput] = useState('');
+  const [bodyInput, setBodyInput] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('urgent-stage');
+  const [selectedTone, setSelectedTone] = useState('urgent');
+  const [isSending, setIsSending] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (selectedCase) {
+      const defaultSubj =
+        workflow.streamedSubject ||
+        selectedCase.current_draft_subject ||
+        `Urgent Follow-Up: Overdue KYC Documentation for ${selectedCase.client_name} (Ref: ${selectedCase.case_code})`;
+      const defaultBody =
+        workflow.streamedText ||
+        selectedCase.current_draft_body ||
+        `Dear Marcus,\n\nWe write further to our initial onboarding request regarding the institutional account opening for ${selectedCase.client_name} (Case ID: ${selectedCase.case_code}).\n\nOur Financial Crime Compliance desk notes that key prerequisite filings remain outstanding past our standard 3-day turnaround:\n\n• Certified Group Ownership Structure Chart (≥25% Threshold)\n• Official Commercial Registry Extract (Marshall Islands Maritime Registry)\n\nPlease submit the required documents via the secure Northgate Vault by Friday, 06 March 2026 to avoid further operational hold.\n\nSincerely,\nAlistair Vance\nSenior Relationship Manager — Corporate & Institutional Banking\nNorthgate Chase Bank`;
+
+      setSubjectInput(defaultSubj);
+      setBodyInput(defaultBody);
+    }
+  }, [selectedCase, workflow.streamedSubject, workflow.streamedText]);
 
   if (!selectedCase) {
     return (
-      <div className="p-space-xl rounded-xl bg-surface-deep text-text-secondary">
-        Select a case from the Orchestrator Inbox to stream drafting synthesis.
+      <div className="p-space-xl rounded bg-surface-container-lowest text-on-surface-variant">
+        Select a corporate case from the Chase Queue to compose or review reminder drafts.
       </div>
     );
   }
 
   const missingDocs = selectedCase.documents.filter((d) => d.status === 'Missing');
-  const displaySubject =
-    workflow.streamedSubject ||
-    selectedCase.current_draft_subject ||
-    `Action Required: Finalizing KYC Documentation for ${selectedCase.client_name} (Ref #${selectedCase.case_code})`;
-  const displayBody =
-    workflow.streamedText ||
-    selectedCase.current_draft_body ||
-    'Click "Run / Regenerate Variant" below to execute the LangGraph StateGraph and watch live AI token synthesis.';
+  const wordCount = bodyInput.trim() ? bodyInput.trim().split(/\s+/).length : 0;
 
-  const wordCount = displayBody.trim() ? displayBody.trim().split(/\s+/).length : 0;
+  const handleTemplateChange = (templateKey: string) => {
+    setSelectedTemplate(templateKey);
+    let toneVal = 'standard';
+    if (templateKey === 'urgent-stage') toneVal = 'urgent';
+    if (templateKey === 'final-warning') toneVal = 'legal';
+    setSelectedTone(toneVal);
+    void adjustTone(selectedCase.id, toneVal);
+  };
 
-  // Determine step states for the 4 LangGraph pipeline node cards
-  const node = workflow.activeNode;
-  const orchDone = ['drafter', 'critic', 'complete'].includes(node) || !!selectedCase.current_draft_body;
-  const drafterActive = node === 'drafter';
-  const drafterDone = ['critic', 'complete'].includes(node) || (node === 'idle' && !!selectedCase.current_draft_body);
-  const criticActive = node === 'critic';
-  const criticDone = node === 'complete' || (node === 'idle' && selectedCase.critic_passed);
+  const handleToneChange = (toneVal: string) => {
+    setSelectedTone(toneVal);
+    void adjustTone(selectedCase.id, toneVal);
+  };
+
+  const handleSignAndSend = async () => {
+    setIsSending(true);
+    try {
+      await approveAndSend(selectedCase.id, {
+        subject: subjectInput,
+        body: bodyInput,
+        notify_analyst: true,
+        cc_emails: ['legal@heliosmarine.co.uk', 'alistair.vance@northgatechase.com'],
+      });
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error('Dispatch failed', err);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex flex-col gap-space-lg w-full">
-        {/* Top Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-space-sm mb-space-xs">
-              <span className="px-space-sm py-0.5 rounded-full bg-surface-raised font-mono-sm text-mono-sm text-brand-accent tracking-wider uppercase">
-                Pipeline Stage 3
-              </span>
-              <span className="flex h-1.5 w-1.5 rounded-full bg-primary-container" />
-              <span className="font-mono-data text-mono-data text-text-muted">
-                ID: {selectedCase.case_code}
-              </span>
-              {workflow.attempt > 1 && (
-                <span className="px-space-sm py-0.5 rounded-full bg-status-warning/15 text-status-warning font-mono-sm text-mono-sm">
-                  Critic Retry Attempt v{workflow.attempt}
-                </span>
-              )}
+      {/* Top Sovereign Protocol & Governance Banner */}
+      <div className="w-full bg-surface-container-high rounded p-space-lg shadow-sm mb-space-xl relative overflow-hidden border border-border-hairline">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md relative z-10">
+          <div className="flex items-start gap-space-md max-w-4xl">
+            <div className="w-10 h-10 rounded bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm text-error">
+              <span className="material-symbols-outlined text-[24px]">gavel</span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary tracking-tight">
-              ChaseUp AI Drafting Agent
-            </h1>
-            <p className="font-body-md text-body-md text-text-secondary">
-              Synthesizing institutional context &amp; drafting personalized escalation for{' '}
-              <span className="text-text-primary font-semibold">{selectedCase.client_name}</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-space-sm self-start lg:self-auto bg-surface-container-low px-space-md py-space-sm rounded-xl">
-            <Cpu className="w-5 h-5 text-brand-accent shrink-0" />
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-mono-sm text-mono-sm text-text-muted uppercase">
-                  Model Context Window
+            <div className="flex flex-col gap-space-2xs">
+              <div className="flex items-center gap-space-sm flex-wrap">
+                <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  DRAFT FOR RM REVIEW — DRAFTS NEVER SEND AUTOMATICALLY
                 </span>
-                <span
-                  className={`px-1.5 py-0.5 rounded font-mono-sm text-[10px] ${
-                    llmStatus?.llm_configured
-                      ? 'bg-status-success/15 text-status-success'
-                      : 'bg-status-warning/15 text-status-warning'
-                  }`}
-                >
-                  {llmStatus?.llm_configured ? 'LIVE .ENV KEY' : 'FALLBACK ENGINE'}
+                <span className="font-label-sm text-label-sm uppercase bg-surface-container-lowest text-on-surface px-space-xs py-space-2xs rounded shadow-xs flex items-center gap-space-2xs border border-border-hairline">
+                  <span className="w-2 h-2 rounded-full bg-error" />
+                  Unapproved (Pending Alistair Vance Sign-off)
                 </span>
               </div>
-              <span className="font-mono-data text-mono-data text-text-primary font-bold">
-                {llmStatus?.llm_model ?? 'ChaseUp-Grounded-Engine'} •{' '}
-                {llmStatus?.llm_provider ?? 'deterministic-fallback'}
-              </span>
-              {llmStatus?.env_file && (
-                <span className="font-mono-sm text-[10px] text-text-muted truncate max-w-[320px]">
-                  .env: {llmStatus.env_file}
-                </span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => void reloadEnvStatus()}
-              title="Reload .env LLM keys without restarting"
-              className="p-1.5 rounded-lg bg-surface-raised hover:bg-surface-highlight text-brand-accent transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* 4-Step Pipeline Progress Strip (Uses .node-active-glow on active LangGraph node) */}
-        <div className="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
-            {/* Step 1: Orchestrator Context Ingestion */}
-            <div
-              className={`flex items-center gap-space-md p-space-md rounded-lg relative overflow-hidden transition-all ${
-                node === 'orchestrator'
-                  ? 'bg-surface-raised node-active-glow'
-                  : 'bg-surface-deep/80'
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                  node === 'orchestrator'
-                    ? 'bg-primary-container/20 text-brand-accent'
-                    : 'bg-status-success/15 text-status-success'
-                }`}
-              >
-                {node === 'orchestrator' ? (
-                  <Sparkles className="w-5 h-5 animate-pulse" />
-                ) : (
-                  <CheckCircle2 className="w-5 h-5" />
-                )}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span
-                  className={`font-label-sm text-label-sm uppercase font-semibold ${
-                    node === 'orchestrator' ? 'text-brand-accent' : 'text-status-success'
-                  }`}
-                >
-                  {node === 'orchestrator'
-                    ? 'Step 1 • Scanning DB'
-                    : orchDone
-                      ? 'Step 1 • Complete'
-                      : 'Step 1 • Ready'}
-                </span>
-                <span className="font-headline-sm text-headline-sm text-text-primary truncate">
-                  Context Ingestion
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted truncate">
-                  {missingDocs.length} missing docs • {selectedCase.contact_name}
-                </span>
-              </div>
-            </div>
-
-            {/* Step 2: Cadence Check */}
-            <div className="flex items-center gap-space-md p-space-md rounded-lg bg-surface-deep/80 relative overflow-hidden">
-              <div className="w-10 h-10 rounded-full bg-status-success/15 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-status-success" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-label-sm text-label-sm text-status-success uppercase font-semibold">
-                  Step 2 • Complete
-                </span>
-                <span className="font-headline-sm text-headline-sm text-text-primary truncate">
-                  Cadence Check
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted truncate">
-                  {selectedCase.sla_breached
-                    ? `Breach +${selectedCase.sla_delay_days.toFixed(1)}d • Warm Sentiment`
-                    : `Day ${selectedCase.days_since_contact.toFixed(1)} • Active`}
-                </span>
-              </div>
-            </div>
-
-            {/* Step 3: Draft Generation (.node-active-glow when Drafter is active!) */}
-            <div
-              className={`flex items-center gap-space-md p-space-md rounded-lg relative overflow-hidden transition-all ${
-                drafterActive || (node === 'idle' && !selectedCase.current_draft_body)
-                  ? 'bg-surface-raised node-active-glow'
-                  : 'bg-surface-raised shadow-[0_0_20px_rgba(154,132,248,0.12)]'
-              }`}
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-container to-brand-accent" />
-              <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0 relative">
-                {drafterDone && !drafterActive ? (
-                  <CheckCircle2 className="w-5 h-5 text-status-success" />
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5 text-brand-accent animate-pulse" />
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-40" />
-                  </>
-                )}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-label-sm text-label-sm text-brand-accent uppercase font-bold">
-                    {drafterActive
-                      ? `Step 3 • Active Synthesis (v${workflow.attempt})`
-                      : drafterDone
-                        ? 'Step 3 • Draft Synthesized'
-                        : 'Step 3 • Ready'}
-                  </span>
-                  {drafterActive && (
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent animate-ping" />
-                  )}
-                </div>
-                <span className="font-headline-sm text-headline-sm text-text-primary truncate">
-                  Draft Generation
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-secondary truncate">
-                  Words: {wordCount} • Formal Exec
-                </span>
-              </div>
-            </div>
-
-            {/* Step 4: Critic QA Handoff */}
-            <div
-              className={`flex items-center gap-space-md p-space-md rounded-lg transition-all ${
-                criticActive
-                  ? 'bg-surface-raised node-active-glow'
-                  : workflow.rejectedReason && node === 'drafter'
-                    ? 'bg-surface-raised node-reject-glow'
-                    : criticDone
-                      ? 'bg-surface-deep/80'
-                      : 'bg-surface-container-low/50 opacity-75'
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                  criticDone
-                    ? 'bg-status-success/15 text-status-success'
-                    : criticActive
-                      ? 'bg-primary-container/20 text-brand-accent'
-                      : 'bg-surface-raised text-text-muted'
-                }`}
-              >
-                {criticDone ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <Clock className="w-5 h-5" />
-                )}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span
-                  className={`font-label-sm text-label-sm uppercase ${
-                    criticDone
-                      ? 'text-status-success font-semibold'
-                      : criticActive
-                        ? 'text-brand-accent font-bold'
-                        : 'text-text-muted'
-                  }`}
-                >
-                  {criticDone
-                    ? 'Step 4 • Passed QA'
-                    : criticActive
-                      ? 'Step 4 • Auditing'
-                      : 'Step 4 • Queued'}
-                </span>
-                <span className="font-headline-sm text-headline-sm text-text-secondary truncate">
-                  Critic QA Handoff
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted truncate">
-                  {criticDone ? `Score ${selectedCase.critic_score}/100` : 'Rule-set validation engine'}
-                </span>
-              </div>
+              <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Review, calibrate formal wording, or tailor operational deadlines before authorizing sovereign dispatch. All electronic dispatches are immutably archived and hashed to the corporate case timeline under <strong>ISO-27001 KYC Regulatory Ledger Rules</strong>.
+              </p>
             </div>
           </div>
-
-          {/* Live Critic -> Drafter Retry Banner (visible whenever self-correction occurred) */}
-          {workflow.rejectedReason && (
-            <div className="mt-space-md p-space-sm rounded-lg bg-status-warning/10 border border-status-warning/30 flex items-center justify-between gap-space-sm">
-              <div className="flex items-center gap-2 text-status-warning font-body-sm text-body-sm">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>
-                  <strong>Critic Loop Triggered:</strong> {workflow.rejectedReason} — LangGraph
-                  automatically routed back to Drafter Node to remediate.
-                </span>
-              </div>
-              <span className="font-mono-sm text-mono-sm text-status-success shrink-0">
-                Self-Corrected
-              </span>
+          <div className="flex items-center gap-space-sm shrink-0 bg-surface-container-lowest px-space-md py-space-sm rounded shadow-sm border border-border-hairline">
+            <span className="material-symbols-outlined text-on-surface-variant text-[20px]">fingerprint</span>
+            <div className="flex flex-col text-right">
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Sign-off Authority</span>
+              <span className="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">A. Vance (RM-48821)</span>
             </div>
-          )}
-        </div>
-
-        {/* 12-Col Main Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
-          {/* Left 5 cols: Grounding Parameters */}
-          <div className="lg:col-span-5 flex flex-col gap-space-md">
-            <div className="bg-surface-deep/90 rounded-xl p-space-lg backdrop-blur-xl shadow-lg flex flex-col gap-space-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-space-sm">
-                  <SlidersHorizontal className="w-4 h-4 text-brand-accent" />
-                  <h2 className="font-headline-sm text-headline-sm text-text-primary">
-                    Grounding Parameters
-                  </h2>
-                </div>
-                <span className="font-mono-sm text-mono-sm px-space-sm py-0.5 rounded-full bg-surface-raised text-text-secondary">
-                  SQLite RAG Context
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-space-sm">
-                <span className="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">
-                  Verified Entity Vector
-                </span>
-                <div className="p-space-sm rounded-lg bg-surface-container flex items-center justify-between">
-                  <div className="flex items-center gap-space-sm min-w-0">
-                    <Building2 className="w-4 h-4 text-brand-accent shrink-0" />
-                    <span className="font-label-md text-label-md text-text-primary truncate">
-                      {selectedCase.client_name}
-                    </span>
-                  </div>
-                  <span className="font-mono-sm text-mono-sm text-text-muted shrink-0 ml-2">
-                    {selectedCase.case_code}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-space-sm">
-                <span className="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">
-                  Signing RM Identity
-                </span>
-                <div className="p-space-sm rounded-lg bg-surface-container flex items-center justify-between">
-                  <div className="flex items-center gap-space-sm">
-                    <div className="w-6 h-6 rounded-full bg-primary-container/30 flex items-center justify-center text-[10px] font-bold text-primary">
-                      SJ
-                    </div>
-                    <span className="font-label-md text-label-md text-text-primary">
-                      {selectedCase.assigned_rm} (VP Institutional)
-                    </span>
-                  </div>
-                  <span className="font-mono-sm text-mono-sm text-status-success">Key Locked</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-space-xs">
-                <span className="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">
-                  Target Missing Evidentials ({missingDocs.length})
-                </span>
-                {missingDocs.map((doc, i) => (
-                  <div
-                    key={doc.id}
-                    className="p-space-sm rounded-lg bg-surface-container-high/60 flex items-start gap-space-sm"
-                  >
-                    <AlertTriangle className="w-4 h-4 text-status-warning shrink-0 mt-0.5" />
-                    <div className="flex flex-col">
-                      <span className="font-label-md text-label-md text-text-primary">
-                        Doc #{i + 1}: {doc.document_name}
-                      </span>
-                      <span className="font-body-sm text-body-sm text-text-secondary">
-                        {doc.description}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-space-xs pt-space-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">
-                    Tone Profile
-                  </span>
-                  <span className="flex items-center gap-1 font-mono-sm text-mono-sm text-text-muted">
-                    <Lock className="w-3 h-3" /> Policy Enforced
-                  </span>
-                </div>
-                <div className="p-space-md rounded-xl bg-surface-raised flex flex-col gap-space-xs">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-label-md text-label-md text-text-primary font-bold">
-                      Institutional Corporate
-                    </span>
-                    <span className="px-space-sm py-0.5 rounded-full bg-status-success/15 font-mono-sm text-mono-sm text-status-success">
-                      Warm • Urgent • Non-coercive
-                    </span>
-                  </div>
-                  <p className="font-body-sm text-body-sm text-text-secondary">
-                    Calibrated for Tier-1 relationship continuity. Requests ONLY missing items and
-                    protects target facility timeline ({selectedCase.target_deadline_label}).
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-space-md rounded-xl bg-surface-container-lowest flex items-start gap-space-sm">
-                <Shield className="w-5 h-5 text-brand-accent shrink-0 mt-0.5" />
-                <div className="flex flex-col">
-                  <span className="font-label-md text-label-md text-text-primary">
-                    Autonomous Policy Guardrail
-                  </span>
-                  <span className="font-body-sm text-body-sm text-text-muted">
-                    Zero automated transmission permitted. Every generated output requires explicit
-                    RM sign-off.
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-surface-deep/90 rounded-xl p-space-md shadow-md flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <Gauge className="w-5 h-5 text-primary-container" />
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-text-primary">
-                    LangGraph Stream Telemetry
-                  </span>
-                  <span className="font-mono-sm text-mono-sm text-text-muted">
-                    {workflow.statusLabel}
-                  </span>
-                </div>
-              </div>
-              <span className="font-mono-data text-mono-data text-status-success font-bold">
-                {workflow.progress}%
-              </span>
-            </div>
-          </div>
-
-          {/* Right 7 cols: Outbound Transmission Draft (.node-active-glow while AI writes!) */}
-          <div className="lg:col-span-7 flex flex-col gap-space-md">
-            <div
-              className={`bg-surface-deep/95 rounded-2xl p-space-lg backdrop-blur-2xl shadow-2xl flex flex-col gap-space-md relative overflow-hidden transition-all ${
-                workflow.isRunning && drafterActive ? 'node-active-glow' : ''
-              }`}
-            >
-              <div className="flex items-center justify-between pb-space-sm">
-                <div className="flex items-center gap-space-sm">
-                  <Mail className="w-5 h-5 text-brand-accent" />
-                  <span className="font-headline-sm text-headline-sm text-text-primary">
-                    Outbound Transmission Draft
-                  </span>
-                </div>
-                <div className="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-raised">
-                  <span
-                    className={`inline-block w-2 h-2 rounded-full ${
-                      workflow.isRunning
-                        ? 'bg-brand-accent animate-ping'
-                        : 'bg-status-success animate-pulse'
-                    }`}
-                  />
-                  <span className="font-mono-sm text-mono-sm text-text-secondary">
-                    {workflow.isRunning
-                      ? `Synthesizing Stream: ${workflow.progress}%`
-                      : 'Synthesizer Stream: 100% Complete'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-space-xs bg-surface-container-lowest p-space-md rounded-xl">
-                <div className="flex items-center gap-space-sm font-body-sm text-body-sm">
-                  <span className="w-16 font-mono-sm text-mono-sm text-text-muted shrink-0 text-right">
-                    TO:
-                  </span>
-                  <span className="font-label-md text-label-md text-text-primary">
-                    {selectedCase.contact_name}
-                  </span>
-                  <span className="font-mono-data text-mono-data text-text-secondary truncate">
-                    &lt;{selectedCase.contact_email}&gt;
-                  </span>
-                </div>
-                <div className="flex items-center gap-space-sm font-body-sm text-body-sm">
-                  <span className="w-16 font-mono-sm text-mono-sm text-text-muted shrink-0 text-right">
-                    FROM:
-                  </span>
-                  <span className="font-label-md text-label-md text-text-primary">
-                    {selectedCase.assigned_rm}
-                  </span>
-                  <span className="font-mono-data text-mono-data text-text-secondary">
-                    &lt;sarah.jenkins@northgatechase.com&gt;
-                  </span>
-                </div>
-                <div className="flex items-center gap-space-sm font-body-sm text-body-sm">
-                  <span className="w-16 font-mono-sm text-mono-sm text-text-muted shrink-0 text-right">
-                    SUBJECT:
-                  </span>
-                  <span className="font-label-md text-label-md text-brand-accent font-semibold">
-                    {displaySubject}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-space-lg rounded-xl bg-surface-raised/60 flex flex-col gap-space-md font-body-md text-body-md text-text-primary leading-relaxed relative min-h-[280px]">
-                {!workflow.isRunning && !workflow.streamedText && !selectedCase.current_draft_body ? (
-                  <div className="flex flex-col items-start gap-space-md py-space-md">
-                    <p className="text-text-secondary">{displayBody}</p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        startLangGraphWorkflow(selectedCase.id, {
-                          navigateToDrafting: false,
-                          simulateRejection: simulateCriticRejection,
-                        })
-                      }
-                      className="px-space-lg py-space-sm rounded-full bg-primary-container text-canvas-base font-label-md text-label-md font-bold shadow-[0_0_24px_rgba(154,132,248,0.4)] hover:brightness-110 transition-all flex items-center gap-space-xs"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      <span>Run LangGraph Pipeline for {selectedCase.case_code}</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="whitespace-pre-wrap">
-                    {displayBody}
-                    {workflow.isRunning && drafterActive && (
-                      <span className="inline-block w-2 h-5 ml-1 bg-brand-accent animate-pulse align-middle" />
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-space-xs self-start pt-space-sm font-mono-sm text-mono-sm text-status-success">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>
-                    Tokens stream verified against FCA Consumer Duty &amp; CDD Standards
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-space-md rounded-xl bg-surface-container-lowest">
-                <div className="flex items-center gap-space-md">
-                  <div className="flex flex-col">
-                    <span className="font-mono-sm text-mono-sm text-text-muted uppercase">
-                      Synthesized Words
-                    </span>
-                    <span className="font-headline-sm text-headline-sm text-text-primary">
-                      {wordCount}
-                    </span>
-                  </div>
-                  <div className="h-8 w-px bg-surface-highlight" />
-                  <div className="flex flex-col">
-                    <span className="font-mono-sm text-mono-sm text-text-muted uppercase">
-                      Politeness Index
-                    </span>
-                    <span className="font-headline-sm text-headline-sm text-status-success">
-                      9.8/10
-                    </span>
-                  </div>
-                  <div className="h-8 w-px bg-surface-highlight" />
-                  <div className="flex flex-col">
-                    <span className="font-mono-sm text-mono-sm text-text-muted uppercase">
-                      Coercion Risk
-                    </span>
-                    <span className="font-headline-sm text-headline-sm text-text-primary">0.0%</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-space-xs text-brand-accent">
-                  <Brain className="w-5 h-5" />
-                  <span className="font-label-sm text-label-sm">
-                    {criticDone ? 'Critic Verified' : 'Critic Ready'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Live LangGraph Trace Log */}
-            {workflow.logs.length > 0 && (
-              <div className="p-space-md rounded-xl bg-surface-container-lowest font-mono-sm text-mono-sm text-text-secondary space-y-1">
-                <div className="text-brand-accent uppercase tracking-wider mb-1">
-                  Live LangGraph StateGraph Trace
-                </div>
-                {workflow.logs.map((entry, i) => (
-                  <div key={i} className="truncate">
-                    {entry}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sticky Bottom Control Bar */}
-        <div className="w-full bg-surface-raised/95 backdrop-blur-2xl rounded-2xl p-space-md shadow-2xl flex flex-col md:flex-row items-center justify-between gap-space-md sticky bottom-4 z-30">
-          <div className="flex items-center gap-space-md">
-            <div className="w-10 h-10 rounded-full bg-status-success/20 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-status-success" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-space-xs">
-                <span className="font-label-md text-label-md text-text-primary font-bold">
-                  {workflow.isRunning ? 'Agentic Synthesis Running...' : 'Drafting Synthesis Complete'}
-                </span>
-                <span className="px-space-xs py-0.5 rounded bg-status-success/20 font-mono-sm text-mono-sm text-status-success">
-                  {workflow.isRunning ? `${workflow.progress}%` : '100% Ready'}
-                </span>
-              </div>
-              <span className="font-body-sm text-body-sm text-text-muted">
-                Draft is grounded in SQLite repository facts. Next: Critic agent compliance inspection.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-space-md w-full md:w-auto justify-end flex-wrap">
-            <label className="flex items-center gap-1.5 font-mono-sm text-mono-sm text-text-secondary cursor-pointer">
-              <input
-                type="checkbox"
-                checked={simulateCriticRejection}
-                onChange={(e) => setSimulateCriticRejection(e.target.checked)}
-                className="accent-[#9A84F8]"
-              />
-              <span>Test Critic Reject Loop</span>
-            </label>
-            <button
-              type="button"
-              onClick={() =>
-                startLangGraphWorkflow(selectedCase.id, {
-                  navigateToDrafting: false,
-                  simulateRejection: simulateCriticRejection,
-                })
-              }
-              disabled={workflow.isRunning}
-              className="px-space-lg py-space-sm rounded-full bg-surface-deep text-text-primary hover:bg-surface-highlight transition-all font-label-md text-label-md flex items-center gap-space-xs disabled:opacity-50"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Regenerate Variant</span>
-            </button>
-            <button
-              type="button"
-              id="cta-pass-critic"
-              onClick={() => setActiveView('critic-compliance-qa')}
-              className="px-space-xl py-space-sm rounded-full bg-primary-container text-canvas-base hover:brightness-110 active:scale-95 transition-all font-label-md text-label-md font-bold shadow-[0_0_24px_rgba(154,132,248,0.4)] flex items-center gap-space-xs group"
-            >
-              <span>Pass to Critic Agent for Compliance QA</span>
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </button>
           </div>
         </div>
       </div>
+
+      {/* Primary Workspace: Split Grid Architecture (12 cols) */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+        {/* Left Column: Case Meta & Configuration Controls (5 Cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-space-lg">
+          {/* Target Entity Card */}
+          <div className="bg-surface-container-lowest rounded p-space-lg shadow-sm flex flex-col gap-space-md border border-border-hairline">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase">
+                <span className="material-symbols-outlined text-[16px]">domain</span>
+                <span>Target Onboarding Case File</span>
+              </div>
+              <span className="font-data-mono-sm text-data-mono-sm bg-surface-container px-space-xs py-space-2xs rounded font-medium text-on-surface">
+                {selectedCase.case_code}
+              </span>
+            </div>
+
+            <div className="flex items-start justify-between gap-space-md">
+              <div>
+                <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">
+                  {selectedCase.client_name}
+                </h2>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-space-2xs">
+                  {selectedCase.jurisdiction} {selectedCase.entity_type} • Stage: Document Chasing
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded bg-surface-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-on-surface text-[24px]">corporate_fare</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-space-sm pt-space-xs text-center">
+              <div className="bg-surface-container-low rounded p-space-xs">
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant block">First Notice</span>
+                <span className="font-data-mono-sm text-data-mono-sm font-medium text-on-surface">
+                  {selectedCase.last_contact_date || '19 Feb 2026'}
+                </span>
+              </div>
+              <div className="bg-surface-container-low rounded p-space-xs">
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant block">Days Elapsed</span>
+                <span className="font-data-mono-sm text-data-mono-sm font-medium text-error">
+                  +{selectedCase.days_since_contact} Days
+                </span>
+              </div>
+              <div className="bg-surface-container-low rounded p-space-xs">
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant block">Deficiencies</span>
+                <span className="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">
+                  {missingDocs.length} Items
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dispatch Configuration Panel */}
+          <div className="bg-surface-container-lowest rounded p-space-lg shadow-sm flex flex-col gap-space-md border border-border-hairline">
+            <div className="flex items-center justify-between border-b pb-space-sm border-surface-container-high/60">
+              <div className="flex items-center gap-space-xs">
+                <span className="material-symbols-outlined text-primary text-[18px]">tune</span>
+                <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  Dispatch Configuration
+                </span>
+              </div>
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+                Protocol: Chase Round {selectedCase.chase_round_count}
+              </span>
+            </div>
+
+            {/* Template Selector */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant flex items-center justify-between">
+                <span>Template Formulation</span>
+                <span className="text-on-surface font-semibold lowercase">ai-assisted draft</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedTemplate}
+                  onChange={(e) => handleTemplateChange(e.target.value)}
+                  className="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-md py-space-sm rounded appearance-none cursor-pointer focus:outline-none focus:bg-surface-container-lowest shadow-xs border border-outline-variant/30 pr-space-2xl"
+                >
+                  <option value="first-nudge">Corporate Onboarding — First Friendly Nudge (Standard T+3)</option>
+                  <option value="urgent-stage">Corporate Onboarding — Second Follow-up (Urgent / Stage Blocked)</option>
+                  <option value="final-warning">Corporate Onboarding — Final Pre-Escalation Warning (T+14 to Legal)</option>
+                  <option value="ad-hoc">Ad-Hoc Specialized Corporate Filing Item Request</option>
+                </select>
+                <span className="material-symbols-outlined pointer-events-none absolute right-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                  expand_more
+                </span>
+              </div>
+            </div>
+
+            {/* Recipient */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                Primary Signatory & Recipient
+              </label>
+              <div className="flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-sm rounded border border-outline-variant/30">
+                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">badge</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-body-md text-body-md text-on-surface font-medium truncate">
+                    {selectedCase.contact_name} &lt;{selectedCase.contact_email}&gt;
+                  </span>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant truncate">
+                    {selectedCase.contact_role}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* CC Distribution */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                Audited CC Distribution
+              </label>
+              <div className="bg-surface-container-low p-space-sm rounded flex flex-col gap-space-xs border border-outline-variant/30">
+                <div className="flex flex-wrap gap-space-2xs">
+                  <span className="bg-surface-container-lowest text-on-surface font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded shadow-xs flex items-center gap-space-2xs border border-border-hairline">
+                    legal@{selectedCase.client_name.toLowerCase().replace(/[^a-z]/g, '')}.com
+                  </span>
+                  <span className="bg-surface-container-lowest text-on-surface font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded shadow-xs flex items-center gap-space-2xs border border-border-hairline">
+                    alistair.vance@northgatechase.com
+                    <span className="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span>
+                  </span>
+                  <span className="bg-surface-container-lowest text-on-surface font-data-mono-sm text-data-mono-sm px-space-xs py-space-2xs rounded shadow-xs flex items-center gap-space-2xs border border-border-hairline">
+                    kyc-ops-desk@northgatechase.com
+                    <span className="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tone Calibration Buttons */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                Tone & Authority Calibration
+              </label>
+              <div className="grid grid-cols-3 gap-space-xs">
+                <button
+                  type="button"
+                  onClick={() => handleToneChange('polite')}
+                  className={`py-space-xs px-space-sm rounded font-label-sm text-label-sm cursor-pointer transition-colors ${
+                    selectedTone === 'polite'
+                      ? 'bg-primary-container text-white font-semibold'
+                      : 'bg-surface-container-low text-on-surface hover:bg-surface-container'
+                  }`}
+                >
+                  Standard Professional
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToneChange('urgent')}
+                  className={`py-space-xs px-space-sm rounded font-label-sm text-label-sm cursor-pointer transition-colors ${
+                    selectedTone === 'urgent'
+                      ? 'bg-error-container text-on-error-container font-semibold border border-error/30'
+                      : 'bg-surface-container-low text-on-surface hover:bg-surface-container'
+                  }`}
+                >
+                  Urgent Escalated
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToneChange('legal')}
+                  className={`py-space-xs px-space-sm rounded font-label-sm text-label-sm cursor-pointer transition-colors ${
+                    selectedTone === 'legal'
+                      ? 'bg-secondary text-white font-semibold'
+                      : 'bg-surface-container-low text-on-surface hover:bg-surface-container'
+                  }`}
+                >
+                  Legal Pre-Action
+                </button>
+              </div>
+            </div>
+
+            {/* Run AI Generator Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                startLangGraphWorkflow(selectedCase.id, {
+                  navigateToDrafting: true,
+                  tone: selectedTone,
+                });
+              }}
+              disabled={workflow.isRunning}
+              className="mt-space-xs w-full py-space-sm rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors flex items-center justify-center gap-space-xs cursor-pointer border border-border-hairline"
+            >
+              <span className="material-symbols-outlined text-[16px]">smart_toy</span>
+              <span>{workflow.isRunning ? 'Streaming Synthesis...' : 'Regenerate AI Variant via LangGraph'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: The Live Reminder Letter & Sign-Off Chassis (7 Cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-space-lg">
+          <div className="bg-surface-container-lowest rounded p-space-lg shadow-sm flex flex-col gap-space-md border border-border-hairline">
+            <div className="flex items-center justify-between pb-space-sm border-b border-surface-container-high/60">
+              <span className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                Formal Dispatch Letter Draft
+              </span>
+              <div className="flex items-center gap-space-xs">
+                <span className="font-label-sm text-label-sm text-status-success bg-surface-container-low px-space-xs py-space-2xs rounded flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                  Compliance Validated
+                </span>
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container px-space-xs py-space-2xs rounded">
+                  {wordCount} words
+                </span>
+              </div>
+            </div>
+
+            {/* Subject Line */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant">Subject Line</label>
+              <input
+                type="text"
+                value={subjectInput}
+                onChange={(e) => setSubjectInput(e.target.value)}
+                className="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-md py-space-sm rounded focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary border border-outline-variant/30 font-medium"
+              />
+            </div>
+
+            {/* Letter Body Textarea */}
+            <div className="flex flex-col gap-space-2xs">
+              <label className="font-label-sm text-label-sm uppercase text-on-surface-variant flex items-center justify-between">
+                <span>Formal Notification Text (RM Editable)</span>
+                <span className="text-on-surface-variant text-[11px]">Audit ID: HASH-2026-8812-CIB</span>
+              </label>
+              <textarea
+                rows={16}
+                value={bodyInput}
+                onChange={(e) => setBodyInput(e.target.value)}
+                className="w-full bg-surface-container-low text-on-surface font-body-md text-body-md p-space-md rounded focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary border border-outline-variant/30 font-mono text-[13px] leading-relaxed"
+              />
+            </div>
+
+            {/* Governance Sign-Off Action Bar */}
+            <div className="pt-space-md border-t border-surface-container-high/60 flex flex-wrap items-center justify-between gap-space-md">
+              <div className="flex items-center gap-space-sm text-on-surface-variant font-label-sm text-label-sm">
+                <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                <span>RM Vance digital certificate will be attached</span>
+              </div>
+
+              <div className="flex items-center gap-space-sm">
+                <button
+                  type="button"
+                  onClick={() => setActiveView('chase-queue')}
+                  className="px-space-md py-space-sm rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer"
+                >
+                  Discard / Return
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignAndSend}
+                  disabled={isSending || workflow.isRunning}
+                  className="px-space-xl py-space-sm rounded bg-primary-container text-white hover:bg-primary font-label-md text-label-md transition-all shadow-md flex items-center gap-space-xs cursor-pointer font-bold disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                  <span>{isSending ? 'Authenticating & Sending...' : 'Sign & Authorize Sovereign Dispatch (A. Vance)'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dispatch Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-lg max-w-lg w-full p-space-xl shadow-2xl border border-border-hairline flex flex-col gap-space-md">
+            <div className="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">check_circle</span>
+            </div>
+            <h3 className="font-headline-md text-headline-md font-bold text-on-surface">
+              Sovereign Dispatch Completed
+            </h3>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              The KYC chase notice has been authorized by <strong>Alistair Vance</strong> and transmitted to <strong>{selectedCase.contact_name}</strong>.
+            </p>
+            <div className="bg-surface-container-low p-space-sm rounded font-data-mono-sm text-data-mono-sm text-on-surface flex flex-col gap-1">
+              <div>Tracking Ref: <span className="font-bold">{lastDispatchResult?.tracking_id || 'CHASE-TRK-8812-B'}</span></div>
+              <div className="truncate text-on-surface-variant text-[10px]">
+                Immutable Hash: {lastDispatchResult?.audit_hash || '0x7f48e920fa392817d8329bc01928471928374'}
+              </div>
+            </div>
+            <div className="flex justify-end gap-space-sm mt-space-sm">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  clearLastDispatch();
+                  setActiveView('chase-queue');
+                }}
+                className="px-space-lg py-space-sm rounded bg-primary-container text-white font-label-md text-label-md cursor-pointer font-semibold"
+              >
+                Return to Chase Queue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

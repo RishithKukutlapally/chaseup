@@ -1,4 +1,9 @@
 export type ViewId =
+  | 'chase-queue'
+  | 'case-detail'
+  | 'reminder-composer'
+  | 'stage-analytics'
+  | 'analyst-handoff'
   | 'orchestrator-inbox'
   | 'case-tracker'
   | 'ai-drafting-agent'

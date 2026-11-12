@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import { Layout } from './components/Layout';
 import { useChaseStore } from './store/useChaseStore';
+import { AnalystHandoffView } from './views/AnalystHandoffView';
 import { CaseTracker } from './views/CaseTracker';
 import { CriticAgentView } from './views/CriticAgentView';
 import { DraftingAgentView } from './views/DraftingAgentView';
@@ -20,18 +21,24 @@ export function App() {
 
   const renderView = () => {
     switch (activeView) {
+      case 'chase-queue':
       case 'orchestrator-inbox':
         return <OrchestratorInbox />;
+      case 'case-detail':
       case 'case-tracker':
         return <CaseTracker />;
+      case 'reminder-composer':
       case 'ai-drafting-agent':
         return <DraftingAgentView />;
+      case 'stage-analytics':
+      case 'executive-success-dashboard':
+        return <ExecutiveDashboard />;
+      case 'analyst-handoff':
+        return <AnalystHandoffView />;
       case 'critic-compliance-qa':
         return <CriticAgentView />;
       case 'human-in-the-loop-review':
         return <HitlReviewView />;
-      case 'executive-success-dashboard':
-        return <ExecutiveDashboard />;
       default:
         return <OrchestratorInbox />;
     }
@@ -40,8 +47,8 @@ export function App() {
   return (
     <Layout>
       {error && (
-        <div className="mb-space-md p-space-md rounded-xl bg-status-danger/15 border border-status-danger/40 text-status-danger font-body-sm text-body-sm">
-          Backend Connection Notice: {error} (ensure FastAPI is running on port 8000)
+        <div className="mb-space-md p-space-md rounded bg-error-container/40 border border-error/30 text-error font-body-sm text-body-sm">
+          Backend Telemetry Notice: {error}
         </div>
       )}
       {renderView()}

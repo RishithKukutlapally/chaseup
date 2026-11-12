@@ -1,59 +1,16 @@
 import React, { useState } from 'react';
-import {
-  Bell,
-  Bot,
-  ClipboardCheck,
-  FileSearch,
-  Inbox,
-  LineChart,
-  Search,
-  ShieldCheck,
-  Volume2,
-  VolumeX,
-} from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 import { useChaseStore } from '../store/useChaseStore';
-import type { ViewId } from '../types/chasezero';
-
-interface NavItem {
-  id: ViewId;
-  label: string;
-  shortLabel: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'orchestrator-inbox', label: 'Orchestrator Inbox', shortLabel: 'Inbox', icon: Inbox },
-  { id: 'case-tracker', label: 'Case Tracker & Audit', shortLabel: 'Cases', icon: FileSearch },
-  { id: 'ai-drafting-agent', label: 'AI Drafting Agent', shortLabel: 'Drafting', icon: Bot },
-  {
-    id: 'critic-compliance-qa',
-    label: 'Critic Compliance QA',
-    shortLabel: 'Critic QA',
-    icon: ClipboardCheck,
-  },
-  {
-    id: 'human-in-the-loop-review',
-    label: 'Human-in-the-Loop Review',
-    shortLabel: 'Review',
-    icon: ShieldCheck,
-  },
-  {
-    id: 'executive-success-dashboard',
-    label: 'Executive Success Dashboard',
-    shortLabel: 'Metrics',
-    icon: LineChart,
-  },
-];
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const {
     activeView,
     setActiveView,
     summary,
+    selectedCase,
     searchQuery,
     setSearchQuery,
-    setFilterTab,
     audioEnabled,
     toggleAudio,
     selectCase,
@@ -63,254 +20,274 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const breachedCases = summary?.cases.filter((c) => c.sla_breached) ?? [];
   const slaBreachCount = summary?.sla_breached_count ?? breachedCases.length;
-  const slaHealth = summary?.sla_buffer_health_pct ?? 98.4;
   const activeCount = summary?.total_active_cases ?? 8;
+  const draftCount = summary?.pending_rm_action_count ?? 3;
+
+  const isQueueActive = activeView === 'chase-queue' || activeView === 'orchestrator-inbox';
+  const isCaseDetailActive = activeView === 'case-detail' || activeView === 'case-tracker';
+  const isComposerActive =
+    activeView === 'reminder-composer' ||
+    activeView === 'ai-drafting-agent' ||
+    activeView === 'critic-compliance-qa' ||
+    activeView === 'human-in-the-loop-review';
+  const isAnalyticsActive =
+    activeView === 'stage-analytics' || activeView === 'executive-success-dashboard';
+  const isHandoffActive = activeView === 'analyst-handoff';
+
+  const caseBadgeLabel = selectedCase
+    ? `${selectedCase.case_code} - ${selectedCase.client_name}`
+    : 'NG-2026-8812 - Helios Marine';
 
   return (
-    <div className="min-h-screen bg-canvas-base text-on-surface">
-      {/* Shared Fixed Top Header + HITL Governance Ribbon */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/40 shadow-[0_1px_20px_rgba(5,8,17,0.8)]">
-        <div className="h-20 w-full px-margin flex items-center justify-between gap-gutter">
-          <div className="flex items-center gap-space-lg min-w-max">
+    <div className="min-h-screen bg-surface font-body-md text-on-surface antialiased flex flex-col">
+      {/* Sovereign Institutional Header */}
+      <header className="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container-high/60">
+        <div className="h-16 w-full px-margin flex items-center justify-between gap-gutter">
+          {/* Logo & Operational Desk Title */}
+          <div className="flex items-center gap-space-md shrink-0">
             <button
               type="button"
-              onClick={() => setActiveView('orchestrator-inbox')}
-              className="flex items-center gap-space-sm text-left group"
+              onClick={() => setActiveView('chase-queue')}
+              className="flex items-center gap-space-md text-left group cursor-pointer focus:outline-none"
             >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-brand-accent flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.4)] group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-5 h-5 text-canvas-base" />
+              <div className="w-8 h-8 rounded bg-primary-container text-white flex items-center justify-center font-data-mono-md text-data-mono-md font-bold shadow-sm">
+                NC
               </div>
               <div className="flex flex-col">
-                <span className="font-headline-sm text-headline-sm tracking-tight text-text-primary">
-                  Northgate <span className="text-primary font-bold">ChaseUp</span>
-                </span>
-                <span className="font-mono-sm text-mono-sm text-text-muted">
-                  ENTERPRISE KYC PLATFORM
+                <div className="flex items-center gap-space-xs">
+                  <span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">
+                    Northgate Chase
+                  </span>
+                  <span className="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-secondary-container px-space-xs py-space-2xs rounded">
+                    Production Ops (v4.2)
+                  </span>
+                </div>
+                <span className="font-body-sm text-body-sm text-on-surface-variant">
+                  KYC Onboarding Chase Workspace
                 </span>
               </div>
             </button>
-
-            <div className="hidden xl:flex items-center gap-space-sm px-space-sm py-space-xs rounded-full bg-surface-raised/70">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-success opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-status-success" />
-              </span>
-              <span className="font-mono-data text-mono-data text-text-secondary">
-                Agentic Engine Active • SLA Monitor Live
-              </span>
-            </div>
           </div>
 
-          {/* Search Input */}
-          <div className="flex-1 max-w-xl mx-auto hidden md:block">
-            <div className="relative flex items-center">
-              <Search className="w-4 h-4 absolute left-space-md text-text-muted pointer-events-none" />
+          {/* Center Navigation Bar */}
+          <nav className="hidden xl:flex items-center gap-space-xs">
+            {/* 1. Chase Queue */}
+            <button
+              type="button"
+              onClick={() => setActiveView('chase-queue')}
+              className={`px-space-md py-space-xs rounded transition-colors flex items-center gap-space-xs font-label-md text-label-md cursor-pointer ${
+                isQueueActive
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              }`}
+            >
+              <span>Chase Queue</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-error-container text-on-error-container px-space-xs py-space-2xs rounded">
+                {activeCount} Open / {slaBreachCount} Overdue
+              </span>
+            </button>
+
+            {/* 2. Case Detail */}
+            <button
+              type="button"
+              onClick={() => setActiveView('case-detail')}
+              className={`px-space-md py-space-xs rounded transition-colors flex flex-col items-start leading-none gap-space-2xs font-label-md text-label-md cursor-pointer ${
+                isCaseDetailActive
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              }`}
+            >
+              <span>Case Detail</span>
+              <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant truncate max-w-[200px]">
+                {caseBadgeLabel}
+              </span>
+            </button>
+
+            {/* 3. Reminder Composer */}
+            <button
+              type="button"
+              onClick={() => setActiveView('reminder-composer')}
+              className={`px-space-md py-space-xs rounded transition-colors flex items-center gap-space-xs font-label-md text-label-md cursor-pointer ${
+                isComposerActive
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              }`}
+            >
+              <span>Reminder Composer</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-secondary-container text-on-secondary-container px-space-xs py-space-2xs rounded">
+                {draftCount} Drafts
+              </span>
+            </button>
+
+            {/* 4. Stage Analytics */}
+            <button
+              type="button"
+              onClick={() => setActiveView('stage-analytics')}
+              className={`px-space-md py-space-xs rounded transition-colors flex flex-col items-start leading-none gap-space-2xs font-label-md text-label-md cursor-pointer ${
+                isAnalyticsActive
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              }`}
+            >
+              <span>Stage Analytics</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">COO Oversight</span>
+            </button>
+
+            {/* 5. Analyst Handoff */}
+            <button
+              type="button"
+              onClick={() => setActiveView('analyst-handoff')}
+              className={`px-space-md py-space-xs rounded transition-colors flex items-center gap-space-xs font-label-md text-label-md cursor-pointer ${
+                isHandoffActive
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              }`}
+            >
+              <span>Analyst Handoff</span>
+              <span className="font-data-mono-sm text-data-mono-sm bg-surface-container-highest text-on-surface-variant px-space-xs py-space-2xs rounded">
+                UBO Blocked
+              </span>
+            </button>
+          </nav>
+
+          {/* Right Controls: Search, Notifications, Audio, Profile */}
+          <div className="flex items-center gap-space-md shrink-0">
+            {/* Global Search Input */}
+            <div className="relative hidden lg:flex items-center">
+              <span className="material-symbols-outlined absolute left-space-sm text-on-surface-variant text-[18px]">
+                search
+              </span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  if (activeView !== 'orchestrator-inbox') {
-                    setActiveView('orchestrator-inbox');
+                  if (!isQueueActive) {
+                    setActiveView('chase-queue');
                   }
                 }}
-                placeholder="Search Corporate Entities, LEIs, CIKs, or Case IDs..."
-                className="w-full h-11 pl-11 pr-space-md rounded-full bg-surface-deep text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container/40 transition-all"
+                placeholder="Search Case ID, Client, or Tax ID... (Ctrl+K)"
+                className="bg-surface-container-low text-on-surface font-body-sm text-body-sm pl-space-2xl pr-space-md py-space-xs rounded w-64 focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container text-ellipsis border border-outline-variant/30"
               />
             </div>
-          </div>
 
-          {/* Right Action Cluster */}
-          <div className="flex items-center gap-space-md min-w-max">
+            {/* Audio Toggle */}
             <button
               type="button"
               onClick={toggleAudio}
-              title={audioEnabled ? 'Mute Web Audio Telemetry' : 'Enable Web Audio Telemetry'}
-              className="hidden sm:flex items-center gap-1.5 px-space-sm py-1.5 rounded-full bg-surface-raised/60 hover:bg-surface-raised text-text-secondary hover:text-text-primary font-mono-sm text-mono-sm transition-colors"
+              title={audioEnabled ? 'Mute Telemetry Pings' : 'Enable Telemetry Audio'}
+              className="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors cursor-pointer"
             >
               {audioEnabled ? (
-                <Volume2 className="w-3.5 h-3.5 text-brand-accent" />
+                <Volume2 className="w-4 h-4 text-on-surface-variant" />
               ) : (
-                <VolumeX className="w-3.5 h-3.5 text-text-muted" />
+                <VolumeX className="w-4 h-4 text-outline" />
               )}
-              <span>{audioEnabled ? 'Audio On' : 'Muted'}</span>
             </button>
 
+            {/* Notifications Button */}
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setShowNotifMenu((prev) => !prev)}
-                className="relative p-space-sm rounded-full bg-surface-raised/60 hover:bg-surface-raised text-on-surface transition-colors"
-                aria-label="SLA Breach Notifications"
+                aria-label="Notifications"
+                onClick={() => setShowNotifMenu(!showNotifMenu)}
+                className="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors cursor-pointer"
               >
-                <Bell className="w-5 h-5 text-text-secondary" />
-                <span className="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-status-danger font-mono-sm text-mono-sm text-on-error font-bold leading-none">
-                  {slaBreachCount}
-                </span>
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                {slaBreachCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-error" />
+                )}
               </button>
 
+              {/* Notifications Dropdown */}
               {showNotifMenu && (
-                <div className="absolute right-0 mt-2 w-80 rounded-xl bg-surface-raised p-space-md shadow-[0_16px_40px_-8px_rgba(11,9,20,0.85)] z-50 border border-white/10">
-                  <div className="flex items-center justify-between pb-space-xs border-b border-white/10">
-                    <span className="font-label-md text-label-md text-text-primary">
-                      SLA Breach Alerts (&gt;3d)
+                <div className="absolute right-0 mt-2 w-80 rounded-lg bg-surface-container-lowest border border-border-hairline shadow-lg p-space-md z-50">
+                  <div className="flex items-center justify-between pb-space-xs border-b border-surface-container-high">
+                    <span className="font-headline-sm text-headline-sm text-on-surface">
+                      Operational Alerts
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilterTab('breached');
-                        setActiveView('orchestrator-inbox');
-                        setShowNotifMenu(false);
-                      }}
-                      className="font-mono-sm text-mono-sm text-brand-accent hover:underline"
-                    >
-                      Filter Inbox
-                    </button>
+                    <span className="font-data-mono-sm text-data-mono-sm text-error font-semibold">
+                      {slaBreachCount} Critical
+                    </span>
                   </div>
-                  <div className="mt-space-sm flex flex-col gap-space-xs max-h-60 overflow-y-auto">
-                    {breachedCases.length === 0 ? (
-                      <span className="font-body-sm text-body-sm text-status-success py-2">
-                        All corporate cases within 3-day SLA.
-                      </span>
-                    ) : (
+                  <div className="mt-space-sm space-y-space-xs max-h-60 overflow-y-auto">
+                    {breachedCases.length > 0 ? (
                       breachedCases.map((c) => (
-                        <button
+                        <div
                           key={c.id}
-                          type="button"
                           onClick={() => {
-                            void selectCase(c.id, 'case-tracker');
+                            void selectCase(c.id, 'case-detail');
                             setShowNotifMenu(false);
                           }}
-                          className="text-left p-space-xs rounded-lg bg-surface-deep hover:bg-surface-highlight transition-colors flex items-center justify-between gap-2"
+                          className="p-space-xs rounded bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors"
                         >
-                          <div className="min-w-0">
-                            <div className="font-label-sm text-label-sm text-text-primary truncate">
-                              {c.client_name}
-                            </div>
-                            <div className="font-mono-sm text-mono-sm text-status-warning">
-                              {c.case_code} • +{c.sla_delay_days}d delay
-                            </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-data-mono-sm text-data-mono-sm text-error font-semibold">
+                              {c.case_code}
+                            </span>
+                            <span className="font-label-sm text-label-sm uppercase text-error">
+                              +{c.sla_delay_days}d SLA breach
+                            </span>
                           </div>
-                          <span className="font-mono-sm text-mono-sm text-brand-accent shrink-0">
-                            Inspect
-                          </span>
-                        </button>
+                          <p className="font-body-sm text-body-sm text-on-surface mt-0.5 truncate">
+                            {c.client_name}
+                          </p>
+                        </div>
                       ))
+                    ) : (
+                      <p className="font-body-sm text-body-sm text-on-surface-variant py-space-sm text-center">
+                        All entity SLAs currently compliant.
+                      </p>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-space-sm pl-space-sm py-space-xs pr-space-md rounded-full bg-surface-deep/80">
-              <div className="w-8 h-8 rounded-full bg-primary-container/30 border border-brand-accent/40 flex items-center justify-center font-label-sm text-label-sm text-primary font-bold">
-                SJ
+            {/* Division Badge */}
+            <div className="hidden md:flex flex-col text-right">
+              <span className="font-label-sm text-label-sm uppercase bg-surface-container-high text-on-surface-variant px-space-xs py-space-2xs rounded">
+                Corporate & Institutional Banking
+              </span>
+            </div>
+
+            {/* User Profile */}
+            <div className="flex items-center gap-space-sm pl-space-xs border-l border-surface-container-high">
+              <div className="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-data-mono-sm text-data-mono-sm font-semibold">
+                AV
               </div>
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="font-label-md text-label-md text-text-primary leading-tight">
-                  Sarah Jenkins
+              <div className="hidden 2xl:flex flex-col text-left">
+                <span className="font-label-md text-label-md font-semibold text-on-surface leading-tight">
+                  Alistair Vance
                 </span>
-                <span className="font-label-sm text-label-sm text-text-muted">
-                  VP Corporate Banking
+                <span className="font-data-mono-sm text-data-mono-sm text-on-surface-variant leading-tight">
+                  Senior RM - Global Industries
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-full bg-surface-raised/90 backdrop-blur-md px-margin py-space-xs flex items-center justify-center gap-space-sm">
-          <ShieldCheck className="w-4 h-4 text-brand-accent shrink-0" />
-          <span className="font-label-sm text-label-sm text-text-secondary text-center">
-            Human-in-the-loop Protocol: AI drafts require Relationship Manager authorization before
-            transmission.
+        {/* Human-in-the-Loop Protocol Ribbon */}
+        <div className="bg-surface-container-low px-margin py-space-xs w-full flex items-center gap-space-sm border-t border-surface-container-high/40 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+          <span className="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">
+            verified_user
           </span>
+          <p className="font-body-sm text-body-sm text-on-surface-variant tracking-normal">
+            <strong className="font-semibold text-on-surface">Human-in-the-loop Protocol:</strong> Reminder
+            drafts are generated automatically from templates but{' '}
+            <span className="font-semibold text-error">NEVER send without explicit RM review and sign-off</span>.
+            Timeline logs are immutably auditable under KYC Ops policy.
+          </p>
         </div>
       </header>
 
-      {/* Left Fixed Navigation Sidebar */}
-      <aside className="fixed left-0 top-28 h-[calc(100vh-7rem)] w-72 bg-surface-container-lowest/80 backdrop-blur-xl z-40 hidden lg:flex flex-col justify-between pt-space-lg pb-space-lg">
-        <div className="flex flex-col gap-space-md px-space-md">
-          <div className="px-space-md text-text-muted font-mono-sm text-mono-sm tracking-wider uppercase">
-            Autonomous Workflows
-          </div>
-          <nav className="flex flex-col gap-space-xs">
-            {NAV_ITEMS.map((item) => {
-              const IconComp = item.icon;
-              const isActive = activeView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={() => setActiveView(item.id)}
-                  className={
-                    isActive
-                      ? 'flex items-center gap-space-md px-space-md py-space-sm rounded-xl transition-all bg-surface-raised text-primary font-bold shadow-[0_0_16px_rgba(154,132,248,0.15)] text-left'
-                      : 'flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-highlight hover:text-on-surface transition-all text-left'
-                  }
-                >
-                  <IconComp className="w-5 h-5 text-brand-accent shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="px-space-md flex flex-col gap-space-sm">
-          <div className="p-space-md rounded-xl bg-surface-deep/90 flex flex-col gap-space-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-label-sm text-label-sm text-text-primary">
-                SLA Buffer Health
-              </span>
-              <span className="font-mono-data text-mono-data text-status-success">
-                {slaHealth.toFixed(1)}%
-              </span>
-            </div>
-            <div className="w-full h-1.5 rounded-full bg-surface-container-high overflow-hidden">
-              <div
-                className="h-full bg-status-success rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, Math.round(slaHealth))}%` }}
-              />
-            </div>
-            <span className="font-mono-sm text-mono-sm text-text-muted">
-              {activeCount} Autonomous Chases Tracked
-            </span>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Container */}
-      <div className="lg:pl-72">
-        <main className="relative w-full pt-32 px-margin pb-24 lg:pb-space-2xl bg-canvas-base min-h-screen">
+      {/* Main Content Area */}
+      <main className="w-full pt-28 bg-surface flex-1">
+        <div className="pt-space-md pb-space-2xl px-margin mx-auto max-w-[1440px]">
           {children}
-        </main>
-      </div>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-container-low/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(11,9,20,0.6)]">
-        <div className="flex items-center justify-around h-16 px-1">
-          {NAV_ITEMS.map((item) => {
-            const IconComp = item.icon;
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveView(item.id)}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 h-full transition-colors min-w-[44px] ${
-                  isActive
-                    ? 'text-primary-container font-semibold'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                <IconComp className="w-5 h-5" />
-                <span className="font-label-sm text-[10px] tracking-tight">{item.shortLabel}</span>
-              </button>
-            );
-          })}
         </div>
-      </nav>
+      </main>
     </div>
   );
 };

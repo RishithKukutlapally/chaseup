@@ -100,10 +100,25 @@ jobs:
       # Step 5: Deploy Unified Service to Cloud Run
       - name: Deploy to Cloud Run
         id: deploy-service
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          DEMO_PASSWORD_TEMPLATE: ${{ secrets.DEMO_PASSWORD_TEMPLATE }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         run: |
           PROJECT_ID="${{ steps.auth.outputs.project_id }}"
           IMAGE_TAG="${{ env.GCP_REGION }}-docker.pkg.dev/${PROJECT_ID}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
-          
+
+          # Without a known password template nobody could sign in to the deployed app.
+          if [ -z "${DEMO_PASSWORD_TEMPLATE}" ]; then
+            echo "::error::Add repository secret DEMO_PASSWORD_TEMPLATE (e.g. {Name}@<suffix>) before deploying."
+            exit 1
+          fi
+          # '|' delimiter so values may contain commas. Secrets are masked in logs by GitHub.
+          ENV_VARS="^|^ENVIRONMENT=production|CHASEZERO_DB_PATH=/tmp/chasezero.db|COOKIE_SECURE=1|DEMO_PASSWORD_TEMPLATE=${DEMO_PASSWORD_TEMPLATE}"
+          [ -n "${GOOGLE_API_KEY}" ] && ENV_VARS="${ENV_VARS}|GOOGLE_API_KEY=${GOOGLE_API_KEY}" || echo "::warning::No GOOGLE_API_KEY secret: app runs in SIMULATED AI mode."
+          [ -n "${SESSION_SECRET}" ] && ENV_VARS="${ENV_VARS}|SESSION_SECRET=${SESSION_SECRET}"
+
+          # One instance: SQLite + in-memory throttling/circuit breaker are per process.
           gcloud run deploy "${{ env.SERVICE_NAME }}" \
             --image "${IMAGE_TAG}" \
             --region "${{ env.GCP_REGION }}" \
@@ -114,9 +129,9 @@ jobs:
             --memory 1Gi \
             --cpu 1 \
             --min-instances 0 \
-            --max-instances 5 \
+            --max-instances 1 \
             --quiet \
-            --set-env-vars "ENVIRONMENT=production,CHASEZERO_DB_PATH=/tmp/chasezero.db,COOKIE_SECURE=1"
+            --set-env-vars "${ENV_VARS}"
 
           SERVICE_URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region "${{ env.GCP_REGION }}" --project "${PROJECT_ID}" --format "value(status.url)")
           echo "SERVICE_URL=${SERVICE_URL}" >> "${GITHUB_ENV}"

@@ -135,7 +135,8 @@ CSRF_HEADER = "X-ChaseUp-Request"
 def demo_password_template() -> str:
     """e.g. '{Name}@Suffix'. If missing, a random suffix is generated and persisted to .env."""
     tpl = env("DEMO_PASSWORD_TEMPLATE")
-    if tpl and "{Name}" in tpl and "change-me" not in tpl.lower():
+    # With {Name} each person gets their own password; without it, everyone shares this fixed one.
+    if tpl and "change-me" not in tpl.lower():
         return tpl
     tpl = "{Name}@" + _secrets.token_urlsafe(6)
     target = APP_DIR.parent / ".env"

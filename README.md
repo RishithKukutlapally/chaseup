@@ -59,9 +59,13 @@ placeholder FX rate (`USD_TO_INR=88.0`).
 
 ## Sign in
 
-Username = first name in lowercase. Password = `DEMO_PASSWORD_TEMPLATE` with `{Name}` replaced by
-the capitalised first name. For example, the template `{Name}@abc123` gives the password `Sarah@abc123`.
-Passwords are stored as PBKDF2-SHA256 hashes. They are never committed.
+Username = first name in lowercase. Password = `DEMO_PASSWORD_TEMPLATE` from `.env`:
+- with `{Name}` in it (e.g. `{Name}@abc123`), each person gets their own password (`Sarah@abc123`);
+- without `{Name}` (e.g. a fixed value), **every user shares that one password** — simplest for demos,
+  but then anyone who knows it can sign in as any role.
+
+Passwords are stored as PBKDF2-SHA256 hashes and never committed. Changing the template takes effect
+on the next start (stored hashes are refreshed automatically).
 
 | Username | Person (fictional) | Role | Lands on |
 |---|---|---|---|

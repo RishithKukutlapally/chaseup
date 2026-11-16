@@ -1,427 +1,338 @@
 import { create } from 'zustand';
 
-import { apiClient } from '../api/client';
+import { apiClient, setUnauthorizedHandler } from '../api/client';
 import type {
-  ApproveDispatchResponse,
+  ApproveResult,
   CasesSummary,
-  DashboardMetrics,
+  CheckItem,
   FilterTab,
+  Health,
   KycCaseDetail,
-  LlmHealthStatus,
+  Me,
+  TraceStep,
   ViewId,
   WorkflowStreamState,
 } from '../types/chasezero';
+import { canView, resolveLanding } from '../utils/access';
 import { telemetryAudio } from '../utils/audio';
 
 interface ChaseStoreState {
+  me: Me | null;
+  authChecked: boolean;
+  health: Health | null;
   activeView: ViewId;
   summary: CasesSummary | null;
   selectedCaseId: number | null;
   selectedCase: KycCaseDetail | null;
-  dashboardMetrics: DashboardMetrics | null;
+  selectedTaskId: number | null;
   searchQuery: string;
   filterTab: FilterTab;
   audioEnabled: boolean;
-  simulateCriticRejection: boolean;
-  loadingCases: boolean;
-  loadingCaseDetail: boolean;
-  loadingMetrics: boolean;
   error: string | null;
+  notice: string | null;
   workflow: WorkflowStreamState;
-  lastDispatchResult: ApproveDispatchResponse | null;
-  llmStatus: LlmHealthStatus | null;
+  lastDispatch: ApproveResult | null;
+  accessOpen: boolean;
 
+  boot: () => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   setActiveView: (view: ViewId) => void;
-  setSearchQuery: (query: string) => void;
-  setFilterTab: (tab: FilterTab) => void;
+  setSearchQuery: (q: string) => void;
+  setFilterTab: (t: FilterTab) => void;
   toggleAudio: () => void;
-  setSimulateCriticRejection: (val: boolean) => void;
+  setError: (msg: string | null) => void;
+  setNotice: (msg: string | null) => void;
+  setAccessOpen: (open: boolean) => void;
+  openTrace: (taskId: number) => void;
 
   fetchCases: () => Promise<void>;
   selectCase: (caseId: number, navigateTo?: ViewId) => Promise<void>;
-  fetchDashboardMetrics: () => Promise<void>;
-  toggleDocumentStatus: (caseId: number, docId: number) => Promise<void>;
-  resetCaseDemo: (caseId: number) => Promise<void>;
-  updateCaseNote: (caseId: number, note: string) => Promise<void>;
-  startLangGraphWorkflow: (
-    caseId: number,
-    options?: { navigateToDrafting?: boolean; simulateRejection?: boolean; tone?: string }
-  ) => void;
-  rescanCritic: (caseId: number, draftBody?: string, simulateFailure?: boolean) => Promise<void>;
-  adjustTone: (caseId: number, tone: string) => Promise<void>;
-  approveAndSend: (
-    caseId: number,
-    payload: { subject: string; body: string; notify_analyst: boolean; cc_emails?: string[] }
-  ) => Promise<ApproveDispatchResponse>;
+  refreshSelectedCase: () => Promise<void>;
+  setDocumentStatus: (docId: number, status: 'received' | 'waived' | 'missing', reason: string) => Promise<void>;
+  updateNote: (note: string) => Promise<void>;
+  analystRequest: (document: string, note: string) => Promise<void>;
+  resetCase: () => Promise<void>;
+  startWorkflow: (caseId: number, opts?: { tone?: string; simulateRejection?: boolean; navigate?: boolean }) => void;
+  approveDraft: (subject: string, body: string) => Promise<ApproveResult>;
+  discardDraft: (reason: string) => Promise<void>;
   clearLastDispatch: () => void;
-  fetchLlmStatus: () => Promise<void>;
-  reloadEnvStatus: () => Promise<void>;
 }
 
-const initialWorkflow: WorkflowStreamState = {
+export const initialWorkflow: WorkflowStreamState = {
   isRunning: false,
   activeNode: 'idle',
   streamedText: '',
   streamedSubject: '',
-  progress: 0,
   attempt: 0,
-  isRetry: false,
-  statusLabel: 'Awaiting Orchestrator Launch',
-  rejectedReason: null,
-  logs: [],
+  statusLabel: 'Not started',
+  checks: [],
+  criticPassed: null,
+  steps: [],
+  taskId: null,
+  traceId: null,
+  draftId: null,
+  engine: null,
+  dataSource: null,
+  error: null,
 };
 
 let activeEventSource: EventSource | null = null;
 
+function msg(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback;
+}
+
 export const useChaseStore = create<ChaseStoreState>((set, get) => ({
-  activeView: 'orchestrator-inbox',
+  me: null,
+  authChecked: false,
+  health: null,
+  activeView: 'chase-queue',
   summary: null,
-  selectedCaseId: 1,
+  selectedCaseId: null,
   selectedCase: null,
-  dashboardMetrics: null,
+  selectedTaskId: null,
   searchQuery: '',
   filterTab: 'all',
-  audioEnabled: true,
-  simulateCriticRejection: false,
-  loadingCases: false,
-  loadingCaseDetail: false,
-  loadingMetrics: false,
+  audioEnabled: false,
   error: null,
+  notice: null,
   workflow: initialWorkflow,
-  lastDispatchResult: null,
-  llmStatus: null,
+  lastDispatch: null,
+  accessOpen: false,
 
-  setActiveView: (view) => {
-    telemetryAudio.playNodePing(get().audioEnabled);
-    set({ activeView: view });
-    if (view === 'executive-success-dashboard') {
-      void get().fetchDashboardMetrics();
+  boot: async () => {
+    setUnauthorizedHandler(() => set({ me: null }));
+    apiClient.health().then((health) => set({ health })).catch(() => undefined);
+    try {
+      const me = await apiClient.me();
+      set({ me, authChecked: true, activeView: resolveLanding(me) ?? 'chase-queue' });
+      if (canView(me, 'chase-queue')) void get().fetchCases();
+    } catch {
+      set({ me: null, authChecked: true });
     }
   },
 
-  setSearchQuery: (query) => {
-    set({ searchQuery: query });
+  login: async (username, password) => {
+    const me = await apiClient.login(username, password);
+    set({
+      me,
+      error: null,
+      notice: null,
+      summary: null,
+      selectedCase: null,
+      selectedCaseId: null,
+      workflow: initialWorkflow,
+      activeView: resolveLanding(me) ?? 'chase-queue',
+    });
+    apiClient.health().then((health) => set({ health })).catch(() => undefined);
+    if (canView(me, 'chase-queue')) void get().fetchCases();
+  },
+
+  logout: async () => {
+    activeEventSource?.close();
+    activeEventSource = null;
+    try {
+      await apiClient.logout();
+    } finally {
+      set({ me: null, summary: null, selectedCase: null, selectedCaseId: null, workflow: initialWorkflow, accessOpen: false });
+    }
+  },
+
+  setActiveView: (view) => {
+    telemetryAudio.playNodePing(get().audioEnabled);
+    set({ activeView: view, error: null });
+  },
+  setSearchQuery: (q) => {
+    set({ searchQuery: q });
     void get().fetchCases();
   },
-
-  setFilterTab: (tab) => {
-    set({ filterTab: tab });
+  setFilterTab: (t) => {
+    set({ filterTab: t });
     void get().fetchCases();
   },
-
-  toggleAudio: () => {
-    const next = !get().audioEnabled;
-    set({ audioEnabled: next });
-    if (next) telemetryAudio.playNodePing(true);
-  },
-
-  setSimulateCriticRejection: (val) => set({ simulateCriticRejection: val }),
+  toggleAudio: () => set({ audioEnabled: !get().audioEnabled }),
+  setError: (error) => set({ error }),
+  setNotice: (notice) => set({ notice }),
+  setAccessOpen: (accessOpen) => set({ accessOpen }),
+  openTrace: (taskId) => set({ selectedTaskId: taskId, activeView: 'traces' }),
 
   fetchCases: async () => {
-    set({ loadingCases: true, error: null });
     try {
-      const { searchQuery, filterTab, selectedCaseId } = get();
+      const { searchQuery, filterTab } = get();
       const summary = await apiClient.getCases(searchQuery, filterTab);
-      set({ summary, loadingCases: false });
-      const currentSelected = selectedCaseId ?? summary.cases[0]?.id ?? null;
-      if (currentSelected && !get().selectedCase) {
-        await get().selectCase(currentSelected);
-      }
+      set({ summary });
+      if (!get().selectedCaseId && summary.cases[0]) await get().selectCase(summary.cases[0].id);
     } catch (err) {
-      set({
-        loadingCases: false,
-        error: err instanceof Error ? err.message : 'Failed to load KYC cases',
-      });
+      set({ error: msg(err, 'Failed to load cases') });
     }
   },
 
   selectCase: async (caseId, navigateTo) => {
-    set({ loadingCaseDetail: true, selectedCaseId: caseId, error: null });
-    if (navigateTo) {
-      telemetryAudio.playNodePing(get().audioEnabled);
-      set({ activeView: navigateTo });
-    }
+    const changed = caseId !== get().selectedCaseId;
+    set({ selectedCaseId: caseId, ...(navigateTo ? { activeView: navigateTo } : {}) });
+    if (changed && !get().workflow.isRunning) set({ workflow: initialWorkflow });
     try {
-      const detail = await apiClient.getCaseDetail(caseId);
-      set({ selectedCase: detail, loadingCaseDetail: false });
+      set({ selectedCase: await apiClient.getCase(caseId) });
     } catch (err) {
-      set({
-        loadingCaseDetail: false,
-        error: err instanceof Error ? err.message : 'Failed to load case details',
-      });
+      set({ error: msg(err, 'Failed to load case') });
     }
   },
 
-  fetchDashboardMetrics: async () => {
-    set({ loadingMetrics: true });
-    try {
-      const metrics = await apiClient.getDashboardMetrics();
-      set({ dashboardMetrics: metrics, loadingMetrics: false });
-    } catch (err) {
-      set({
-        loadingMetrics: false,
-        error: err instanceof Error ? err.message : 'Failed to load COO metrics',
-      });
-    }
+  refreshSelectedCase: async () => {
+    const id = get().selectedCaseId;
+    if (id) await get().selectCase(id);
   },
 
-  toggleDocumentStatus: async (caseId, docId) => {
+  setDocumentStatus: async (docId, status, reason) => {
+    const c = get().selectedCase;
+    if (!c) return;
     try {
-      const updated = await apiClient.toggleDocument(caseId, docId);
-      set({ selectedCase: updated });
+      set({ selectedCase: await apiClient.setDocumentStatus(c.id, docId, status, reason), error: null });
       void get().fetchCases();
-      telemetryAudio.playNodePing(get().audioEnabled);
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to toggle document' });
+      set({ error: msg(err, 'Failed to update document') });
     }
   },
 
-  resetCaseDemo: async (caseId) => {
+  updateNote: async (note) => {
+    const c = get().selectedCase;
+    if (!c) return;
     try {
-      const updated = await apiClient.resetCaseDemo(caseId);
-      set({ selectedCase: updated, workflow: initialWorkflow, lastDispatchResult: null });
+      set({ selectedCase: await apiClient.updateNote(c.id, note), notice: 'Note saved' });
+    } catch (err) {
+      set({ error: msg(err, 'Failed to save note') });
+    }
+  },
+
+  analystRequest: async (document, note) => {
+    const c = get().selectedCase;
+    if (!c) return;
+    try {
+      set({
+        selectedCase: await apiClient.analystRequest(c.id, document, note),
+        notice: `Request sent to ${c.assigned_rm} (logged on the case timeline)`,
+      });
+    } catch (err) {
+      set({ error: msg(err, 'Failed to send request') });
+    }
+  },
+
+  resetCase: async () => {
+    const c = get().selectedCase;
+    if (!c) return;
+    try {
+      set({ selectedCase: await apiClient.resetCase(c.id), workflow: initialWorkflow, lastDispatch: null });
       void get().fetchCases();
-      telemetryAudio.playNodePing(get().audioEnabled);
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to reset case' });
+      set({ error: msg(err, 'Failed to reset case') });
     }
   },
 
-  updateCaseNote: async (caseId, note) => {
-    try {
-      const updated = await apiClient.updateCaseNote(caseId, note);
-      set({ selectedCase: updated });
-      telemetryAudio.playNodePing(get().audioEnabled);
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to update case note' });
-    }
-  },
-
-  startLangGraphWorkflow: (caseId, options = {}) => {
-    if (activeEventSource) {
-      activeEventSource.close();
-      activeEventSource = null;
-    }
-
-    const simulateRejection = options.simulateRejection ?? get().simulateCriticRejection;
-    const tone = options.tone ?? 'institutional';
-
-    if (options.navigateToDrafting !== false) {
-      set({ activeView: 'ai-drafting-agent' });
-    }
-
-    telemetryAudio.playNodePing(get().audioEnabled);
-
+  startWorkflow: (caseId, opts = {}) => {
+    activeEventSource?.close();
+    if (opts.navigate !== false) set({ activeView: 'reminder-composer' });
     set({
       selectedCaseId: caseId,
-      workflow: {
-        isRunning: true,
-        activeNode: 'orchestrator',
-        streamedText: '',
-        streamedSubject: '',
-        progress: 5,
-        attempt: 1,
-        isRetry: false,
-        statusLabel: 'Orchestrator Node querying SQLite for SLA breaches...',
-        rejectedReason: null,
-        logs: ['[LangGraph] Starting StateGraph execution...'],
-      },
+      error: null,
+      lastDispatch: null,
+      workflow: { ...initialWorkflow, isRunning: true, activeNode: 'orchestrator', statusLabel: 'Starting…' },
     });
-
-    const es = apiClient.openWorkflowStream(caseId, simulateRejection, tone);
+    const es = apiClient.openWorkflowStream(caseId, opts.tone, Boolean(opts.simulateRejection));
     activeEventSource = es;
+    const upd = (patch: Partial<WorkflowStreamState>) => set((s) => ({ workflow: { ...s.workflow, ...patch } }));
 
-    es.onmessage = (msg) => {
+    es.onmessage = (m) => {
+      let data: Record<string, unknown>;
       try {
-        const data = JSON.parse(msg.data) as Record<string, unknown>;
-        const audioOn = get().audioEnabled;
-        const type = String(data.type ?? '');
-
-        if (type === 'node_start') {
-          const node = String(data.node ?? 'orchestrator') as WorkflowStreamState['activeNode'];
-          const label = String(data.label ?? '');
-          const attempt = Number(data.attempt ?? get().workflow.attempt ?? 1);
-          const isRetry = Boolean(data.is_retry);
-          telemetryAudio.playNodePing(audioOn);
-
-          set((state) => ({
-            workflow: {
-              ...state.workflow,
-              activeNode: node,
-              attempt,
-              isRetry,
-              statusLabel: label,
-              streamedText: node === 'drafter' ? '' : state.workflow.streamedText,
-              progress: node === 'orchestrator' ? 15 : node === 'drafter' ? 40 : 85,
-              logs: [...state.workflow.logs, `[${node.toUpperCase()}] ${label}`],
-            },
-          }));
-        } else if (type === 'orchestrator_result') {
-          const breached = Number(data.breached_count ?? 0);
-          const missing = Number(data.missing_docs_count ?? 0);
-          set((state) => ({
-            workflow: {
-              ...state.workflow,
-              progress: 28,
-              logs: [
-                ...state.workflow.logs,
-                `[ORCHESTRATOR] Found ${breached} SLA-breached cases (>3d); gathered ${missing} missing docs.`,
-              ],
-            },
-          }));
-        } else if (type === 'draft_token') {
-          const chunk = String(data.chunk ?? '');
-          const prog = Number(data.progress ?? 50);
-          if (prog % 16 < 5) telemetryAudio.playDraftTick(audioOn);
-          set((state) => ({
-            workflow: {
-              ...state.workflow,
-              streamedText: state.workflow.streamedText + chunk,
-              progress: Math.max(40, Math.min(82, 40 + Math.round(prog * 0.4))),
-            },
-          }));
-        } else if (type === 'draft_complete') {
-          const subject = String(data.subject ?? '');
-          const body = String(data.body ?? '');
-          set((state) => ({
-            workflow: {
-              ...state.workflow,
-              streamedSubject: subject,
-              streamedText: body,
-              progress: 84,
-              logs: [
-                ...state.workflow.logs,
-                `[DRAFTER] Completed draft v${data.attempt ?? 1} (${data.word_count ?? 0} words).`,
-              ],
-            },
-          }));
-        } else if (type === 'critic_result') {
-          const passed = Boolean(data.passed);
-          const feedback = String(data.feedback ?? '');
-          const score = Number(data.score ?? 100);
-          if (passed) {
-            telemetryAudio.playCriticPass(audioOn);
-          } else {
-            telemetryAudio.playCriticReject(audioOn);
-          }
-          set((state) => ({
-            workflow: {
-              ...state.workflow,
-              rejectedReason: passed ? state.workflow.rejectedReason : feedback,
-              statusLabel: passed
-                ? `Critic QA Passed (${score}/100) — Status set to Draft_Ready`
-                : `Critic QA Rejected Draft v${data.attempt ?? 1} — Routing back to Drafter Node!`,
-              logs: [
-                ...state.workflow.logs,
-                passed
-                  ? `[CRITIC] PASSED (${score}/100) — ${feedback}`
-                  : `[CRITIC] REJECTED (${score}/100) -> Routing back to Drafter: ${feedback}`,
-              ],
-            },
-          }));
-        } else if (type === 'workflow_complete') {
-          const updatedCase = data.case as KycCaseDetail | undefined;
-          es.close();
-          activeEventSource = null;
-          set((state) => ({
-            selectedCase: updatedCase ?? state.selectedCase,
-            workflow: {
-              ...state.workflow,
-              isRunning: false,
-              activeNode: 'complete',
-              progress: 100,
-              statusLabel: 'Drafting & Compliance QA Complete — Ready for Review',
-            },
-          }));
-          void get().fetchCases();
-          void get().fetchDashboardMetrics();
-        } else if (type === 'error') {
-          es.close();
-          activeEventSource = null;
-          set((state) => ({
-            error: String(data.message ?? 'Workflow stream error'),
-            workflow: {
-              ...state.workflow,
-              isRunning: false,
-              activeNode: 'error',
-              statusLabel: 'Workflow Error',
-            },
-          }));
-        }
+        data = JSON.parse(m.data) as Record<string, unknown>;
       } catch {
-        // Ignore malformed SSE ping
+        return;
+      }
+      const type = String(data.type ?? '');
+      const audio = get().audioEnabled;
+      if (type === 'trace_step') {
+        const step = data.step as TraceStep;
+        set((s) => ({ workflow: { ...s.workflow, steps: [...s.workflow.steps, step], traceId: String(data.trace_id ?? '') } }));
+      } else if (type === 'node_start') {
+        telemetryAudio.playNodePing(audio);
+        const node = String(data.node ?? 'orchestrator') as WorkflowStreamState['activeNode'];
+        upd({
+          activeNode: node,
+          statusLabel: String(data.label ?? ''),
+          attempt: Number(data.attempt ?? get().workflow.attempt),
+          ...(node === 'drafter' ? { streamedText: '' } : {}),
+        });
+      } else if (type === 'orchestrator_result') {
+        upd({ dataSource: String(data.data_source ?? '') });
+      } else if (type === 'draft_token') {
+        set((s) => ({ workflow: { ...s.workflow, streamedText: s.workflow.streamedText + String(data.chunk ?? '') } }));
+      } else if (type === 'draft_complete') {
+        upd({ streamedSubject: String(data.subject ?? ''), streamedText: String(data.body ?? ''), engine: String(data.engine ?? '') });
+      } else if (type === 'critic_result') {
+        const passed = Boolean(data.passed);
+        if (passed) telemetryAudio.playCriticPass(audio);
+        else telemetryAudio.playCriticReject(audio);
+        upd({ criticPassed: passed, checks: (data.checks as CheckItem[]) ?? [] });
+      } else if (type === 'workflow_complete') {
+        es.close();
+        activeEventSource = null;
+        const c = data.case as KycCaseDetail | undefined;
+        set((s) => ({
+          selectedCase: c && c.id === s.selectedCaseId ? c : s.selectedCase,
+          workflow: {
+            ...s.workflow,
+            isRunning: false,
+            activeNode: 'complete',
+            statusLabel: 'Draft ready — waiting for the named RM. Nothing has been sent.',
+            taskId: Number(data.task_id) || null,
+            traceId: String(data.trace_id ?? s.workflow.traceId ?? ''),
+            draftId: (data.draft_id as number | null) ?? null,
+            engine: String(data.engine ?? s.workflow.engine ?? ''),
+            dataSource: String(data.data_source ?? s.workflow.dataSource ?? ''),
+            criticPassed: (data.critic_passed as boolean | null) ?? s.workflow.criticPassed,
+          },
+        }));
+        void get().fetchCases();
+      } else if (type === 'error') {
+        es.close();
+        activeEventSource = null;
+        upd({ isRunning: false, activeNode: 'error', statusLabel: 'Workflow error', error: String(data.message ?? '') });
+        set({ error: String(data.message ?? 'Workflow error') });
       }
     };
-
     es.onerror = () => {
       es.close();
       activeEventSource = null;
-      set((state) => {
-        if (!state.workflow.isRunning) return state;
-        return {
-          workflow: {
-            ...state.workflow,
-            isRunning: false,
-            activeNode: 'error',
-            statusLabel: 'SSE stream disconnected',
-          },
-        };
-      });
+      if (get().workflow.isRunning) {
+        upd({ isRunning: false, activeNode: 'error', statusLabel: 'Stream disconnected', error: 'Stream disconnected' });
+        void get().refreshSelectedCase();
+      }
     };
   },
 
-  rescanCritic: async (caseId, draftBody, simulateFailure = false) => {
-    try {
-      const updated = await apiClient.rescanCritic(caseId, draftBody, simulateFailure);
-      set({ selectedCase: updated });
-      if (updated.critic_passed) {
-        telemetryAudio.playCriticPass(get().audioEnabled);
-      } else {
-        telemetryAudio.playCriticReject(get().audioEnabled);
-      }
-      void get().fetchDashboardMetrics();
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Critic scan failed' });
-    }
-  },
-
-  adjustTone: async (caseId, tone) => {
-    try {
-      const updated = await apiClient.adjustTone(caseId, tone);
-      set({ selectedCase: updated });
-      telemetryAudio.playNodePing(get().audioEnabled);
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Tone adjustment failed' });
-    }
-  },
-
-  approveAndSend: async (caseId, payload) => {
-    const res = await apiClient.approveAndSend(caseId, payload);
+  approveDraft: async (subject, body) => {
+    const c = get().selectedCase;
+    if (!c || !c.pending_draft_id) throw new Error('No draft is pending approval');
+    const res = await apiClient.approveDraft(c.pending_draft_id, subject, body);
     telemetryAudio.playDispatchSuccess(get().audioEnabled);
-    set({ selectedCase: res.case, lastDispatchResult: res });
+    set({ selectedCase: res.case, lastDispatch: res, workflow: initialWorkflow });
     void get().fetchCases();
-    void get().fetchDashboardMetrics();
     return res;
   },
 
-  clearLastDispatch: () => set({ lastDispatchResult: null }),
-
-  fetchLlmStatus: async () => {
+  discardDraft: async (reason) => {
+    const c = get().selectedCase;
+    if (!c || !c.pending_draft_id) return;
     try {
-      const llmStatus = await apiClient.getHealth();
-      set({ llmStatus });
-    } catch {
-      // ignore initial health check failure
-    }
-  },
-
-  reloadEnvStatus: async () => {
-    try {
-      const llmStatus = await apiClient.reloadEnv();
-      set({ llmStatus });
-      telemetryAudio.playNodePing(get().audioEnabled);
+      await apiClient.discardDraft(c.pending_draft_id, reason);
+      set({ notice: `Draft #${c.pending_draft_id} discarded`, workflow: initialWorkflow });
+      await get().refreshSelectedCase();
+      void get().fetchCases();
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to reload .env' });
+      set({ error: msg(err, 'Failed to discard draft') });
     }
   },
+
+  clearLastDispatch: () => set({ lastDispatch: null }),
 }));

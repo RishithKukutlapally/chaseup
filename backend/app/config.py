@@ -135,13 +135,14 @@ CSRF_HEADER = "X-ChaseUp-Request"
 def demo_password_template() -> str:
     """e.g. '{Name}@Suffix'. If missing, a random suffix is generated and persisted to .env."""
     tpl = env("DEMO_PASSWORD_TEMPLATE")
-    if tpl and "{Name}" in tpl:
+    if tpl and "{Name}" in tpl and "change-me" not in tpl.lower():
         return tpl
     tpl = "{Name}@" + _secrets.token_urlsafe(6)
     target = APP_DIR.parent / ".env"
     try:
-        with open(target, "a", encoding="utf-8") as fh:
-            fh.write(f"\nDEMO_PASSWORD_TEMPLATE={tpl}\n")
+        lines = target.read_text(encoding="utf-8").splitlines() if target.exists() else []
+        lines = [ln for ln in lines if not ln.strip().startswith("DEMO_PASSWORD_TEMPLATE=")]
+        target.write_text("\n".join([*lines, f"DEMO_PASSWORD_TEMPLATE={tpl}"]) + "\n", encoding="utf-8")
         print(f"[ChaseUp] DEMO_PASSWORD_TEMPLATE was not set; generated one and saved it to {target}")
     except OSError:
         print("[ChaseUp] DEMO_PASSWORD_TEMPLATE was not set and .env is not writable; using a session-only template")

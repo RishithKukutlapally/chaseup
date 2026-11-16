@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title Northgate ChaseZero - Autonomous KYC Platform
+title Northgate ChaseUp - RM-approved KYC document chasing
 
 set "ROOT_DIR=%~dp0"
 if "%ROOT_DIR:~-1%"=="\" set "ROOT_DIR=%ROOT_DIR:~0,-1%"
@@ -10,7 +10,7 @@ set "ENV_FILE=%ROOT_DIR%\.env"
 set "ENV_EXAMPLE=%ROOT_DIR%\.env.example"
 
 echo ====================================================================
-echo   NORTHGATE CHASEZERO - Autonomous Enterprise KYC Platform
+echo   NORTHGATE CHASEUP - RM-approved KYC document chasing (synthetic data)
 echo ====================================================================
 
 if not exist "%ENV_FILE%" (
@@ -20,23 +20,16 @@ if not exist "%ENV_FILE%" (
     )
 )
 
-echo [1/3] Checking Python backend environment...
-if not exist "%BACKEND_DIR%\.venv\Scripts\python.exe" (
-    echo [SETUP] Installing backend dependencies via uv...
-    pushd "%BACKEND_DIR%"
-    uv sync --python 3.12
-    if errorlevel 1 (
-        echo [WARN] Retrying uv sync with system Python...
-        uv sync
-    )
-    if errorlevel 1 (
-        echo [ERROR] Failed to initialize Python backend environment.
-        popd
-        pause
-        exit /b 1
-    )
+echo [1/3] Syncing Python backend environment (uv)...
+pushd "%BACKEND_DIR%"
+uv sync --extra dev
+if errorlevel 1 (
+    echo [ERROR] uv sync failed. Install uv: https://docs.astral.sh/uv/
     popd
+    pause
+    exit /b 1
 )
+popd
 
 echo [2/3] Checking React frontend bundle...
 if not exist "%FRONTEND_DIR%\node_modules" (
@@ -51,7 +44,7 @@ if not exist "%FRONTEND_DIR%\node_modules" (
     )
     popd
 )
-if not exist "%FRONTEND_DIR%\dist\index.html" (
+if not "%CHASEUP_SKIP_BUILD%"=="1" (
     echo [SETUP] Building frontend production bundle...
     pushd "%FRONTEND_DIR%"
     call npm run build
@@ -64,7 +57,7 @@ if not exist "%FRONTEND_DIR%\dist\index.html" (
     popd
 )
 
-echo [3/3] Launching ChaseZero (LangGraph + FastAPI + React UI)...
+echo [3/3] Launching ChaseUp (FastAPI + LangGraph + MCP + React UI)...
 echo        LLM API Keys (.env): %ENV_FILE%
 echo.
 
@@ -75,7 +68,7 @@ popd
 
 if not "%EXIT_CODE%"=="0" (
     echo.
-    echo [ERROR] ChaseZero exited with code %EXIT_CODE%.
+    echo [ERROR] ChaseUp exited with code %EXIT_CODE%.
     pause
     exit /b %EXIT_CODE%
 )

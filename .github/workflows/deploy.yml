@@ -116,7 +116,7 @@ jobs:
             --min-instances 0 \
             --max-instances 5 \
             --quiet \
-            --set-env-vars "ENVIRONMENT=production,LLM_PROVIDER=auto,GEMINI_MODEL=gemini-2.5-flash,CHASEZERO_DB_PATH=/tmp/chasezero.db"
+            --set-env-vars "ENVIRONMENT=production,CHASEZERO_DB_PATH=/tmp/chasezero.db,COOKIE_SECURE=1"
 
           SERVICE_URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region "${{ env.GCP_REGION }}" --project "${PROJECT_ID}" --format "value(status.url)")
           echo "SERVICE_URL=${SERVICE_URL}" >> "${GITHUB_ENV}"

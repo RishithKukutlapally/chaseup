@@ -1,8 +1,8 @@
 """Runtime path resolution supporting source dev mode, Docker/Cloud Run, and PyInstaller."""
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def is_frozen() -> bool:
@@ -13,7 +13,7 @@ def is_frozen() -> bool:
 def get_bundle_dir() -> Path:
     """Return directory containing bundled read-only assets (e.g. frontend_dist)."""
     if is_frozen():
-        return Path(getattr(sys, "_MEIPASS"))
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
     return Path(__file__).resolve().parent.parent.parent
 
 

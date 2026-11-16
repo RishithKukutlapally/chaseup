@@ -11,3 +11,10 @@ dist/
 build/
 *.spec
 *.tsbuildinfo
+.uv_cache/
+.pytest_cache/
+.deepeval/
+.mypy_cache/
+.ruff_cache/
+test-results/
+playwright-report/

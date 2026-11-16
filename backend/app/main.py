@@ -1,48 +1,50 @@
-"""FastAPI application exposing ChaseZero REST and SSE LangGraph endpoints."""
+"""FastAPI app: authenticated, RBAC-checked REST + SSE API, MCP at /mcp, and the React UI."""
 
 from __future__ import annotations
 
 import asyncio
-from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
-import hashlib
 import json
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import func, select
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.agent_graph import (
-    evaluate_draft_compliance,
-    run_chase_workflow,
-    synthesize_chase_email,
+from app import audit, config, security, services
+from app.agent_config import (
+    AGENTS,
+    EDITABLE_FIELDS,
+    TONES,
+    append_version,
+    load_settings,
+    serialize_version,
 )
 from app.database import AsyncSessionLocal, get_db, init_db
-from app.llm_config import get_llm_status, reload_env_files
-from app.models import AgentAction, KycCase, MissingDocument
+from app.mcp_server import TOOL_NAMES
+from app.mcp_server import http_app as mcp_http_app
+from app.mcp_server import mcp as mcp_server
+from app.models import AgentConfigVersion, AgentControl, FeatureFlag, McpToken, User
 from app.paths import ANALYST_ASSIST_CANDIDATES, FRONTEND_DIST_DIR
-from app.schemas import (
-    AgentActionOut,
-    ApproveDispatchRequest,
-    ApproveDispatchResponse,
-    CaseNoteRequest,
-    CasesSummaryOut,
-    CriticCheckItem,
-    CriticRescanRequest,
-    DashboardMetricsOut,
-    DeskMetric,
-    DocumentOut,
-    DraftToneRequest,
-    KycCaseDetailOut,
-    KycCaseOut,
-    WorkflowRunRequest,
+from app.rbac import (
+    LANDING,
+    MATRIX,
+    ROLES,
+    NotFound,
+    PermissionDenied,
+    authorize,
+    authorize_fields,
+    matrix_for_ui,
+    scope_for,
 )
 from app.seed import seed_database
+
+_mcp_asgi = mcp_http_app()
 
 
 @asynccontextmanager
@@ -50,657 +52,576 @@ async def lifespan(_: FastAPI):
     await init_db()
     async with AsyncSessionLocal() as session:
         await seed_database(session)
-    yield
+    async with mcp_server.session_manager.run():
+        yield
 
 
-app = FastAPI(
-    title="Northgate ChaseUp API",
-    version="1.0.0",
-    description="Autonomous Enterprise KYC Document Chasing Platform powered by LangGraph & React 18",
-    lifespan=lifespan,
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="Northgate ChaseUp API", version="2.0.0", lifespan=lifespan,
+              description="RM-approved KYC document chasing. Synthetic data only.")
 
 
-def _as_utc(dt: datetime) -> datetime:
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+# --------------------------------------------------------------------------- errors & CSRF
+@app.exception_handler(PermissionDenied)
+async def _denied(_: Request, exc: PermissionDenied):
+    return JSONResponse({"detail": exc.message}, status_code=403)
 
 
-def _serialize_case(case_obj: KycCase) -> KycCaseOut:
-    now = datetime.now(timezone.utc)
-    last_contact = _as_utc(case_obj.last_contact_date)
-    days_since = round(max(0.0, (now - last_contact).total_seconds() / 86400.0), 1)
-    sla_breached = days_since > 3.0 and case_obj.status != "Completed"
-    sla_delay = round(max(0.0, days_since - 3.0), 1) if sla_breached else 0.0
-
-    parsed_checks: list[CriticCheckItem] = []
-    if case_obj.critic_checks_json:
-        try:
-            raw_checks = json.loads(case_obj.critic_checks_json)
-            parsed_checks = [CriticCheckItem(**c) for c in raw_checks]
-        except Exception:
-            parsed_checks = []
-
-    docs = [DocumentOut.model_validate(d) for d in case_obj.documents]
-    missing_count = sum(1 for d in docs if d.status == "Missing")
-    verified_count = sum(1 for d in docs if d.status == "Verified")
-
-    return KycCaseOut(
-        id=case_obj.id,
-        case_code=case_obj.case_code,
-        client_name=case_obj.client_name,
-        status=case_obj.status,
-        days_open=case_obj.days_open,
-        last_contact_date=last_contact,
-        days_since_contact=days_since,
-        sla_breached=sla_breached,
-        sla_delay_days=sla_delay,
-        chase_round_count=case_obj.chase_round_count,
-        lei=case_obj.lei,
-        entity_type=case_obj.entity_type,
-        jurisdiction=case_obj.jurisdiction,
-        desk=case_obj.desk,
-        region=case_obj.region,
-        address=case_obj.address,
-        contact_name=case_obj.contact_name,
-        contact_role=case_obj.contact_role,
-        contact_email=case_obj.contact_email,
-        assigned_rm=case_obj.assigned_rm,
-        facility_value=case_obj.facility_value,
-        relationship_notes=case_obj.relationship_notes,
-        target_deadline_label=case_obj.target_deadline_label,
-        current_draft_subject=case_obj.current_draft_subject,
-        current_draft_body=case_obj.current_draft_body,
-        critic_passed=case_obj.critic_passed,
-        critic_score=case_obj.critic_score,
-        critic_feedback=case_obj.critic_feedback,
-        critic_checks=parsed_checks,
-        workflow_iterations=case_obj.workflow_iterations,
-        audit_hash=case_obj.audit_hash,
-        documents=docs,
-        missing_count=missing_count,
-        verified_count=verified_count,
-    )
+@app.exception_handler(NotFound)
+async def _nf(_: Request, exc: NotFound):
+    return JSONResponse({"detail": exc.message}, status_code=404)
 
 
-async def _load_case_or_404(session: AsyncSession, case_id: int) -> KycCase:
-    stmt = (
-        select(KycCase)
-        .options(selectinload(KycCase.documents), selectinload(KycCase.actions))
-        .where(KycCase.id == case_id)
-    )
-    case_obj = (await session.execute(stmt)).scalar_one_or_none()
-    if case_obj is None:
-        raise HTTPException(status_code=404, detail=f"KYC case {case_id} not found")
-    return case_obj
+@app.exception_handler(ValueError)
+async def _bad(_: Request, exc: ValueError):
+    return JSONResponse({"detail": str(exc)}, status_code=422)
 
 
-def _serialize_case_detail(case_obj: KycCase) -> KycCaseDetailOut:
-    base = _serialize_case(case_obj)
-    actions = [
-        AgentActionOut(
-            id=a.id,
-            case_id=a.case_id,
-            case_code=case_obj.case_code,
-            client_name=case_obj.client_name,
-            action_type=a.action_type,
-            timestamp=_as_utc(a.timestamp),
-            actor=a.actor,
-            details=a.details,
-        )
-        for a in case_obj.actions
-    ]
-    return KycCaseDetailOut(**base.model_dump(), actions=actions)
+@app.middleware("http")
+async def csrf_guard(request: Request, call_next):
+    """State-changing API calls must carry the custom header (blocks cross-site form posts)."""
+    if (request.url.path.startswith("/api/") and request.method not in ("GET", "HEAD", "OPTIONS")
+            and request.headers.get(config.CSRF_HEADER) != "1"):
+        return JSONResponse({"detail": f"Missing {config.CSRF_HEADER} header"}, status_code=403)
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    return response
 
 
+# --------------------------------------------------------------------------- auth dependencies
+async def current_user(request: Request, session: AsyncSession = Depends(get_db)) -> User:
+    user = await security.user_from_cookie(session, request.cookies.get(config.SESSION_COOKIE))
+    if user is None:
+        raise HTTPException(status_code=401, detail="Sign in required")
+    return user
+
+
+class RequirePerm:
+    """Route-level permission gate. Scope (own/all) is enforced again in the service layer."""
+
+    def __init__(self, permission: str) -> None:
+        if permission not in MATRIX:
+            raise RuntimeError(f"Unknown permission {permission}")
+        self.permission = permission
+
+    async def __call__(self, user: User = Depends(current_user)) -> User:
+        authorize(user, self.permission)
+        return user
+
+
+def require(permission: str):
+    return Depends(RequirePerm(permission))
+
+
+PUBLIC_ROUTES = {("GET", "/api/health"), ("POST", "/api/auth/login"), ("POST", "/api/auth/logout")}
+
+
+# --------------------------------------------------------------------------- request models
+class Strict(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class LoginIn(Strict):
+    username: str
+    password: str
+
+
+class DocStatusIn(Strict):
+    status: str
+    reason: str = ""
+
+
+class NoteIn(Strict):
+    relationship_notes: str
+
+
+class AnalystRequestIn(Strict):
+    document: str
+    note: str = ""
+
+
+class WorkflowIn(Strict):
+    tone: str | None = None
+    simulate_critic_rejection: bool = False
+
+
+class ApproveIn(Strict):
+    """No 'actor' field: the approver is always the signed-in session user."""
+
+    subject: str
+    body: str
+
+
+class DiscardIn(Strict):
+    reason: str = Field(min_length=3)
+
+
+class RecheckIn(Strict):
+    body: str
+
+
+class TokenIn(Strict):
+    name: str = "MCP client"
+
+
+class ConfigChangeIn(Strict):
+    changes: dict[str, Any]
+    reason: str = Field(min_length=5)
+
+
+class RestoreIn(Strict):
+    version: int
+    reason: str = Field(min_length=5)
+
+
+class TestRunIn(Strict):
+    changes: dict[str, Any] = Field(default_factory=dict)
+    tone: str | None = None
+    simulate_critic_rejection: bool = False
+
+
+class ControlsIn(Strict):
+    enabled: bool | None = None
+    monthly_budget_usd: float | None = Field(default=None, ge=0)
+    simulate_primary_outage: bool | None = None
+    reason: str = Field(min_length=5)
+
+
+class FlagIn(Strict):
+    enabled: bool
+    reason: str = Field(min_length=5)
+
+
+# --------------------------------------------------------------------------- health & auth
 @app.get("/api/health")
-async def health_check(session: AsyncSession = Depends(get_db)) -> dict[str, object]:
-    count = await session.scalar(select(func.count(KycCase.id)))
-    llm = get_llm_status()
-    return {
-        "status": "ok",
-        "service": "chasezero-backend",
-        "cases_loaded": str(count or 0),
-        "llm_configured": llm.configured,
-        "llm_provider": llm.provider,
-        "llm_model": llm.model,
-        "env_file": llm.env_file,
-    }
+async def health() -> dict[str, Any]:
+    live = bool(config.google_api_key())
+    return {"status": "ok", "service": "chaseup", "llm_mode": "live" if live else "simulated",
+            "llm_configured": live, "llm_provider": "google" if live else "simulated",
+            "llm_model": config.GEMINI_PRIMARY_MODEL, "fallback_model": config.fallback_model_for_primary(),
+            "env_file": "(.env at project root)"}
 
 
-@app.post("/api/settings/reload-env")
-async def reload_env_settings() -> dict[str, object]:
-    reload_env_files()
-    llm = get_llm_status()
-    return {
-        "llm_configured": llm.configured,
-        "llm_provider": llm.provider,
-        "llm_model": llm.model,
-        "env_file": llm.env_file,
-    }
+def _me(user: User) -> dict[str, Any]:
+    return {"id": user.id, "username": user.username, "display_name": user.display_name, "role": user.role,
+            "role_label": ROLES[user.role], "title": user.title, "landing": LANDING[user.role],
+            "permissions": {p: scope_for(user, p) for p in MATRIX if scope_for(user, p)}}
 
 
-@app.get("/api/cases", response_model=CasesSummaryOut)
-async def list_cases(
-    search: str = Query(default="", description="Filter by client name, LEI, or case code"),
-    filter_tab: str = Query(default="all", description="all | breached | draft_ready | completed"),
-    session: AsyncSession = Depends(get_db),
-) -> CasesSummaryOut:
-    stmt = (
-        select(KycCase)
-        .options(selectinload(KycCase.documents))
-        .order_by(KycCase.last_contact_date.asc())
-    )
-    all_cases = (await session.execute(stmt)).scalars().all()
-    serialized_all = [_serialize_case(c) for c in all_cases]
-
-    breached_count = sum(1 for c in serialized_all if c.sla_breached)
-    pending_rm_count = sum(1 for c in serialized_all if c.status == "Draft_Ready")
-    completed_count = sum(1 for c in serialized_all if c.status == "Completed")
-    active_cases = [c for c in serialized_all if c.status != "Completed"]
-    avg_latency = (
-        round(sum(c.days_since_contact for c in active_cases) / len(active_cases), 1)
-        if active_cases
-        else 0.0
-    )
-    sla_health = round(
-        max(82.0, 100.0 - (breached_count / max(1, len(serialized_all))) * 12.0), 1
-    )
-
-    filtered = serialized_all
-    if filter_tab == "breached":
-        filtered = [c for c in filtered if c.sla_breached]
-    elif filter_tab == "draft_ready":
-        filtered = [c for c in filtered if c.status == "Draft_Ready"]
-    elif filter_tab == "awaiting":
-        filtered = [c for c in filtered if c.status == "Missing_Docs"]
-    elif filter_tab == "completed":
-        filtered = [c for c in filtered if c.status == "Completed" or not c.sla_breached]
-
-    if search.strip():
-        q = search.strip().lower()
-        filtered = [
-            c
-            for c in filtered
-            if q in c.client_name.lower()
-            or q in c.case_code.lower()
-            or q in c.lei.lower()
-            or q in c.contact_name.lower()
-        ]
-
-    return CasesSummaryOut(
-        cases=filtered,
-        total_active_cases=len(serialized_all),
-        sla_breached_count=breached_count,
-        pending_rm_action_count=pending_rm_count,
-        completed_count=completed_count,
-        avg_chase_latency_days=avg_latency,
-        sla_buffer_health_pct=sla_health,
-    )
+@app.post("/api/auth/login")
+async def login(payload: LoginIn, request: Request, response: Response, session: AsyncSession = Depends(get_db)):
+    ip = request.client.host if request.client else "?"
+    key = security.throttle_key(payload.username, ip)
+    wait = security.is_locked(key)
+    if wait:
+        raise HTTPException(status_code=429, detail=f"Too many failed attempts. Try again in {int(wait // 60) + 1} min.")
+    user = (await session.execute(select(User).where(User.username == payload.username.strip().lower()))).scalar_one_or_none()
+    if user is None or not user.active or not security.verify_password(payload.password, user.password_hash):
+        security.record_failure(key)
+        await audit.record(session, actor=None, action="login_failed", entity_type="user",
+                           entity_id=payload.username[:64], details={"ip": ip})
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    security.record_success(key)
+    cookie = await security.create_session(session, user)
+    response.set_cookie(config.SESSION_COOKIE, cookie, httponly=True, samesite="strict", secure=config.COOKIE_SECURE,
+                        max_age=config.SESSION_TTL_HOURS * 3600, path="/")
+    await audit.record(session, actor=user, action="login", entity_type="user", entity_id=user.id)
+    return _me(user)
 
 
-@app.get("/api/cases/{case_id}", response_model=KycCaseDetailOut)
-async def get_case_detail(
-    case_id: int,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    case_obj = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(case_obj)
+@app.post("/api/auth/logout")
+async def logout(request: Request, response: Response, session: AsyncSession = Depends(get_db)):
+    user = await security.user_from_cookie(session, request.cookies.get(config.SESSION_COOKIE))
+    await security.revoke_session(session, request.cookies.get(config.SESSION_COOKIE))
+    response.delete_cookie(config.SESSION_COOKIE, path="/")
+    if user:
+        await audit.record(session, actor=user, action="logout", entity_type="user", entity_id=user.id)
+    return {"ok": True}
 
 
-@app.post("/api/cases/{case_id}/documents/{doc_id}/toggle", response_model=KycCaseDetailOut)
-async def toggle_document_status(
-    case_id: int,
-    doc_id: int,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """Toggle a document status (Missing -> Received -> Verified -> Missing) for interactive demos."""
-    case_obj = await _load_case_or_404(session, case_id)
-    doc = next((d for d in case_obj.documents if d.id == doc_id), None)
-    if doc is None:
-        raise HTTPException(status_code=404, detail=f"Document {doc_id} not found on case {case_id}")
+@app.get("/api/auth/me")
+async def me(user: User = require("self:read")):
+    return _me(user)
 
-    cycle = {"Missing": "Received", "Received": "Verified", "Verified": "Missing"}
-    doc.status = cycle.get(doc.status, "Missing")
-    if doc.status == "Verified":
-        doc.assigned_to_or_verifier = "Verified by Analyst Marcus Vance (Live Demo)"
-    elif doc.status == "Received":
-        doc.assigned_to_or_verifier = "Human-in-the-loop Active"
-    else:
-        doc.assigned_to_or_verifier = f"Assigned: {case_obj.contact_name}"
 
-    await session.commit()
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+@app.get("/api/auth/access-matrix")
+async def access_matrix(user: User = require("self:read")):
+    return {**matrix_for_ui(), "you": _me(user), "mcp_tools": TOOL_NAMES,
+            "red_lines": [
+                "Nothing is sent to a client without the named RM approving it (server-enforced).",
+                "No auto-send; no MCP tool can send or approve.",
+                "The system never decides whether a document is genuine.",
+                "No system assigns or changes a risk rating — AI prepares, a person decides.",
+                "Synthetic data only.",
+            ]}
+
+
+@app.get("/api/auth/mcp-tokens")
+async def list_tokens(user: User = require("mcp:manage_own_tokens"), session: AsyncSession = Depends(get_db)):
+    rows = (await session.execute(select(McpToken).where(McpToken.user_id == user.id).order_by(McpToken.id.desc()))).scalars()
+    return [{"id": t.id, "name": t.name, "prefix": t.prefix, "created_at": services.iso(t.created_at),
+             "last_used_at": services.iso(t.last_used_at), "revoked": t.revoked} for t in rows]
+
+
+@app.post("/api/auth/mcp-tokens")
+async def create_token(payload: TokenIn, user: User = require("mcp:manage_own_tokens"),
+                       session: AsyncSession = Depends(get_db)):
+    row, raw = await security.create_mcp_token(session, user, payload.name)
+    await audit.record(session, actor=user, action="mcp_token_created", entity_type="mcp_token", entity_id=row.id,
+                       details={"name": row.name, "prefix": row.prefix})
+    return {"id": row.id, "name": row.name, "prefix": row.prefix, "token": raw,
+            "note": "Shown once. Stored only as a SHA-256 hash. Tools run with your role."}
+
+
+@app.delete("/api/auth/mcp-tokens/{token_id}")
+async def revoke_token(token_id: int, user: User = require("mcp:manage_own_tokens"),
+                       session: AsyncSession = Depends(get_db)):
+    row = await session.get(McpToken, token_id)
+    if row is None or row.user_id != user.id:
+        raise NotFound("Token not found")
+    row.revoked = True
+    await audit.record(session, actor=user, action="mcp_token_revoked", entity_type="mcp_token", entity_id=row.id)
+    return {"ok": True}
+
+
+# --------------------------------------------------------------------------- cases & documents
+@app.get("/api/cases")
+async def list_cases(search: str = "", filter_tab: str = "all", user: User = require("case:read"),
+                     session: AsyncSession = Depends(get_db)):
+    return await services.list_cases(session, user, search, filter_tab)
+
+
+@app.get("/api/cases/{case_id}")
+async def get_case(case_id: int, user: User = require("case:read"), session: AsyncSession = Depends(get_db)):
+    return await services.get_case(session, user, case_id)
+
+
+@app.get("/api/cases/{case_id}/missing")
+async def missing_docs(case_id: int, user: User = require("case:read"), session: AsyncSession = Depends(get_db)):
+    return await services.list_missing_documents(session, user, case_id)
+
+
+@app.post("/api/cases/{case_id}/documents/{doc_id}/status")
+async def doc_status(case_id: int, doc_id: int, payload: DocStatusIn, user: User = require("document:update_status"),
+                     session: AsyncSession = Depends(get_db)):
+    return await services.update_document_status(session, user, case_id, doc_id, payload.status, payload.reason)
+
+
+@app.patch("/api/cases/{case_id}/note")
+async def note(case_id: int, payload: NoteIn, user: User = require("case:note_edit"), session: AsyncSession = Depends(get_db)):
+    return await services.update_note(session, user, case_id, payload.relationship_notes)
+
+
+@app.post("/api/cases/{case_id}/analyst-request")
+async def analyst_request(case_id: int, payload: AnalystRequestIn, user: User = require("analyst:request_from_rm"),
+                          session: AsyncSession = Depends(get_db)):
+    return await services.analyst_request(session, user, case_id, payload.document, payload.note)
+
+
+@app.post("/api/cases/{case_id}/reset")
+async def reset(case_id: int, user: User = require("case:demo_reset"), session: AsyncSession = Depends(get_db)):
+    return await services.demo_reset(session, user, case_id)
+
+
+@app.get("/api/cases/{case_id}/drafts")
+async def drafts(case_id: int, user: User = require("draft:read"), session: AsyncSession = Depends(get_db)):
+    return await services.list_drafts(session, user, case_id)
+
+
+@app.post("/api/cases/{case_id}/draft/recheck")
+async def recheck(case_id: int, payload: RecheckIn, user: User = require("draft:read"),
+                  session: AsyncSession = Depends(get_db)):
+    return await services.recheck_draft(session, user, case_id, payload.body)
+
+
+@app.post("/api/cases/{case_id}/workflow/run")
+async def run_workflow(case_id: int, payload: WorkflowIn, user: User = require("draft:create"),
+                       session: AsyncSession = Depends(get_db)):
+    result = await services.create_draft(user, case_id, tone=payload.tone,
+                                         simulate_critic_rejection=payload.simulate_critic_rejection)
+    return {**result, "case": await services.get_case(session, user, case_id)}
 
 
 @app.get("/api/cases/{case_id}/workflow/stream")
-async def stream_workflow(
-    case_id: int,
-    simulate_critic_rejection: bool = Query(default=False),
-    tone: str = Query(default="institutional"),
-) -> StreamingResponse:
-    """Execute the LangGraph StateGraph and stream real-time SSE node & token events."""
-    # Validate case exists up front
-    async with AsyncSessionLocal() as session:
-        await _load_case_or_404(session, case_id)
-
+async def stream_workflow(case_id: int, tone: str | None = None, simulate_critic_rejection: bool = False,
+                          user: User = require("draft:create"), session: AsyncSession = Depends(get_db)):
+    await services.load_case(session, user, case_id, "draft:create")
     queue: asyncio.Queue[dict | None] = asyncio.Queue()
 
-    async def emit(event: dict) -> None:
-        await queue.put(event)
+    async def emit(ev: dict) -> None:
+        await queue.put(ev)
 
-    async def _runner() -> None:
+    async def runner() -> None:
         try:
-            final_state = await run_chase_workflow(
-                case_id=case_id,
-                simulate_critic_rejection=simulate_critic_rejection,
-                tone_override=tone,
-                emit=emit,
-            )
-            async with AsyncSessionLocal() as session:
-                updated_case = await _load_case_or_404(session, case_id)
-                case_payload = _serialize_case_detail(updated_case).model_dump(mode="json")
-
-            await queue.put({
-                "type": "workflow_complete",
-                "case": case_payload,
-                "attempts": final_state.get("draft_attempt", 1),
-                "critic_passed": final_state.get("critic_passed", True),
-            })
-        except Exception as exc:
-            await queue.put({"type": "error", "message": str(exc)})
+            result = await services.create_draft(user, case_id, tone=tone or None,
+                                                 simulate_critic_rejection=simulate_critic_rejection, emit=emit)
+            async with AsyncSessionLocal() as s:
+                case = await services.get_case(s, user, case_id)
+            await queue.put({"type": "workflow_complete", "case": case, "task_id": result["task_id"],
+                             "trace_id": result["trace_id"], "draft_id": result["draft_id"],
+                             "attempts": result["attempts"], "critic_passed": result["critic_passed"],
+                             "engine": result["engine"], "data_source": result["data_source"]})
+        except Exception as exc:  # surfaced to the UI, no secrets in messages
+            await queue.put({"type": "error", "message": str(exc)[:300]})
         finally:
             await queue.put(None)
 
-    async def event_generator() -> AsyncGenerator[str, None]:
-        task = asyncio.create_task(_runner())
+    async def gen() -> AsyncGenerator[str, None]:
+        task = asyncio.create_task(runner())
         try:
-            while True:
-                item = await queue.get()
-                if item is None:
-                    break
-                yield f"data: {json.dumps(item)}\n\n"
+            while (item := await queue.get()) is not None:
+                yield f"data: {json.dumps(item, default=str)}\n\n"
         finally:
             if not task.done():
-                task.cancel()
+                await task
 
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
-    )
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@app.post("/api/cases/{case_id}/workflow/run", response_model=KycCaseDetailOut)
-async def run_workflow_sync(
-    case_id: int,
-    payload: WorkflowRunRequest,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """REST endpoint executing the full LangGraph StateGraph and returning the updated case."""
-    await _load_case_or_404(session, case_id)
-    await run_chase_workflow(
-        case_id=case_id,
-        simulate_critic_rejection=payload.simulate_critic_rejection,
-        tone_override=payload.tone,
-    )
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+@app.post("/api/cases/{case_id}/approve")
+async def approve_latest(case_id: int, payload: ApproveIn, user: User = require("draft:approve_send"),
+                         session: AsyncSession = Depends(get_db)):
+    case = await services.get_case(session, user, case_id)
+    if not case["pending_draft_id"]:
+        raise ValueError("No draft is pending approval on this case — run the chaser first")
+    return await services.approve_and_send(session, user, case["pending_draft_id"], payload.subject, payload.body)
 
 
-@app.post("/api/cases/{case_id}/critic/rescan", response_model=KycCaseDetailOut)
-async def rescan_critic(
-    case_id: int,
-    payload: CriticRescanRequest,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """Re-run the Critic Compliance QA evaluation against the current or provided draft."""
-    case_obj = await _load_case_or_404(session, case_id)
-    missing_docs = [
-        {"id": d.id, "document_name": d.document_name, "description": d.description}
-        for d in case_obj.documents
-        if d.status == "Missing"
-    ]
-    verified_docs = [
-        {"id": d.id, "document_name": d.document_name}
-        for d in case_obj.documents
-        if d.status == "Verified"
-    ]
-
-    body = payload.draft_body if payload.draft_body is not None else (case_obj.current_draft_body or "")
-    if payload.simulate_failure:
-        body = (
-            f"Dear {case_obj.contact_name},\n\n"
-            "Northgate Bank can guarantee immediate credit approval and a waiver of regulatory KYC checks.\n"
-        )
-
-    passed, score, feedback, checks = evaluate_draft_compliance(
-        draft_body=body,
-        missing_docs=missing_docs,
-        verified_docs=verified_docs,
-        client_name=case_obj.client_name,
-    )
-
-    raw_hash = hashlib.sha256(f"{case_id}:{body}".encode()).hexdigest()[:8].upper()
-    case_obj.current_draft_body = body
-    case_obj.critic_passed = passed
-    case_obj.critic_score = score
-    case_obj.critic_feedback = feedback
-    case_obj.critic_checks_json = json.dumps(checks)
-    case_obj.audit_hash = f"#QA-{raw_hash}-RESCAN"
-
-    if not passed:
-        session.add(
-            AgentAction(
-                case_id=case_id,
-                action_type="Critic_Rejected",
-                actor="ChaseZero Critic QA",
-                details=f"Manual rescan rejected draft (Score {score}/100): {feedback}",
-            )
-        )
-    elif case_obj.status != "Completed":
-        case_obj.status = "Draft_Ready"
-
-    await session.commit()
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+@app.post("/api/drafts/{draft_id}/approve")
+async def approve(draft_id: int, payload: ApproveIn, user: User = require("draft:approve_send"),
+                  session: AsyncSession = Depends(get_db)):
+    return await services.approve_and_send(session, user, draft_id, payload.subject, payload.body)
 
 
-@app.post("/api/cases/{case_id}/draft/tone", response_model=KycCaseDetailOut)
-async def adjust_draft_tone(
-    case_id: int,
-    payload: DraftToneRequest,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """Re-synthesize the draft with an RM-selected tone preset while keeping Critic compliance."""
-    case_obj = await _load_case_or_404(session, case_id)
-    missing_docs = [
-        {"id": d.id, "document_name": d.document_name, "description": d.description}
-        for d in case_obj.documents
-        if d.status == "Missing"
-    ]
-    verified_docs = [
-        {"id": d.id, "document_name": d.document_name}
-        for d in case_obj.documents
-        if d.status == "Verified"
-    ]
-    client_ctx = {
-        "client_name": case_obj.client_name,
-        "case_code": case_obj.case_code,
-        "contact_name": case_obj.contact_name,
-        "contact_role": case_obj.contact_role,
-        "facility_value": case_obj.facility_value,
-        "target_deadline_label": case_obj.target_deadline_label,
-        "assigned_rm": case_obj.assigned_rm,
-    }
-    tone = "institutional" if payload.tone == "baseline" else payload.tone
-    subject, body = synthesize_chase_email(
-        client_context=client_ctx,
-        missing_docs=missing_docs,
-        verified_docs=verified_docs,
-        tone=tone,
-    )
-    passed, score, feedback, checks = evaluate_draft_compliance(
-        draft_body=body,
-        missing_docs=missing_docs,
-        verified_docs=verified_docs,
-        client_name=case_obj.client_name,
-    )
-    case_obj.current_draft_subject = subject
-    case_obj.current_draft_body = body
-    case_obj.critic_passed = passed
-    case_obj.critic_score = score
-    case_obj.critic_feedback = feedback
-    case_obj.critic_checks_json = json.dumps(checks)
-    if passed and case_obj.status != "Completed":
-        case_obj.status = "Draft_Ready"
-
-    await session.commit()
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+@app.post("/api/drafts/{draft_id}/discard")
+async def discard(draft_id: int, payload: DiscardIn, user: User = require("draft:discard"),
+                  session: AsyncSession = Depends(get_db)):
+    return await services.discard_draft(session, user, draft_id, payload.reason)
 
 
-@app.post("/api/cases/{case_id}/approve", response_model=ApproveDispatchResponse)
-async def approve_and_send(
-    case_id: int,
-    payload: ApproveDispatchRequest,
-    session: AsyncSession = Depends(get_db),
-) -> ApproveDispatchResponse:
-    """HITL Gate: RM approves & sends finalized chase email, updating SQLite & telemetry."""
-    case_obj = await _load_case_or_404(session, case_id)
-
-    now = datetime.now(timezone.utc)
-    case_obj.current_draft_subject = payload.subject
-    case_obj.current_draft_body = payload.body
-    case_obj.status = "Completed"
-    case_obj.last_contact_date = now
-    case_obj.chase_round_count += 1
-
-    raw_hash = hashlib.sha256(f"{case_id}:{payload.body}:{now.isoformat()}".encode()).hexdigest()[:12]
-    tracking_id = f"#CHASE-{case_obj.case_code.split('-')[-1]}-DISPATCH-OK"
-    case_obj.audit_hash = raw_hash
-
-    session.add(
-        AgentAction(
-            case_id=case_id,
-            action_type="RM_Approved",
-            timestamp=now,
-            actor=f"{payload.actor} (RM)",
-            details=(
-                f"RM authorized & dispatched chase round #{case_obj.chase_round_count} "
-                f"to {case_obj.contact_email} | Hash {raw_hash[:8]}"
-                + (" | Analyst notified" if payload.notify_analyst else "")
-            ),
-        )
-    )
-    await session.commit()
-
-    refreshed = await _load_case_or_404(session, case_id)
-    return ApproveDispatchResponse(
-        case=_serialize_case_detail(refreshed),
-        tracking_id=tracking_id,
-        audit_hash=raw_hash,
-        message=(
-            f"Outbound chase dispatched to {case_obj.contact_name} ({case_obj.contact_email}) "
-            f"via {payload.actor}'s authenticated corporate gateway."
-        ),
-    )
+@app.get("/api/actions")
+async def actions(limit: int = Query(default=50, le=200), user: User = require("case:read"),
+                  session: AsyncSession = Depends(get_db)):
+    data = await services.list_cases(session, user)
+    out = []
+    for c in data["cases"]:
+        out.extend((await services.get_case(session, user, c["id"]))["actions"])
+    return sorted(out, key=lambda a: a["timestamp"] or "", reverse=True)[:limit]
 
 
-@app.post("/api/cases/{case_id}/reset", response_model=KycCaseDetailOut)
-async def reset_case_for_demo(
-    case_id: int,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """Reset a case back to SLA-breached Missing_Docs state for repeatable demos."""
-    case_obj = await _load_case_or_404(session, case_id)
-    case_obj.status = "Missing_Docs"
-    case_obj.last_contact_date = datetime.now(timezone.utc) - timedelta(days=4, hours=5)
-    case_obj.current_draft_subject = None
-    case_obj.current_draft_body = None
-    case_obj.critic_passed = False
-    case_obj.critic_score = 0
-    case_obj.critic_feedback = None
-    case_obj.critic_checks_json = None
-    case_obj.workflow_iterations = 0
-    await session.commit()
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+# --------------------------------------------------------------------------- traces & costs
+@app.get("/api/tasks")
+async def tasks(case_id: int | None = None, user: User = require("trace:read"), session: AsyncSession = Depends(get_db)):
+    return await services.list_tasks(session, user, case_id)
 
 
-@app.patch("/api/cases/{case_id}/note", response_model=KycCaseDetailOut)
-async def update_case_note(
-    case_id: int,
-    payload: CaseNoteRequest,
-    session: AsyncSession = Depends(get_db),
-) -> KycCaseDetailOut:
-    """Persist RM relationship note edits to SQLite."""
-    case_obj = await _load_case_or_404(session, case_id)
-    case_obj.relationship_notes = payload.relationship_notes.strip()
-    await session.commit()
-    refreshed = await _load_case_or_404(session, case_id)
-    return _serialize_case_detail(refreshed)
+@app.get("/api/tasks/{task_id}/trace")
+async def trace(task_id: int, user: User = require("trace:read"), session: AsyncSession = Depends(get_db)):
+    return await services.get_trace(session, user, task_id)
 
 
-@app.get("/api/actions", response_model=list[AgentActionOut])
-async def list_agent_actions(
-    limit: int = Query(default=50, le=200),
-    session: AsyncSession = Depends(get_db),
-) -> list[AgentActionOut]:
-    stmt = (
-        select(AgentAction, KycCase.case_code, KycCase.client_name)
-        .join(KycCase, AgentAction.case_id == KycCase.id)
-        .order_by(AgentAction.timestamp.desc())
-        .limit(limit)
-    )
-    rows = (await session.execute(stmt)).all()
-    return [
-        AgentActionOut(
-            id=action.id,
-            case_id=action.case_id,
-            case_code=case_code,
-            client_name=client_name,
-            action_type=action.action_type,
-            timestamp=_as_utc(action.timestamp),
-            actor=action.actor,
-            details=action.details,
-        )
-        for action, case_code, client_name in rows
-    ]
+@app.get("/api/costs/summary")
+async def costs(user: User = require("cost:read"), session: AsyncSession = Depends(get_db)):
+    return await services.cost_summary(session, user)
 
 
-@app.get("/api/dashboard/metrics", response_model=DashboardMetricsOut)
-async def get_dashboard_metrics(
-    session: AsyncSession = Depends(get_db),
-) -> DashboardMetricsOut:
-    """Calculate COO Success Dashboard metrics directly from agent_actions & kyc_cases."""
-    counts_stmt = select(AgentAction.action_type, func.count(AgentAction.id)).group_by(
-        AgentAction.action_type
-    )
-    counts_rows = (await session.execute(counts_stmt)).all()
-    counts = {action_type: count for action_type, count in counts_rows}
-
-    total_drafts = int(counts.get("Draft_Generated", 0))
-    total_rejections = int(counts.get("Critic_Rejected", 0))
-    total_approved = int(counts.get("RM_Approved", 0))
-
-    # RM Adoption Rate calculated directly from agent_actions
-    rm_adoption_rate = round(min(100.0, (total_approved / max(1, total_drafts)) * 100.0), 1)
-    critic_intercept_rate = round((total_rejections / max(1, total_drafts)) * 100.0, 1)
-
-    # Operational velocity dynamically reflects new RM approvals logged in agent_actions
-    baseline_days = 5.5
-    extra_approvals = max(0, total_approved - 18)
-    days_per_round = round(max(2.6, 3.1 - (extra_approvals * 0.05)), 2)
-    velocity_delta = round(((days_per_round - baseline_days) / baseline_days) * 100.0, 1)
-    days_saved_per_round = round(baseline_days - days_per_round, 1)
-
-    pilot_clients = 400
-    rounds_per_client = 3
-    case_days_saved = int(round(pilot_clients * rounds_per_client * days_saved_per_round))
-    capital_enabled = round(14.2 + (extra_approvals * 0.45), 1)
-
-    pilot_chasing_days = round(max(6.2, 7.8 - (extra_approvals * 0.1)), 1)
-    pilot_onboarding_days = round(16.0 + pilot_chasing_days + 29.0, 1)
-
-    recent_actions = await list_agent_actions(limit=15, session=session)
-
-    all_cases = (await session.execute(select(KycCase))).scalars().all()
-    breached_live = sum(
-        1
-        for c in all_cases
-        if (_as_utc(datetime.now(timezone.utc)) - _as_utc(c.last_contact_date)).total_seconds()
-        > 3 * 86400
-        and c.status != "Completed"
-    )
-    live_unresponsive_pct = round(max(6.5, 9.0 - (extra_approvals * 0.4)), 1)
-
-    desks = [
-        DeskMetric(
-            desk_name="FX & Rates Desk",
-            accounts=180,
-            adoption_rate=min(99.5, round(96.1 + extra_approvals * 0.2, 1)),
-            round_avg_days=round(max(2.4, days_per_round - 0.3), 1),
-            status="healthy",
-        ),
-        DeskMetric(
-            desk_name="Energy & Commodities",
-            accounts=140,
-            adoption_rate=min(99.2, round(93.8 + extra_approvals * 0.25, 1)),
-            round_avg_days=round(days_per_round + 0.1, 1),
-            status="healthy",
-        ),
-        DeskMetric(
-            desk_name="Structured Debt",
-            accounts=80,
-            adoption_rate=min(98.5, round(91.5 + extra_approvals * 0.3, 1)),
-            round_avg_days=round(days_per_round + 0.3, 1),
-            status="warning",
-        ),
-    ]
-
-    return DashboardMetricsOut(
-        days_per_chase_round=days_per_round,
-        baseline_days_per_round=baseline_days,
-        target_days_per_round=3.0,
-        velocity_delta_pct=velocity_delta,
-        case_days_saved_month=case_days_saved,
-        pilot_clients_count=pilot_clients,
-        rounds_per_client=rounds_per_client,
-        days_saved_per_round=days_saved_per_round,
-        capital_enabled_gbp_m=capital_enabled,
-        rm_adoption_rate_pct=rm_adoption_rate,
-        total_drafts_generated=total_drafts,
-        total_critic_rejections=total_rejections,
-        total_rm_approved=total_approved,
-        critic_intercept_rate_pct=critic_intercept_rate,
-        avg_rm_review_seconds=48,
-        baseline_onboarding_days=62.0,
-        pilot_onboarding_days=pilot_onboarding_days,
-        baseline_chasing_days=17.0,
-        pilot_chasing_days=pilot_chasing_days,
-        baseline_unresponsive_pct=68.0,
-        pilot_unresponsive_pct=live_unresponsive_pct,
-        escalations_avoided=236 + extra_approvals,
-        desks=desks,
-        recent_actions=recent_actions,
-        extra={
-            "live_breached_cases": breached_live,
-            "total_db_cases": len(all_cases),
-        },
-    )
+# --------------------------------------------------------------------------- agent workbench
+def _check_agent(agent: str) -> None:
+    if agent not in AGENTS:
+        raise NotFound(f"Unknown agent '{agent}'")
 
 
+def _validate_changes(changes: dict[str, Any]) -> dict[str, Any]:
+    unknown = [k for k in changes if k not in EDITABLE_FIELDS]
+    if unknown:
+        raise ValueError(f"Not editable: {', '.join(unknown)}")
+    for k in ("primary_model", "fallback_model"):
+        if k in changes and changes[k] not in config.MODEL_PRICES:
+            raise ValueError(f"{k} must be one of {sorted(config.MODEL_PRICES)} (models with a price on file)")
+    if "tone" in changes and changes["tone"] not in TONES + ["n/a"]:
+        raise ValueError(f"tone must be one of {TONES}")
+    if "temperature" in changes and not 0 <= float(changes["temperature"]) <= 1:
+        raise ValueError("temperature must be between 0 and 1")
+    if "timeout_s" in changes and not 2 <= float(changes["timeout_s"]) <= 120:
+        raise ValueError("timeout_s must be between 2 and 120")
+    if "system_prompt" in changes and len(str(changes["system_prompt"]).strip()) < 20:
+        raise ValueError("system_prompt is too short")
+    return changes
+
+
+@app.get("/api/agents")
+async def agents(user: User = require("agent:read_config"), session: AsyncSession = Depends(get_db)):
+    flag = await session.get(FeatureFlag, "ai_drafting")
+    out = []
+    for a, desc in AGENTS.items():
+        s = await load_settings(session, a)
+        out.append({"agent": a, "description": desc, "settings": s.as_dict()})
+    from app.guardrails import FIXED_GUARDRAILS
+    from app.llm_gateway import breakers_snapshot
+
+    return {"agents": out, "ai_feature_flag": flag.enabled if flag else True, "fixed_guardrails": FIXED_GUARDRAILS,
+            "models": sorted(config.MODEL_PRICES), "tones": TONES, "editable_fields": EDITABLE_FIELDS,
+            "circuit_breakers": breakers_snapshot(), "live_mode": bool(config.google_api_key()),
+            "your_field_rights": [f for f, roles in __import__("app.rbac", fromlist=["x"]).AGENT_FIELD_RIGHTS.items()
+                                  if user.role in roles]}
+
+
+@app.get("/api/agents/{agent}/versions")
+async def versions(agent: str, user: User = require("agent:read_config"), session: AsyncSession = Depends(get_db)):
+    _check_agent(agent)
+    rows = (await session.execute(select(AgentConfigVersion).where(AgentConfigVersion.agent == agent)
+                                  .order_by(AgentConfigVersion.version.desc()))).scalars()
+    return [serialize_version(v) for v in rows]
+
+
+@app.post("/api/agents/{agent}/config")
+async def change_config(agent: str, payload: ConfigChangeIn, user: User = require("agent:edit_config"),
+                        session: AsyncSession = Depends(get_db)):
+    _check_agent(agent)
+    authorize_fields(user, list(payload.changes))
+    changes = _validate_changes(payload.changes)
+    v = await append_version(session, agent, changes, user.display_name, payload.reason)
+    await audit.record(session, actor=user, action="agent_config_changed", entity_type="agent", entity_id=agent,
+                       reason=payload.reason, details={"version": v.version, "fields": sorted(changes)})
+    return serialize_version(v)
+
+
+@app.post("/api/agents/{agent}/restore")
+async def restore(agent: str, payload: RestoreIn, user: User = require("agent:restore_version"),
+                  session: AsyncSession = Depends(get_db)):
+    _check_agent(agent)
+    old = (await session.execute(select(AgentConfigVersion).where(
+        AgentConfigVersion.agent == agent, AgentConfigVersion.version == payload.version))).scalar_one_or_none()
+    if old is None:
+        raise NotFound(f"Version {payload.version} not found")
+    v = await append_version(session, agent, {f: getattr(old, f) for f in EDITABLE_FIELDS}, user.display_name,
+                             payload.reason, restored_from=old.version)
+    await audit.record(session, actor=user, action="agent_config_restored", entity_type="agent", entity_id=agent,
+                       reason=payload.reason, details={"restored_from": old.version, "new_version": v.version})
+    return serialize_version(v)
+
+
+@app.post("/api/agents/{agent}/test")
+async def test_run(agent: str, payload: TestRunIn, user: User = require("agent:test_run"),
+                   session: AsyncSession = Depends(get_db)):
+    """Try a candidate config on a SYNTHETIC case before saving. Nothing is persisted to any case."""
+    _check_agent(agent)
+    if agent != "drafter":
+        raise ValueError("Test runs are available for the drafter (the critic runs inside every drafter test)")
+    changes = _validate_changes(payload.changes)
+    from app.agent_graph import SYNTHETIC_TEST_CASE, run_chase_workflow
+
+    result = await run_chase_workflow(None, user, tone=payload.tone, overrides=changes, synthetic=SYNTHETIC_TEST_CASE,
+                                      simulate_critic_rejection=payload.simulate_critic_rejection)
+    await audit.record(session, actor=user, action="agent_test_run", entity_type="agent", entity_id=agent,
+                       details={"task_id": result["task_id"], "fields_overridden": sorted(changes)})
+    return result
+
+
+@app.patch("/api/agents/{agent}/controls")
+async def controls(agent: str, payload: ControlsIn, user: User = require("agent:control"),
+                   session: AsyncSession = Depends(get_db)):
+    _check_agent(agent)
+    changes = {k: v for k, v in payload.model_dump().items() if k != "reason" and v is not None}
+    if not changes:
+        raise ValueError("Nothing to change")
+    authorize_fields(user, list(changes))
+    ctl = await session.get(AgentControl, agent)
+    before = {k: getattr(ctl, k) for k in changes}
+    for k, v in changes.items():
+        setattr(ctl, k, v)
+    await audit.record(session, actor=user, action="agent_controls_changed", entity_type="agent", entity_id=agent,
+                       reason=payload.reason, details={"before": before, "after": changes})
+    return (await load_settings(session, agent)).as_dict()
+
+
+@app.patch("/api/feature-flags/ai_drafting")
+async def feature_flag(payload: FlagIn, user: User = require("agent:control"), session: AsyncSession = Depends(get_db)):
+    authorize_fields(user, ["ai_feature_flag"])
+    flag = await session.get(FeatureFlag, "ai_drafting")
+    if flag is None:
+        flag = FeatureFlag(name="ai_drafting")
+        session.add(flag)
+    flag.enabled = payload.enabled
+    await audit.record(session, actor=user, action="feature_flag_changed", entity_type="feature_flag",
+                       entity_id="ai_drafting", reason=payload.reason, details={"enabled": payload.enabled})
+    return {"name": "ai_drafting", "enabled": flag.enabled}
+
+
+@app.post("/api/settings/reload-env")
+async def reload_env(user: User = require("system:reload_env")):
+    config.load_env_files()
+    return await health()
+
+
+# --------------------------------------------------------------------------- oversight & analytics
+@app.get("/api/audit")
+async def audit_log(limit: int = 200, case_id: int | None = None, user: User = require("audit:read"),
+                    session: AsyncSession = Depends(get_db)):
+    return await services.audit_log(session, user, limit, case_id)
+
+
+@app.post("/api/audit/verify")
+async def audit_verify(user: User = require("audit:verify"), session: AsyncSession = Depends(get_db)):
+    result = await audit.verify_chain(session)
+    await audit.record(session, actor=user, action="audit_chain_verified", entity_type="audit",
+                       details={"valid": result["valid"], "events_checked": result["events_checked"]})
+    return result
+
+
+@app.get("/api/dashboard/metrics")
+async def dashboard(user: User = require("analytics:read"), session: AsyncSession = Depends(get_db)):
+    return await services.dashboard_metrics(session, user)
+
+
+@app.get("/api/measure")
+async def measure(user: User = require("measure:read"), session: AsyncSession = Depends(get_db)):
+    return await services.measure(session, user)
+
+
+# --------------------------------------------------------------------------- MCP over streamable HTTP
+async def mcp_endpoint(scope, receive, send):
+    """Require a valid MCP bearer token before any MCP traffic reaches the server."""
+    if scope["type"] == "http":
+        headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
+        auth = headers.get("authorization", "")
+        raw = auth[7:].strip() if auth.lower().startswith("bearer ") else None
+        async with AsyncSessionLocal() as s:
+            user = await security.user_from_mcp_token(s, raw)
+        if user is None:
+            resp = JSONResponse({"detail": "Valid MCP bearer token required"}, status_code=401,
+                                headers={"WWW-Authenticate": "Bearer"})
+            await resp(scope, receive, send)
+            return
+        if scope.get("path", "") in ("/mcp", ""):
+            scope = {**scope, "path": "/mcp/"}
+    await _mcp_asgi(scope, receive, send)
+
+
+class _McpPathFix:
+    """Serve both /mcp and /mcp/ without a redirect."""
+
+    def __init__(self, app_):
+        self.app = app_
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope.get("path") == "/mcp":
+            scope = {**scope, "path": "/mcp/", "raw_path": b"/mcp/"}
+        await self.app(scope, receive, send)
+
+
+app.mount("/mcp", mcp_endpoint)
+app.add_middleware(_McpPathFix)
+
+
+# --------------------------------------------------------------------------- static UI
 def _find_analyst_assist_html() -> Path | None:
-    for candidate in ANALYST_ASSIST_CANDIDATES:
-        if candidate.exists() and candidate.is_file():
-            return candidate
-    return None
+    return next((c for c in ANALYST_ASSIST_CANDIDATES if c.exists() and c.is_file()), None)
 
 
 @app.get("/analystassist", include_in_schema=False)
 @app.get("/analystassist/", include_in_schema=False)
-@app.get("/analyst-assist", include_in_schema=False)
-@app.get("/analystassist/problem.html", include_in_schema=False)
 async def serve_analyst_assist():
     target = _find_analyst_assist_html()
     if target:
@@ -708,24 +629,15 @@ async def serve_analyst_assist():
     raise HTTPException(status_code=404, detail="Analyst Assist prototype not found")
 
 
-# Serve bundled Vite React production build (used by ChaseZero.exe and standalone backend runs)
 if FRONTEND_DIST_DIR.exists():
-    assets_dir = FRONTEND_DIST_DIR / "assets"
-    if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    if (FRONTEND_DIST_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_DIR / "assets"), name="assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not Found")
-        if full_path in ("analystassist", "analystassist/", "analyst-assist"):
-            target = _find_analyst_assist_html()
-            if target:
-                return FileResponse(target)
-        candidate = FRONTEND_DIST_DIR / full_path
-        if full_path and candidate.exists():
-            if candidate.is_file():
-                return FileResponse(candidate)
-            if candidate.is_dir() and (candidate / "index.html").exists():
-                return FileResponse(candidate / "index.html")
+        candidate = (FRONTEND_DIST_DIR / full_path).resolve()
+        if full_path and candidate.is_file() and FRONTEND_DIST_DIR.resolve() in candidate.parents:
+            return FileResponse(candidate)
         return FileResponse(FRONTEND_DIST_DIR / "index.html")

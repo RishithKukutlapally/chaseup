@@ -12,24 +12,17 @@ import webbrowser
 
 import uvicorn
 
-from app.llm_config import get_llm_status
+from app import config
 from app.main import app
 from app.paths import APP_DIR, DB_PATH, FRONTEND_DIST_DIR, is_frozen
 
-
 DEFAULT_ENV_TEMPLATE = """# Northgate ChaseZero - LLM & Runtime Environment Configuration
 # Add at least ONE API key below and restart or click "Reload .env" in the UI.
-LLM_PROVIDER=auto
-
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
-OPENAI_BASE_URL=
-
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-3-5-sonnet-latest
 
 GOOGLE_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+# Optional second provider for fallback:
+ANTHROPIC_API_KEY=
+DEMO_PASSWORD_TEMPLATE={Name}@change-me
 
 CHASEZERO_HOST=127.0.0.1
 CHASEZERO_PORT=8000
@@ -60,18 +53,18 @@ def main() -> None:
         except OSError:
             pass
 
-    llm = get_llm_status()
+    live = bool(config.google_api_key())
     host = os.getenv("CHASEZERO_HOST", "127.0.0.1").strip() or "127.0.0.1"
     preferred_port = args.port or int(os.getenv("CHASEZERO_PORT", "8000"))
     port = _find_available_port(host, preferred_port)
     url = f"http://{host}:{port}"
 
     print("=" * 68)
-    print("  NORTHGATE CHASEZERO - Autonomous Enterprise KYC Platform")
+    print("  NORTHGATE CHASEUP - RM-approved KYC document chasing")
     print("=" * 68)
     print(f"  App URL      : {url}")
-    print(f"  .env Config  : {llm.env_file}")
-    print(f"  LLM Status   : {'LIVE (' + llm.provider + ' / ' + llm.model + ')' if llm.configured else 'Deterministic Fallback (add API key to .env)'}")
+    print(f"  .env Config  : {config.ACTIVE_ENV_FILE}")
+    print(f"  LLM Mode     : {'LIVE (google / ' + config.GEMINI_PRIMARY_MODEL + ', fallback ' + config.fallback_model_for_primary() + ')' if live else 'SIMULATED (add GOOGLE_API_KEY to .env)'}")
     print(f"  SQLite DB    : {DB_PATH}")
     print(f"  Frontend UI  : {FRONTEND_DIST_DIR} (exists={FRONTEND_DIST_DIR.exists()})")
     print("=" * 68)

@@ -15,18 +15,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import audit
 from app.agent_config import ensure_defaults
 from app.models import DocRequestHistory, KycCase, MissingDocument, User
-from app.rbac import AGENT_OWNER, ANALYST, COO, FINANCE, MLRO, OPS, RM
+from app.rbac import AGENT_OWNER, ARCHITECT, BUSINESS, DATA, MLRO, OPS, PRODUCT, RM
 from app.security import demo_password_for, hash_password, verify_password
 
 STAFF = [
     ("sarah", "Sarah Jenkins", RM, "Relationship Manager — Energy & Commodities"),
     ("daniel", "Daniel Okafor", RM, "Relationship Manager — Structured Debt"),
     ("priya", "Priya Raman", OPS, "KYC Ops Coordinator"),
-    ("tomas", "Tomas Lindqvist", ANALYST, "KYC Analyst"),
-    ("grace", "Grace Whitfield", MLRO, "Money Laundering Reporting Officer"),
-    ("robert", "Robert Hale", COO, "Chief Operating Officer"),
-    ("aisha", "Aisha Karim", AGENT_OWNER, "AI Agent Owner"),
-    ("elena", "Elena Brooks", FINANCE, "Finance / CFO office"),
+    ("aisha", "Aisha Karim", AGENT_OWNER, "AI Agent Owner — Engineering"),
+    ("omar", "Omar Haddad", ARCHITECT, "Enterprise Architect — AI Gateway & Cloud"),
+    ("mei", "Mei Tanaka", PRODUCT, "Product Owner — ChaseUp workflow & UX"),
+    ("robert", "Robert Hale", BUSINESS, "COO — business sponsor (with the CFO office)"),
+    ("grace", "Grace Whitfield", MLRO, "MLRO — Security & InfoSec"),
+    ("lucas", "Lucas Brandt", DATA, "Data Lead — Checklist & email ingestion"),
 ]
 
 # case_code, client, rm_username, days_since_contact, days_open, rounds, contact, role, email, deadline, desk, jurisdiction, docs
@@ -77,6 +78,11 @@ async def sync_users(session: AsyncSession) -> dict[str, User]:
             if not verify_password(pw, u.password_hash):
                 u.password_hash = hash_password(pw)  # template changed in .env
         users[username] = u
+    # Logins from earlier versions (e.g. analyst, finance) are switched off, not deleted.
+    keep = {s[0] for s in STAFF}
+    for old in (await session.execute(select(User))).scalars():
+        if old.username not in keep:
+            old.active = False
     await session.commit()
     return users
 

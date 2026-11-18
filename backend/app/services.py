@@ -207,14 +207,6 @@ async def update_note(session: AsyncSession, user: User, case_id: int, note: str
     return await get_case(session, user, case_id)
 
 
-async def analyst_request(session: AsyncSession, user: User, case_id: int, document: str, note: str) -> dict[str, Any]:
-    c = await load_case(session, user, case_id, "analyst:request_from_rm")
-    await audit.record(session, actor=user, action="analyst_request_to_rm", entity_type="case", entity_id=c.id,
-                       case_id=c.id, reason=note, details={"document": document, "rm": c.assigned_rm},
-                       timeline=f"Analyst {user.display_name} asked {c.assigned_rm} to obtain: {document}. {note}")
-    return await get_case(session, user, case_id)
-
-
 async def demo_reset(session: AsyncSession, user: User, case_id: int) -> dict[str, Any]:
     c = await load_case(session, user, case_id, "case:demo_reset")
     for d in (await session.execute(select(ChaseDraft).where(ChaseDraft.case_id == c.id,

@@ -128,7 +128,7 @@ def test_audit_detects_tampering(client, as_user):
 
 
 def test_measure_before_vs_after(client, as_user):
-    m = as_user("coo").get("/api/measure").json()
+    m = as_user("business").get("/api/measure").json()
     assert 14 <= m["baseline"]["median_days"] <= 20  # mirrors the 17-day chase stage
     assert m["pilot"]["median_days"] < m["baseline"]["median_days"]
     assert 35 <= m["baseline"]["pct_more_than_one_round"] <= 47  # ~41% go back more than once

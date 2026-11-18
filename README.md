@@ -69,14 +69,15 @@ on the next start (stored hashes are refreshed automatically).
 
 | Username | Person (fictional) | Role | Lands on |
 |---|---|---|---|
-| `sarah` | Sarah Jenkins | Relationship Manager (5 cases) | Chase queue (own cases) |
-| `daniel` | Daniel Okafor | Relationship Manager (3 cases) | Chase queue (own cases) |
-| `priya` | Priya Raman | KYC Ops coordinator | Chase queue (all cases) |
-| `tomas` | Tomas Lindqvist | KYC analyst | Chase queue (read-only) |
-| `grace` | Grace Whitfield | MLRO | Audit log |
-| `robert` | Robert Hale | COO | Stage analytics |
-| `aisha` | Aisha Karim | AI Agent Owner | Agent Workbench |
-| `elena` | Elena Brooks | Finance / CFO | AI Cost & Governance |
+| `sarah` | Sarah Jenkins | Relationship Manager (5 cases) | My cases → Review & send |
+| `daniel` | Daniel Okafor | Relationship Manager (3 cases) | My cases (his own only) |
+| `priya` | Priya Raman | KYC Ops coordinator | Queue (all cases) + Operations dashboard |
+| `aisha` | Aisha Karim | AI Agent Owner (Engineering) | Agent settings + Engineering dashboard |
+| `omar` | Omar Haddad | Architecture (AI Gateway & Cloud) | Architecture dashboard |
+| `mei` | Mei Tanaka | Product (ChaseUp workflow) | Product dashboard |
+| `robert` | Robert Hale | Business (COO & CFO office) | All seven dashboards |
+| `grace` | Grace Whitfield | Security (MLRO & InfoSec) | Security dashboard |
+| `lucas` | Lucas Brandt | Data (checklist & ingestion) | Data dashboard |
 
 Sessions use a signed, HttpOnly, `SameSite=Strict` cookie that is revocable server-side and lasts
 10 hours. After 5 failed sign-ins, that username and IP are locked out for 15 minutes. State-changing
@@ -88,25 +89,24 @@ The single source is `backend/app/rbac.py`. Every `/api` route carries a permiss
 fails if one is missing), and the service layer re-checks the scope (own or all cases). The same
 matrix appears in the UI under **Your access**.
 
-| Permission | RM | Ops | Analyst | MLRO | COO | Agent Owner | Finance |
-|---|---|---|---|---|---|---|---|
-| Read cases | own | all | all | all | – | – | – |
-| Mark received / waive (reason required) | – | all | – | – | – | – | – |
-| Create a draft (run the chaser) | own | all | – | – | – | – | – |
-| **Approve & send** | **own** | – | – | – | – | – | – |
-| Discard a draft | own | all | – | – | – | – | – |
-| Request a document from the RM | – | – | all | – | – | – | – |
-| Audit log + verify chain | – | – | – | all | – | – | – |
-| Agent traces | own | all | all | all | – | all | – |
-| Stage analytics / Measure | – | all | – | all | all | – | – |
-| AI cost | – | – | – | all | all | all | all |
-| Read agent config | – | – | – | all | all | all | – |
-| Edit prompt/tone/models, test, restore | – | – | – | – | – | all | – |
+| Permission | RM | Ops | Agent Owner | Architecture | Product | Business | Security | Data |
+|---|---|---|---|---|---|---|---|---|
+| Read cases | own | all | – | – | – | – | all | – |
+| Mark received / waive (reason required) | – | all | – | – | – | – | – | – |
+| Prepare a reminder (run the chaser) | own | all | – | – | – | – | – | – |
+| **Approve & send** | **own** | – | – | – | – | – | – | – |
+| Discard a reminder | own | all | – | – | – | – | – | – |
+| Edit prompt / tone / models, test, restore | – | – | all | – | – | – | – | – |
+| Kill switch | – | – | all | – | – | all | – | – |
+| Monthly AI budget | – | – | – | – | – | all | – | – |
+| Audit log + verify chain | – | – | – | – | – | – | all | – |
+| AI cost | – | – | all | all | – | all | all | – |
+| Live dashboard (own vertical) | – | Operations | Engineering | Architecture | Product | all seven | Security | Data |
 
 Some agent-config fields have their own rights. Only the **Agent Owner** may change the prompt,
-tone, primary/fallback models, temperature, timeout and the outage drill. The **COO** sets the
-monthly budget cap. The Agent Owner and the COO can both use the kill switch and the global AI
-feature flag. Every change requires a reason and is audited.
+tone, primary/fallback models, temperature, timeout and the outage drill. **Business** (COO & CFO)
+sets the monthly budget cap. The Agent Owner and Business can both use the kill switch and the
+global AI feature flag. Every change requires a reason and is audited.
 
 ## AI cost governance
 

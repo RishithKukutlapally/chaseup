@@ -45,7 +45,7 @@ def test_per_task_and_outcome_costs(client, as_user):
                        json={"subject": out["subject"], "body": out["body"]}, headers=H)
     out2 = chase(client, as_user, code="NCZ-2024-8875", persona="rm2")
     as_user("rm2").post(f"/api/drafts/{out2['draft_id']}/discard", json={"reason": "client called instead"}, headers=H)
-    s = as_user("finance").get("/api/costs/summary").json()
+    s = as_user("business").get("/api/costs/summary").json()
     assert s["outcomes"]["approved"]["drafts"] >= 1 and s["outcomes"]["approved"]["per_draft_usd"] > 0
     assert s["outcomes"]["discarded"]["drafts"] >= 1
     task = next(t for t in s["ledger"] if t["id"] == out["task_id"])
@@ -55,11 +55,11 @@ def test_per_task_and_outcome_costs(client, as_user):
 
 
 def test_budget_cap_blocks_calls(client, as_user):
-    # field-level: the Agent Owner may not set budgets, the COO may
+    # field-level: the Agent Owner may not set budgets, Business (COO/CFO) may
     r = as_user("agent_owner").patch("/api/agents/drafter/controls",
                                      json={"monthly_budget_usd": 0, "reason": "trying to set budget"}, headers=H)
     assert r.status_code == 403
-    set_controls(as_user, persona="coo", monthly_budget_usd=0.0)
+    set_controls(as_user, persona="business", monthly_budget_usd=0.0)
     try:
         out = chase(client, as_user)
         assert out["engine"] == "template"
@@ -68,7 +68,7 @@ def test_budget_cap_blocks_calls(client, as_user):
         assert any(s["step"] == "control" and s["status"] == "fail" for s in out["trace"])
         assert out["draft_id"]  # the RM still gets a (template) draft to approve
     finally:
-        set_controls(as_user, persona="coo", monthly_budget_usd=25.0)
+        set_controls(as_user, persona="business", monthly_budget_usd=25.0)
 
 
 def test_kill_switch_and_feature_flag(client, as_user):
@@ -146,7 +146,7 @@ def test_config_change_applies_on_next_call_and_restore(client, as_user):
     ao = as_user("agent_owner")
     v1 = ao.get("/api/agents/drafter/versions").json()[-1]
     marker = "PYTEST-MARKER: keep it to five sentences."
-    assert as_user("coo").post("/api/agents/drafter/config",
+    assert as_user("business").post("/api/agents/drafter/config",
                                json={"changes": {"system_prompt": marker}, "reason": "nope"}, headers=H).status_code == 403
     ao = as_user("agent_owner")
     r = ao.post("/api/agents/drafter/config",

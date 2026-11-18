@@ -7,8 +7,8 @@ from app.main import PUBLIC_ROUTES, RequirePerm, app
 from app.rbac import MATRIX
 from tests.conftest import USERS, H, case_id, run_sql
 
-ROLE_OF = {"rm": "rm", "rm2": "rm", "ops": "ops", "analyst": "analyst", "mlro": "mlro", "coo": "coo",
-           "agent_owner": "agent_owner", "finance": "finance"}
+ROLE_OF = {"rm": "rm", "rm2": "rm", "ops": "ops", "agent_owner": "agent_owner", "architect": "architect",
+           "product": "product", "business": "business", "mlro": "mlro", "data": "data"}
 
 # (method, path, permission). Mutating calls get an empty JSON body: denied -> 403 (auth runs
 # before body validation); allowed -> 422/200/404, i.e. anything except 401/403.
@@ -21,7 +21,6 @@ ENDPOINTS = [
     ("GET", "/api/cases/{own}/missing", "case:read"),
     ("POST", "/api/cases/{own}/documents/1/status", "document:update_status"),
     ("PATCH", "/api/cases/{own}/note", "case:note_edit"),
-    ("POST", "/api/cases/{own}/analyst-request", "analyst:request_from_rm"),
     ("POST", "/api/cases/{own}/reset", "case:demo_reset"),
     ("GET", "/api/cases/{own}/drafts", "draft:read"),
     ("POST", "/api/cases/{own}/draft/recheck", "draft:read"),
@@ -45,7 +44,9 @@ ENDPOINTS = [
     ("POST", "/api/audit/verify", "audit:verify"),
     ("GET", "/api/dashboard/metrics", "analytics:read"),
     ("GET", "/api/measure", "measure:read"),
-]
+    ("GET", "/api/insights", "self:read"),
+] + [("GET", f"/api/insights/{v}", f"insights:{v}") for v in
+     ("engineering", "architecture", "product", "business", "security", "data", "operations")]
 
 # Body payloads that are VALID but harmless, so allowed roles don't trigger side effects we
 # don't want (workflow runs etc. get an invalid body instead -> 422).
@@ -131,7 +132,7 @@ def test_only_named_rm_can_approve_even_via_direct_api(client, as_user):
     draft = run.json()
     payload = {"subject": draft["subject"], "body": draft["body"]}
     outbox_before = run_sql("SELECT COUNT(*) FROM outbound_messages")[0][0]
-    for persona in ("ops", "analyst", "mlro", "coo", "agent_owner", "finance", "rm2"):
+    for persona in ("ops", "mlro", "business", "agent_owner", "architect", "product", "data", "rm2"):
         r = as_user(persona).post(f"/api/drafts/{draft['draft_id']}/approve", json=payload, headers=H)
         assert r.status_code == 403, (persona, r.status_code)
         r = client.post(f"/api/cases/{cid}/approve", json=payload, headers=H)
@@ -199,11 +200,11 @@ def test_passwords_are_hashed_and_never_returned(client, as_user):
     assert "password" not in str(me).lower()
 
 
-def test_coo_dashboard_has_no_document_content(client, as_user):
-    d = as_user("coo").get("/api/dashboard/metrics").json()
+def test_business_dashboard_has_no_document_content(client, as_user):
+    d = as_user("business").get("/api/dashboard/metrics").json()
     text = str(d)
     assert "Trust Deed" not in text and "Apex" not in text and d["recent_actions"] == []
-    assert as_user("coo").get("/api/cases").status_code == 403
+    assert as_user("business").get("/api/cases").status_code == 403
 
 
 def test_no_risk_rating_anywhere(client, as_user):

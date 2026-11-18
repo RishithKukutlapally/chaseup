@@ -135,11 +135,6 @@ class NoteIn(Strict):
     relationship_notes: str
 
 
-class AnalystRequestIn(Strict):
-    document: str
-    note: str = ""
-
-
 class WorkflowIn(Strict):
     tone: str | None = None
     simulate_critic_rejection: bool = False
@@ -310,12 +305,6 @@ async def doc_status(case_id: int, doc_id: int, payload: DocStatusIn, user: User
 @app.patch("/api/cases/{case_id}/note")
 async def note(case_id: int, payload: NoteIn, user: User = require("case:note_edit"), session: AsyncSession = Depends(get_db)):
     return await services.update_note(session, user, case_id, payload.relationship_notes)
-
-
-@app.post("/api/cases/{case_id}/analyst-request")
-async def analyst_request(case_id: int, payload: AnalystRequestIn, user: User = require("analyst:request_from_rm"),
-                          session: AsyncSession = Depends(get_db)):
-    return await services.analyst_request(session, user, case_id, payload.document, payload.note)
 
 
 @app.post("/api/cases/{case_id}/reset")
@@ -573,6 +562,21 @@ async def audit_verify(user: User = require("audit:verify"), session: AsyncSessi
 @app.get("/api/dashboard/metrics")
 async def dashboard(user: User = require("analytics:read"), session: AsyncSession = Depends(get_db)):
     return await services.dashboard_metrics(session, user)
+
+
+@app.get("/api/insights")
+async def insights_overview(user: User = require("self:read"), session: AsyncSession = Depends(get_db)):
+    from app import insights
+
+    return await insights.overview(session, user)
+
+
+@app.get("/api/insights/{vertical}")
+async def insights_vertical(vertical: str, user: User = require("self:read"), session: AsyncSession = Depends(get_db)):
+    """Live dashboard for one vertical. Access is checked per vertical (insights:<id>) inside."""
+    from app import insights
+
+    return await insights.build(session, user, vertical)
 
 
 @app.get("/api/measure")

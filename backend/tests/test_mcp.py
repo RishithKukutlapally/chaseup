@@ -58,9 +58,9 @@ def test_tools_respect_rbac(client, as_user):
     assert res.is_error
     _, res = call(make_token(as_user, "mlro"), "get_audit_log", {"limit": 5})
     assert not res.is_error and len(json.loads(text(res))) == 5
-    _, res = call(make_token(as_user, "coo"), "get_agent_costs")
+    _, res = call(make_token(as_user, "business"), "get_agent_costs")
     assert not res.is_error and "all_time" in json.loads(text(res))
-    _, res = call(make_token(as_user, "finance"), "list_cases")
+    _, res = call(make_token(as_user, "architect"), "list_cases")
     assert res.is_error
 
 
@@ -77,8 +77,8 @@ def test_draft_tool_creates_draft_only_and_is_audited(client, as_user):
     assert run_sql("SELECT COUNT(*) FROM agent_runs WHERE via='mcp'")[0][0] > calls  # LLM calls attributed to MCP
     ev = run_sql("SELECT actor, via FROM audit_events WHERE action='mcp_tool_call' ORDER BY id DESC LIMIT 1")[0]
     assert ev == ("Priya Raman", "mcp")
-    _, res = call(make_token(as_user, "analyst"), "draft_chase_email", {"case_id": cid})
-    assert res.is_error  # analysts cannot create drafts
+    _, res = call(make_token(as_user, "product"), "draft_chase_email", {"case_id": cid})
+    assert res.is_error  # only Ops and the named RM can create drafts
 
 
 def test_bad_or_revoked_token_rejected(client, as_user):

@@ -22,11 +22,12 @@ USERS = {
     "rm": ("sarah", "Sarah"),
     "rm2": ("daniel", "Daniel"),
     "ops": ("priya", "Priya"),
-    "analyst": ("tomas", "Tomas"),
     "mlro": ("grace", "Grace"),
-    "coo": ("robert", "Robert"),
+    "architect": ("omar", "Omar"),
+    "product": ("mei", "Mei"),
+    "business": ("robert", "Robert"),
+    "data": ("lucas", "Lucas"),
     "agent_owner": ("aisha", "Aisha"),
-    "finance": ("elena", "Elena"),
 }
 
 

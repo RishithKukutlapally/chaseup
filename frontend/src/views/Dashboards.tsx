@@ -51,45 +51,6 @@ const Overview: React.FC<{ data: InsightsOverview; at: Date | null }> = ({ data,
         <span className="spacer" />
         <LiveBadge at={at} />
       </div>
-      <section className="card intro">
-        <div className="txt">
-          <span className="cap" style={{ color: 'var(--hub)' }}>
-            What this dashboard shows
-          </span>
-          <h1>One agent, seven views, one number</h1>
-          <p>
-            This dashboard tracks the Northgate document-chase agent during its pilot. The agent finds every missing document on a
-            corporate onboarding file, drafts one complete reminder, and holds it until the named Relationship Manager approves and
-            sends it.
-          </p>
-          <p>Seven functions have a stake in the pilot and each needs different evidence. Each has its own view here, built around the one question it brings to the weekly review.</p>
-        </div>
-        <ul className="how-list">
-          <li>
-            <span className="ic">1</span>
-            <div>
-              <b>Start with the shared outcome</b>
-              <span>{data.outcome.label ?? 'Every view rolls up to the days it takes to chase a file to complete.'}</span>
-            </div>
-          </li>
-          <li>
-            <span className="ic">2</span>
-            <div>
-              <b>Open the view for your function</b>
-              <span>Each opens with its question, four headline numbers, then the detail behind them.</span>
-            </div>
-          </li>
-          <li>
-            <span className="ic">3</span>
-            <div>
-              <b>Read the status chips</b>
-              <span>
-                <Chip tone="good">Green</Chip> on track, <Chip tone="warn">amber</Chip> watch, <Chip tone="bad">red</Chip> act this week.
-              </span>
-            </div>
-          </li>
-        </ul>
-      </section>
       <section className="card north" aria-label="Shared outcome">
         <div className="ring">
           <b>
@@ -147,7 +108,6 @@ const Overview: React.FC<{ data: InsightsOverview; at: Date | null }> = ({ data,
               <b>{v.name}</b>
               <small>{v.lead}</small>
             </div>
-            <p>{v.question}</p>
             {v.headline && (
               <div className="hk">
                 <div>
@@ -191,11 +151,6 @@ const Vertical: React.FC<{ me: Me; data: VerticalDashboard; at: Date | null; sho
         <div className="stack" style={{ gap: 6 }}>
           <span className="lead">{data.lead}</span>
           <h1>{data.name}</h1>
-          <p className="q">{data.question}</p>
-        </div>
-        <div className="card proves">
-          <span className="cap">What this view proves</span>
-          {data.proves}
         </div>
       </div>
       <div className="kpis">
@@ -271,7 +226,7 @@ export const Dashboards: React.FC<{ me: Me; verticalId: string | null }> = ({ me
                 <i className="ov" aria-hidden="true" />
                 <span>
                   <b>Overview</b>
-                  <small>What this dashboard shows</small>
+                  <small>All seven at a glance</small>
                 </span>
               </a>
             </>

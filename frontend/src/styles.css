@@ -360,3 +360,24 @@ pre.guard { white-space: pre-wrap; font-family: var(--mono); font-size: 12px; ba
 .matrix td.me, .matrix th.me { background: var(--soft); font-weight: 600; }
 .token { font-family: var(--mono); font-size: 12px; word-break: break-all; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
 pre.cfg { font-family: var(--mono); font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; overflow-x: auto; margin: 0; }
+
+/* monthly budget widget */
+.budget { display: flex; flex-direction: column; gap: 18px; }
+.budget-row { display: flex; flex-direction: column; gap: 8px; }
+.budget-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.budget-track { position: relative; height: 14px; border-radius: 7px; background: var(--soft); }
+.budget-track .fc { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; background: var(--c); opacity: .25; }
+.budget-track .sp { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; background: var(--c); }
+.budget-track .cap-mark { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1px; border-radius: 2px; background: var(--text); }
+.budget-nums { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; font-size: 13px; color: var(--mute); }
+.budget-nums b { color: var(--text); font-variant-numeric: tabular-nums; font-family: var(--mono); font-weight: 500; }
+.budget-nums small { color: var(--dim); }
+.budget-nums .k { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.budget-nums .k.sp { background: var(--c); }
+.budget-nums .k.fc { background: var(--c); opacity: .25; }
+.budget-nums .k.cap { background: var(--text); width: 3px; }
+.dash-full { display: flex; flex-direction: column; gap: 18px; }
+
+/* paired bars show "17 d → 9.2 d": keep the figures on one line */
+.bar.pair { grid-template-columns: minmax(96px, 170px) minmax(0, 1fr) 118px; }
+.bar.pair .num { white-space: nowrap; }

@@ -53,3 +53,20 @@ def test_latency_percentiles_are_ordered(client, as_user, monkeypatch):
         p50 = s[len(s) // 2] if len(s) % 2 else (s[len(s) // 2 - 1] + s[len(s) // 2]) / 2
         p95 = s[max(0, math.ceil(0.95 * len(s)) - 1)]
         assert p95 >= p50
+
+
+def test_business_sees_forecast_and_can_set_cap(client, as_user):
+    c = as_user("business")
+    d = c.get("/api/insights/business").json()
+    assert any(k["label"] == "Month-end forecast" for k in d["kpis"])
+    budget = next(w for w in d["widgets"] if w["type"] == "budget")
+    assert budget["can_edit"] is True and {r["agent"] for r in budget["rows"]} == {"drafter", "critic"}
+    assert all(r["forecast"] >= r["spent"] for r in budget["rows"])
+    r = c.patch("/api/agents/critic/controls", json={"monthly_budget_usd": 33.0, "reason": "pytest cap change"}, headers=H)
+    assert r.status_code == 200
+    rows = next(w for w in c.get("/api/insights/business").json()["widgets"] if w["type"] == "budget")["rows"]
+    assert next(x for x in rows if x["agent"] == "critic")["cap"] == 33.0
+    c.patch("/api/agents/critic/controls", json={"monthly_budget_usd": 25.0, "reason": "pytest restore cap"}, headers=H)
+    # the Agent Owner may not change the budget
+    assert as_user("agent_owner").patch("/api/agents/critic/controls",
+                                        json={"monthly_budget_usd": 1.0, "reason": "should be refused"}, headers=H).status_code == 403

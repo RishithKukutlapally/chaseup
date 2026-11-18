@@ -3,7 +3,8 @@ import React from 'react';
 import { formatValue } from '../lib/format';
 import { isNumericColumn, niceMax, parseCell, pct } from '../lib/widgets';
 import type { Widget } from '../types';
-import { Chip, StatusChip } from './ui';
+import { api } from '../api';
+import { Button, Chip, ErrorBanner, StatusChip } from './ui';
 
 function isEmpty(w: Widget): boolean {
   switch (w.type) {
@@ -18,6 +19,8 @@ function isEmpty(w: Widget): boolean {
       return !w.steps || w.steps.length === 0;
     case 'list':
       return !w.items || w.items.length === 0;
+    case 'budget':
+      return !w.rows || w.rows.length === 0;
   }
 }
 
@@ -195,6 +198,126 @@ const TableW: React.FC<{ w: Extract<Widget, { type: 'table' }> }> = ({ w }) => (
   </div>
 );
 
+const usd = (v: number) => `$${v < 1 ? v.toFixed(4) : v.toFixed(2)}`;
+
+type BudgetW = Extract<Widget, { type: 'budget' }>;
+
+const BudgetRowView: React.FC<{ r: BudgetW['rows'][number]; fx: number; canEdit: boolean }> = ({ r, fx, canEdit }) => {
+  const [editing, setEditing] = React.useState(false);
+  const [cap, setCap] = React.useState(String(r.cap));
+  const [reason, setReason] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState<string | null>(null);
+  const [saved, setSaved] = React.useState<number | null>(null);
+  const shownCap = saved ?? r.cap;
+  const scale = Math.max(shownCap, r.forecast, r.spent, 0.0001) * 1.1;
+  const at = (v: number) => `${Math.min(100, (v / scale) * 100)}%`;
+  const tone = r.forecast > shownCap ? 'bad' : r.forecast > shownCap * 0.8 ? 'warn' : 'good';
+  const capNum = Number(cap);
+  const valid = cap.trim() !== '' && Number.isFinite(capNum) && capNum >= 0 && reason.trim().length >= 5;
+  const save = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.controls(r.agent, { monthly_budget_usd: capNum }, reason.trim());
+      setSaved(capNum);
+      setEditing(false);
+      setReason('');
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="budget-row" data-testid={`budget-${r.agent}`}>
+      <div className="budget-head">
+        <b>{r.label} agent</b>
+        <Chip tone={tone}>{tone === 'bad' ? 'Forecast over cap' : tone === 'warn' ? 'Close to cap' : 'Within cap'}</Chip>
+      </div>
+      <div className="budget-track" aria-hidden="true">
+        <span className="fc" style={{ width: at(r.forecast) }} />
+        <span className="sp" style={{ width: at(r.spent) }} />
+        <span className="cap-mark" style={{ left: at(shownCap) }} />
+      </div>
+      <div className="budget-nums">
+        <span>
+          <i className="k sp" />
+          Spent <b>{usd(r.spent)}</b> <small>₹{(r.spent * fx).toFixed(2)}</small>
+        </span>
+        <span>
+          <i className="k fc" />
+          Month-end forecast <b>{usd(r.forecast)}</b>
+        </span>
+        <span>
+          <i className="k cap" />
+          Cap <b data-testid={`cap-${r.agent}`}>{usd(shownCap)}</b>
+        </span>
+        {canEdit && !editing && (
+          <Button size="sm" onClick={() => setEditing(true)} testId={`set-cap-${r.agent}`}>
+            Set cap
+          </Button>
+        )}
+      </div>
+      {editing && (
+        <div className="confirm">
+          <div className="field" style={{ flex: '0 0 150px' }}>
+            <label htmlFor={`cap-${r.agent}-in`}>New monthly cap (USD)</label>
+            <input
+              id={`cap-${r.agent}-in`}
+              className="input"
+              type="number"
+              min={0}
+              step="0.5"
+              value={cap}
+              onChange={(e) => setCap(e.target.value)}
+              data-testid={`cap-input-${r.agent}`}
+            />
+          </div>
+          <div className="field" style={{ flex: '1 1 220px' }}>
+            <label htmlFor={`cap-${r.agent}-why`}>Why are you changing it?</label>
+            <input
+              id={`cap-${r.agent}-why`}
+              className="input"
+              value={reason}
+              placeholder="e.g. Pilot extended to a second RM team"
+              onChange={(e) => setReason(e.target.value)}
+              data-testid={`cap-reason-${r.agent}`}
+            />
+          </div>
+          <div className="row">
+            <Button variant="primary" disabled={!valid || busy} testId={`cap-save-${r.agent}`} onClick={save}>
+              {busy ? 'Saving…' : 'Save cap'}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setEditing(false);
+                setErr(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      <ErrorBanner message={err} />
+    </div>
+  );
+};
+
+const Budget: React.FC<{ w: BudgetW }> = ({ w }) => (
+  <div className="budget">
+    {w.rows.map((r) => (
+      <BudgetRowView key={r.agent} r={r} fx={w.fx} canEdit={w.can_edit} />
+    ))}
+    <p className="small dim">
+      Forecast = spend so far ÷ days elapsed × days in the month. Calls are blocked once spend reaches the cap. Prices are list
+      prices until Finance confirms them. Every cap change is written to the audit trail.
+    </p>
+  </div>
+);
+
 export const WidgetCard: React.FC<{ w: Widget; color: string }> = ({ w, color }) => {
   const empty = isEmpty(w);
   const body = (() => {
@@ -214,6 +337,8 @@ export const WidgetCard: React.FC<{ w: Widget; color: string }> = ({ w, color })
         return <List w={w} />;
       case 'table':
         return <TableW w={w} />;
+      case 'budget':
+        return <Budget w={w} />;
     }
   })();
   return (

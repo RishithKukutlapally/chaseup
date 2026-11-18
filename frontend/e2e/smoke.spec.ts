@@ -108,3 +108,22 @@ test('Agent owner tries a prompt on a sample case', async ({ page }) => {
   await expect(page.getByTestId('agent-test-result')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('agent-test-result')).toContainText('Register of Members');
 });
+
+test('Business sees spend, month-end forecast and can set the monthly cap', async ({ page }) => {
+  await signIn(page, 'robert');
+  await page.getByTestId('vcard-business').click();
+  await expect(page.getByTestId('dash-business')).toContainText('Month-end forecast');
+  await expect(page.getByTestId('budget-drafter')).toBeVisible();
+  await page.getByTestId('set-cap-drafter').click();
+  await page.getByTestId('cap-input-drafter').fill('40');
+  await page.getByTestId('cap-reason-drafter').fill('Pilot extended to a second RM team');
+  await page.getByTestId('cap-save-drafter').click();
+  await expect(page.getByTestId('cap-drafter')).toHaveText('$40.00');
+});
+
+test('single-dashboard users go straight in with no dashboard list', async ({ page }) => {
+  await signIn(page, 'grace');
+  await expect(page.getByTestId('dash-security')).toBeVisible();
+  await expect(page.locator('nav.rail')).toHaveCount(0);
+  await expect(page.locator('[data-testid^="rail-"]')).toHaveCount(0);
+});

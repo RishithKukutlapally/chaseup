@@ -211,7 +211,16 @@ export type Widget =
   | (WidgetBase & { type: 'funnel'; rows: [string, number][] })
   | (WidgetBase & { type: 'flow'; steps: [string, string, number][] })
   | (WidgetBase & { type: 'list'; items: [string, string, string][] })
-  | (WidgetBase & { type: 'table'; head: string[]; rows: (string | number)[][] });
+  | (WidgetBase & { type: 'table'; head: string[]; rows: (string | number)[][] })
+  | (WidgetBase & { type: 'budget'; fx: number; can_edit: boolean; rows: BudgetRow[] });
+
+export interface BudgetRow {
+  agent: string;
+  label: string;
+  spent: number;
+  forecast: number;
+  cap: number;
+}
 
 export interface Kpi {
   label: string;

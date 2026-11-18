@@ -104,7 +104,7 @@ export const api = {
   restore: (agent: string, version: number, reason: string) =>
     post<AgentVersion>(`/agents/${agent}/restore`, { version, reason }),
   testRun: (agent: string, changes: Record<string, unknown>) => post<TestRunResult>(`/agents/${agent}/test`, { changes }),
-  controls: (agent: string, changes: Partial<Pick<AgentSettings, 'enabled' | 'simulate_primary_outage'>>, reason: string) =>
+  controls: (agent: string, changes: Partial<Pick<AgentSettings, 'enabled' | 'simulate_primary_outage' | 'monthly_budget_usd'>>, reason: string) =>
     patch<AgentSettings>(`/agents/${agent}/controls`, { ...changes, reason }),
 
   insights: () => request<InsightsOverview>('/insights'),

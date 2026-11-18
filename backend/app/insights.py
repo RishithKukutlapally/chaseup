@@ -33,7 +33,7 @@ from app.models import (
     OutboundMessage,
     User,
 )
-from app.rbac import RM, VERTICALS, NotFound, PermissionDenied, can
+from app.rbac import AGENT_FIELD_RIGHTS, RM, VERTICALS, NotFound, PermissionDenied, can
 from app.services import SLA_DAYS, measure, utc
 
 PILOT_TARGET_DAYS = 9.5  # pilot target from the orchestration brief (17 -> 9.5 chase days)
@@ -278,14 +278,26 @@ async def business(s: AsyncSession, user: User) -> dict[str, Any]:
     if m is None:
         raise PermissionDenied("measure:read required")
     b, p = m["baseline"], m["pilot"]
-    spent = {a: await month_spend(s, a) for a in ("drafter", "critic")}
+    from calendar import monthrange
+
     from app.models import AgentControl
 
-    caps = 0.0
+    spent = {a: await month_spend(s, a) for a in ("drafter", "critic")}
+    caps_by: dict[str, float] = {}
     for a in ("drafter", "critic"):
         ctl = await s.get(AgentControl, a)
-        caps += ctl.monthly_budget_usd if ctl else 0
+        caps_by[a] = ctl.monthly_budget_usd if ctl else 0.0
+    caps = sum(caps_by.values())
     total = sum(spent.values())
+    # Month-end forecast: spend so far, run-rated over the days elapsed (at least one day).
+    now, ms = _now(), month_start()
+    days_in_month = monthrange(now.year, now.month)[1]
+    elapsed = max(1.0, (now - ms).total_seconds() / 86400)
+
+    def forecast(x: float) -> float:
+        return x / elapsed * days_in_month
+
+    fc_total = forecast(total)
     runs = await _all(s, AgentRun)
     tasks = [t for t in await _all(s, AgentTask) if t.kind == "chase"]
     cost_by_task: Counter[int] = Counter()
@@ -306,20 +318,28 @@ async def business(s: AsyncSession, user: User) -> dict[str, Any]:
             kpi("Chase days, median", f"{b['median_days']} → {p['median_days']}", f"target {PILOT_TARGET_DAYS}",
                 "good" if p["median_days"] <= PILOT_TARGET_DAYS else "warn",
                 "Ahead" if p["median_days"] <= PILOT_TARGET_DAYS else "Behind"),
-            kpi("Files back more than once", f"{b['pct_more_than_one_round']:.0f}% → {p['pct_more_than_one_round']:.0f}%",
-                "share of requests", "good" if p["pct_more_than_one_round"] < b["pct_more_than_one_round"] else "warn", "Down"),
             kpi("AI spend this month", f"${total:.4f}", f"of ${caps:.2f} cap · ₹{total * config.USD_TO_INR:.2f}",
                 "good" if total < caps * .8 else "warn", f"{_pct(total, caps)} of cap"),
+            kpi("Month-end forecast", f"${fc_total:.4f}", f"at today's run rate · ₹{fc_total * config.USD_TO_INR:.2f}",
+                "good" if fc_total <= caps * .8 else ("warn" if fc_total <= caps else "bad"),
+                "Within cap" if fc_total <= caps else "Over cap"),
             kpi("Cost per approved reminder", f"${per_approved:.4f}" if per_approved else "–",
                 "fully loaded, incl. rewrites and discards"),
         ],
         "widgets": [
+            {"type": "budget", "wide": True, "title": "Monthly AI budget", "source": "live",
+             "note": f"{now:%B %Y} · day {int(elapsed)} of {days_in_month} · calls are blocked when spend reaches the cap",
+             "fx": config.USD_TO_INR, "can_edit": can(user, "agent:control") and user.role in AGENT_FIELD_RIGHTS["monthly_budget_usd"],
+             "rows": [{"agent": a, "label": a.capitalize(), "spent": round(spent[a], 6),
+                       "forecast": round(forecast(spent[a]), 6), "cap": caps_by[a]} for a in ("drafter", "critic")]},
             {"type": "pairs", "wide": True, "title": "Days from requested to received, by document type",
              "note": "median · seeded synthetic history", "source": "live", "legend": ["Before", "Pilot"], "unit": " d",
              "max": max([v["baseline"] or 0 for v in m["by_doc_type"].values()] + [1]),
              "rows": [[k, v["baseline"], v["pilot"]] for k, v in m["by_doc_type"].items()]},
             {"type": "list", "title": "Projections", "note": "arithmetic, not yet realised", "source": "live", "items": [
                 ["Median onboarding", f"62 → about {62 - saved:.0f} days if the chase saving holds", "warn:Projected"],
+                ["Files back more than once", f"{b['pct_more_than_one_round']:.0f}% → {p['pct_more_than_one_round']:.0f}% of requests",
+                 "good:Down" if p["pct_more_than_one_round"] < b["pct_more_than_one_round"] else "warn:Flat"],
                 ["Case-days saved per month", f"About {saved * 400:,.0f} at 400 cases", "warn:Projected"],
                 ["Spend at full volume", f"About ${avg_task * 400 * 2:.2f} a month (400 cases × 2 runs)", "warn:Projected"],
             ]},

@@ -217,37 +217,7 @@ export const Dashboards: React.FC<{ me: Me; verticalId: string | null }> = ({ me
 
   return (
     <div className="page">
-      <div className="dash-shell">
-        <nav className="rail" aria-label="Dashboards">
-          {multi && (
-            <>
-              <span className="cap">Start here</span>
-              <a href="#dashboards" className={verticalId === null ? 'on' : ''} data-testid="rail-overview">
-                <i className="ov" aria-hidden="true" />
-                <span>
-                  <b>Overview</b>
-                  <small>All seven at a glance</small>
-                </span>
-              </a>
-            </>
-          )}
-          <span className="cap">Seven views</span>
-          {(overview.data?.verticals ?? []).map((v) => (
-            <a
-              key={v.id}
-              href={v.allowed ? `#dash-${v.id}` : undefined}
-              className={`${verticalId === v.id ? 'on' : ''} ${v.allowed ? '' : 'locked'}`}
-              style={{ ['--c' as string]: v.color } as React.CSSProperties}
-              data-testid={`rail-${v.id}`}
-            >
-              <i aria-hidden="true" />
-              <span>
-                <b>{v.name}</b>
-                <small>{v.allowed ? v.lead : 'No access'}</small>
-              </span>
-            </a>
-          ))}
-        </nav>
+      <div className="dash-full">
         {verticalId ? (
           <VerticalLoader key={verticalId} me={me} id={verticalId} multi={multi} />
         ) : overview.error ? (

@@ -1,20 +1,24 @@
 import { expect, test, type Page } from '@playwright/test';
 
 // Synthetic personas; passwords come from the e2e-only template set in start-backend.mjs.
-const PERSONAS = [
-  { user: 'sarah', name: 'Sarah Jenkins', landing: 'queue-table', has: ['chase-queue'], lacks: ['audit-log', 'ai-cost', 'agent-workbench'] },
-  { user: 'priya', name: 'Priya Raman', landing: 'queue-table', has: ['chase-queue', 'measure'], lacks: ['audit-log', 'agent-workbench'] },
-  { user: 'tomas', name: 'Tomas Lindqvist', landing: 'queue-table', has: ['chase-queue'], lacks: ['ai-cost', 'audit-log'] },
-  { user: 'grace', name: 'Grace Whitfield', landing: 'audit-table', has: ['audit-log', 'traces', 'agent-workbench'], lacks: [] },
-  { user: 'robert', name: 'Robert Hale', landing: 'stage-analytics-title', has: ['stage-analytics', 'ai-cost'], lacks: ['chase-queue', 'audit-log'] },
-  { user: 'aisha', name: 'Aisha Karim', landing: 'agent-config', has: ['agent-workbench', 'ai-cost'], lacks: ['chase-queue', 'audit-log'] },
-  { user: 'elena', name: 'Elena Brooks', landing: 'ai-cost', has: ['ai-cost'], lacks: ['chase-queue', 'agent-workbench', 'audit-log'] },
+const LANDINGS: { user: string; name: string; hash: string; testId: string }[] = [
+  { user: 'sarah', name: 'Sarah Jenkins', hash: '#my-cases', testId: 'my-cases' },
+  { user: 'daniel', name: 'Daniel Okafor', hash: '#my-cases', testId: 'my-cases' },
+  { user: 'priya', name: 'Priya Raman', hash: '#queue', testId: 'queue-table' },
+  { user: 'aisha', name: 'Aisha Karim', hash: '#agent-settings', testId: 'agent-config' },
+  { user: 'robert', name: 'Robert Hale', hash: '#dashboards', testId: 'dash-overview' },
+  { user: 'grace', name: 'Grace Whitfield', hash: '#dash-security', testId: 'dash-security' },
+  { user: 'omar', name: '', hash: '#dash-architecture', testId: 'dash-architecture' },
+  { user: 'mei', name: '', hash: '#dash-product', testId: 'dash-product' },
+  { user: 'lucas', name: '', hash: '#dash-data', testId: 'dash-data' },
 ];
 
-async function signIn(page: Page, user: string, first: string) {
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+async function signIn(page: Page, user: string) {
   await page.goto('/');
   await page.getByTestId('login-username').fill(user);
-  await page.getByTestId('login-password').fill(`${first}@e2e-only`);
+  await page.getByTestId('login-password').fill(`${cap(user)}@e2e-only`);
   await page.getByTestId('login-submit').click();
   await expect(page.getByTestId('header-user')).toBeVisible();
 }
@@ -27,53 +31,79 @@ test('wrong password is rejected', async ({ page }) => {
   await expect(page.getByTestId('login-error')).toBeVisible();
 });
 
-for (const p of PERSONAS) {
-  test(`${p.user} signs in and lands on their own screens`, async ({ page }) => {
-    await signIn(page, p.user, p.name.split(' ')[0]);
-    await expect(page.getByTestId('header-user')).toHaveText(p.name);
-    if (p.landing === 'stage-analytics-title') {
-      await expect(page.getByRole('heading', { name: 'Stage analytics' })).toBeVisible();
-    } else {
-      await expect(page.getByTestId(p.landing)).toBeVisible();
-    }
-    for (const v of p.has) await expect(page.getByTestId(`nav-${v}`)).toBeVisible();
-    for (const v of p.lacks) await expect(page.getByTestId(`nav-${v}`)).toHaveCount(0);
-    await page.getByTestId('open-access').click();
-    await expect(page.getByTestId('access-matrix')).toBeVisible();
+for (const p of LANDINGS) {
+  test(`${p.user} lands on ${p.hash}`, async ({ page }) => {
+    await signIn(page, p.user);
+    await expect(page).toHaveURL(new RegExp(`${p.hash.replace('#', '#')}$`));
+    await expect(page.getByTestId(p.testId)).toBeVisible();
+    if (p.name) await expect(page.getByTestId('header-user')).toHaveText(p.name);
   });
 }
 
-test('ops runs the chaser, sees the MCP-sourced trace, and cannot approve', async ({ page }) => {
-  await signIn(page, 'priya', 'Priya');
-  await page.getByTestId('run-chaser-1').click();
+test('RMs only see their own cases, as simple cards', async ({ page }) => {
+  await signIn(page, 'sarah');
+  const cards = page.locator('[data-testid^="case-card-"]');
+  await expect(cards).toHaveCount(5);
+  await expect(page.getByTestId('nav-agent-settings')).toHaveCount(0);
+  await expect(page.getByTestId('nav-dashboards')).toHaveCount(0);
+});
+
+test('Ops prepares a reminder on case 1 and cannot send it', async ({ page }) => {
+  await signIn(page, 'priya');
+  await page.getByTestId('queue-row-1').click();
+  await page.getByTestId('run-chaser').click();
+  await expect(page.getByTestId('preparing')).toBeVisible();
   await expect(page.getByTestId('pending-draft')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('approve-blocked')).toContainText('Sarah Jenkins');
   await expect(page.getByTestId('approve-send')).toHaveCount(0);
-  await page.getByTestId('view-trace').first().click();
-  await expect(page.getByTestId('trace-steps')).toBeVisible();
-  await expect(page.getByTestId('trace-data-source').first()).toContainText(/mcp/i);
-  await expect(page.getByTestId('trace-steps')).toContainText(/Redacted/);
-  await expect(page.getByTestId('trace-steps')).toContainText(/PENDING APPROVAL/);
+  await page.getByTestId('how-made').locator('summary').click();
+  await expect(page.getByTestId('trace-steps')).toContainText('MCP');
 });
 
-test('named RM approves and sends the pending draft', async ({ page }) => {
-  await signIn(page, 'sarah', 'Sarah');
-  await page.getByTestId('run-chaser-2').click();
+test('the named RM reviews and sends a reminder with an in-page confirm', async ({ page }) => {
+  await signIn(page, 'sarah');
+  await page.getByTestId('prepare-2').click();
   await expect(page.getByTestId('pending-draft')).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByTestId('draft-body')).not.toHaveValue('');
-  page.once('dialog', (d) => d.accept()); // "Send this e-mail ... ?" confirmation
+  await expect(page.getByTestId('checks-ok')).toBeVisible();
   await page.getByTestId('approve-send').click();
-  await expect(page.getByTestId('dispatch-result')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('confirm-send')).toContainText('Sarah Jenkins');
+  await page.getByTestId('send-now').click();
+  await expect(page.getByTestId('sent-panel')).toContainText('audit trail');
 });
 
-test('MLRO verifies the audit hash chain', async ({ page }) => {
-  await signIn(page, 'grace', 'Grace');
+test('an edit that breaks the rules blocks sending', async ({ page }) => {
+  await signIn(page, 'sarah');
+  await page.goto('/#case-1');
+  await expect(page.getByTestId('pending-draft')).toBeVisible({ timeout: 30_000 });
+  const body = page.getByTestId('draft-body');
+  await body.fill((await body.inputValue()) + '\nWe guarantee approval.');
+  await expect(page.getByTestId('checks-problems')).toBeVisible();
+  await expect(page.getByTestId('approve-send')).toBeDisabled();
+});
+
+test('MLRO verifies the audit chain on the live Security dashboard', async ({ page }) => {
+  await signIn(page, 'grace');
+  await expect(page.getByTestId('live-indicator')).toContainText('Live');
   await page.getByTestId('verify-chain').click();
-  await expect(page.getByTestId('verify-result')).toContainText(/valid|intact/i);
+  await expect(page.getByTestId('verify-result')).toContainText('Chain intact');
 });
 
-test('agent owner runs a prompt test on the synthetic case', async ({ page }) => {
-  await signIn(page, 'aisha', 'Aisha');
+test('Business sees the overview with all seven dashboards, live', async ({ page }) => {
+  await signIn(page, 'robert');
+  await expect(page.locator('[data-testid^="vcard-"]')).toHaveCount(7);
+  await expect(page.getByTestId('live-indicator')).toBeVisible();
+  await page.getByTestId('vcard-operations').click();
+  await expect(page.getByTestId('dash-operations')).toBeVisible();
+  await expect(page.getByTestId('kpi')).toHaveCount(4);
+});
+
+test('Data dashboard shows the not-yet-connected widget', async ({ page }) => {
+  await signIn(page, 'lucas');
+  await expect(page.getByTestId('dash-data')).toContainText('Not connected yet');
+});
+
+test('Agent owner tries a prompt on a sample case', async ({ page }) => {
+  await signIn(page, 'aisha');
   await page.getByTestId('agent-test').click();
   await expect(page.getByTestId('agent-test-result')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('agent-test-result')).toContainText('Register of Members');

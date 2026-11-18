@@ -1,226 +1,123 @@
 import React from 'react';
 
-type Tone = 'neutral' | 'ok' | 'warn' | 'fail' | 'info' | 'accent';
+import { parseStatus } from '../lib/widgets';
 
-const TONE_CLASSES: Record<Tone, string> = {
-  neutral: 'bg-surface-container-high text-on-surface-variant',
-  ok: 'bg-[#dcfce7] text-status-success',
-  warn: 'bg-[#fef3c7] text-status-warning',
-  fail: 'bg-error-container text-on-error-container',
-  info: 'bg-secondary-container text-on-secondary-container',
-  accent: 'bg-primary-container text-white',
+type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'big';
+  testId?: string;
 };
 
-export function statusTone(status: string | null | undefined): Tone {
-  switch (status) {
-    case 'ok':
-    case 'success':
-    case 'Received':
-    case 'approved_sent':
-    case 'approved':
-    case 'completed':
-    case 'Completed':
-      return 'ok';
-    case 'warn':
-    case 'simulated':
-    case 'fallback_success':
-    case 'pending_approval':
-    case 'Draft_Ready':
-    case 'Waived':
-    case 'pending':
-      return 'warn';
-    case 'fail':
-    case 'error':
-    case 'timeout':
-    case 'blocked_budget':
-    case 'blocked_rate_limit':
-    case 'disabled':
-    case 'circuit_open':
-    case 'Missing':
-    case 'discarded':
-    case 'failed':
-      return 'fail';
-    default:
-      return 'neutral';
-  }
-}
+export const Button: React.FC<BtnProps> = ({ variant = 'secondary', size = 'md', testId, className = '', ...rest }) => (
+  <button
+    type="button"
+    data-testid={testId}
+    className={`btn ${variant === 'secondary' ? '' : variant} ${size === 'md' ? '' : size} ${className}`.trim()}
+    {...rest}
+  />
+);
 
-export const Badge: React.FC<{ tone?: Tone; children: React.ReactNode; title?: string; testId?: string }> = ({
+export const Chip: React.FC<{ tone?: 'good' | 'warn' | 'bad' | 'info' | 'neutral'; children: React.ReactNode; testId?: string }> = ({
   tone = 'neutral',
   children,
-  title,
   testId,
 }) => (
-  <span
-    title={title}
-    data-testid={testId}
-    className={`inline-flex items-center gap-1 px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase whitespace-nowrap ${TONE_CLASSES[tone]}`}
-  >
+  <span className={`chip ${tone === 'neutral' ? '' : tone}`} data-testid={testId}>
     {children}
   </span>
 );
 
+/** Renders "good:Text" style specs as a chip; anything else renders nothing. */
+export const StatusChip: React.FC<{ spec?: string | null }> = ({ spec }) => {
+  const s = parseStatus(spec);
+  return s ? <Chip tone={s.status}>{s.text}</Chip> : null;
+};
+
 export const Card: React.FC<{
   title?: React.ReactNode;
-  actions?: React.ReactNode;
+  aside?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   testId?: string;
-}> = ({ title, actions, children, className = '', testId }) => (
-  <section
-    data-testid={testId}
-    className={`bg-surface-container-lowest rounded border border-border-hairline shadow-sm p-space-lg flex flex-col gap-space-md ${className}`}
-  >
-    {(title || actions) && (
-      <header className="flex items-center justify-between gap-space-md flex-wrap">
-        {title && <h2 className="font-headline-sm text-headline-sm text-on-surface">{title}</h2>}
-        {actions && <div className="flex items-center gap-space-sm flex-wrap">{actions}</div>}
-      </header>
+  style?: React.CSSProperties;
+}> = ({ title, aside, children, className = '', testId, style }) => (
+  <section className={`card ${className}`} data-testid={testId} style={style}>
+    {(title || aside) && (
+      <div className="ch">
+        {typeof title === 'string' ? <h3>{title}</h3> : title}
+        {aside}
+      </div>
     )}
-    {children}
+    <div className="cb">{children}</div>
   </section>
 );
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
-const BTN: Record<ButtonVariant, string> = {
-  primary: 'bg-primary-container text-white hover:bg-on-primary-fixed-variant',
-  secondary: 'bg-surface-container-lowest text-on-surface border border-border-structural hover:bg-surface-container-low',
-  danger: 'bg-error text-white hover:bg-on-error-container',
-  ghost: 'text-on-surface-variant hover:bg-surface-container-high',
-};
-
-export const Button: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; testId?: string }
-> = ({ variant = 'secondary', className = '', testId, children, ...rest }) => (
-  <button
-    type="button"
-    data-testid={testId}
-    {...rest}
-    className={`px-space-md py-space-xs rounded font-label-md text-label-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${BTN[variant]} ${className}`}
-  >
-    {children}
-  </button>
-);
-
-export const Stat: React.FC<{ label: string; value: React.ReactNode; sub?: React.ReactNode; tone?: Tone }> = ({
+export const Field: React.FC<{ label: string; htmlFor: string; children: React.ReactNode; hint?: string }> = ({
   label,
-  value,
-  sub,
-  tone,
-}) => (
-  <div className="bg-surface-container-lowest rounded border border-border-hairline p-space-md flex flex-col gap-space-2xs">
-    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">{label}</span>
-    <span
-      className={`font-headline-lg text-headline-lg ${tone === 'fail' ? 'text-error' : tone === 'ok' ? 'text-status-success' : 'text-on-surface'}`}
-    >
-      {value}
-    </span>
-    {sub && <span className="font-body-sm text-body-sm text-on-surface-variant">{sub}</span>}
-  </div>
-);
-
-export const PageHeader: React.FC<{ title: string; subtitle?: React.ReactNode; actions?: React.ReactNode }> = ({
-  title,
-  subtitle,
-  actions,
-}) => (
-  <div className="flex items-start justify-between gap-space-md flex-wrap mb-space-lg">
-    <div>
-      <h1 className="font-headline-lg text-headline-lg text-on-surface">{title}</h1>
-      {subtitle && <p className="font-body-md text-body-md text-on-surface-variant mt-space-2xs max-w-3xl">{subtitle}</p>}
-    </div>
-    {actions && <div className="flex items-center gap-space-sm flex-wrap">{actions}</div>}
-  </div>
-);
-
-export const Table: React.FC<{ head: React.ReactNode[]; children: React.ReactNode; testId?: string }> = ({
-  head,
+  htmlFor,
   children,
-  testId,
+  hint,
 }) => (
-  <div className="overflow-x-auto">
-    <table data-testid={testId} className="w-full text-left border-collapse">
-      <thead>
-        <tr className="border-b border-border-structural">
-          {head.map((h, i) => (
-            <th key={i} className="py-space-xs pr-space-md font-label-sm text-label-sm uppercase text-on-surface-variant">
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody className="font-body-sm text-body-sm text-on-surface">{children}</tbody>
-    </table>
-  </div>
-);
-
-export const Td: React.FC<{ children?: React.ReactNode; mono?: boolean; className?: string; title?: string }> = ({
-  children,
-  mono,
-  className = '',
-  title,
-}) => (
-  <td title={title} className={`py-space-xs pr-space-md align-top border-b border-border-hairline ${mono ? 'font-data-mono-sm text-data-mono-sm' : ''} ${className}`}>
+  <div className="field">
+    <label htmlFor={htmlFor}>{label}</label>
     {children}
-  </td>
-);
-
-export const Modal: React.FC<{ title: string; onClose: () => void; children: React.ReactNode; wide?: boolean; testId?: string }> = ({
-  title,
-  onClose,
-  children,
-  wide,
-  testId,
-}) => (
-  <div className="fixed inset-0 z-[100] bg-black/40 flex items-start justify-center overflow-y-auto p-space-xl" onClick={onClose}>
-    <div
-      role="dialog"
-      aria-label={title}
-      data-testid={testId}
-      onClick={(e) => e.stopPropagation()}
-      className={`bg-surface-container-lowest rounded shadow-lg border border-border-hairline w-full ${wide ? 'max-w-6xl' : 'max-w-xl'} p-space-xl flex flex-col gap-space-md`}
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="font-headline-md text-headline-md text-on-surface">{title}</h2>
-        <Button variant="ghost" onClick={onClose} aria-label="Close">
-          ✕
-        </Button>
-      </div>
-      {children}
-    </div>
+    {hint && <span className="small dim">{hint}</span>}
   </div>
 );
 
-export const SimulatedBanner: React.FC<{ mode: string | undefined }> = ({ mode }) =>
-  mode === 'simulated' ? (
-    <div className="rounded border border-status-warning/40 bg-[#fef3c7] text-on-surface p-space-sm font-body-sm text-body-sm">
-      <strong>SIMULATED MODE</strong> — no GOOGLE_API_KEY is configured. AI output is produced locally, and tokens and
-      costs are estimates at list price, labelled "simulated".
+export const ErrorBanner: React.FC<{ message: string | null; testId?: string }> = ({ message, testId }) =>
+  message ? (
+    <div className="banner bad" role="alert" data-testid={testId ?? 'error'}>
+      {message}
     </div>
   ) : null;
 
-export const Field: React.FC<{ label: string; children: React.ReactNode; hint?: string }> = ({ label, children, hint }) => (
-  <label className="flex flex-col gap-space-2xs">
-    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">{label}</span>
-    {children}
-    {hint && <span className="font-body-sm text-body-sm text-on-surface-variant">{hint}</span>}
-  </label>
+export const Loading: React.FC<{ label?: string }> = ({ label = 'Loading…' }) => (
+  <div className="empty" aria-busy="true">
+    {label}
+  </div>
 );
 
-export const inputClass =
-  'bg-surface-container-lowest border border-border-structural rounded px-space-sm py-space-xs font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-accent-blue disabled:bg-surface-container-low disabled:text-on-surface-variant';
-
-export const Empty: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="font-body-md text-body-md text-on-surface-variant p-space-md text-center">{children}</p>
-);
-
-/** Prompt the user for a reason; returns null if cancelled or too short. */
-export function askReason(question: string, min = 5): string | null {
-  const r = window.prompt(question);
-  if (r === null) return null;
-  if (r.trim().length < min) {
-    window.alert(`Please give a reason of at least ${min} characters.`);
-    return null;
-  }
-  return r.trim();
-}
+/** An inline "reason" row used instead of window.prompt. */
+export const ReasonRow: React.FC<{
+  id: string;
+  label: string;
+  placeholder?: string;
+  confirmLabel: string;
+  minLength?: number;
+  busy?: boolean;
+  onConfirm: (reason: string) => void;
+  onCancel: () => void;
+  testId?: string;
+}> = ({ id, label, placeholder, confirmLabel, minLength = 5, busy, onConfirm, onCancel, testId }) => {
+  const [reason, setReason] = React.useState('');
+  const ok = reason.trim().length >= minLength;
+  return (
+    <div className="confirm" data-testid={testId}>
+      <div className="field" style={{ flex: '1 1 240px' }}>
+        <label htmlFor={id}>{label}</label>
+        <input
+          id={id}
+          className="input"
+          value={reason}
+          placeholder={placeholder}
+          autoFocus
+          onChange={(e) => setReason(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && ok) onConfirm(reason.trim());
+            if (e.key === 'Escape') onCancel();
+          }}
+          data-testid={testId ? `${testId}-input` : undefined}
+        />
+      </div>
+      <div className="row">
+        <Button variant="primary" disabled={!ok || busy} onClick={() => onConfirm(reason.trim())} testId={testId ? `${testId}-confirm` : undefined}>
+          {confirmLabel}
+        </Button>
+        <Button variant="ghost" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+};

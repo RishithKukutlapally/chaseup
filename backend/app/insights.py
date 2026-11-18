@@ -8,6 +8,7 @@ presented as live unless it is.
 from __future__ import annotations
 
 import json
+import math
 import re
 import statistics
 from collections import Counter
@@ -131,7 +132,7 @@ async def engineering(s: AsyncSession) -> dict[str, Any]:
     fb = [r for r in attempts if r.status in ("fallback_success",) or (r.status == "simulated" and r.is_fallback)]
     lat = sorted(r.latency_ms for r in ok + fb if r.latency_ms)
     p50 = statistics.median(lat) / 1000 if lat else 0
-    p95 = lat[int(0.95 * (len(lat) - 1))] / 1000 if lat else 0
+    p95 = lat[max(0, math.ceil(0.95 * len(lat)) - 1)] / 1000 if lat else 0
     tasks = [t for t in await _all(s, AgentTask) if t.kind == "chase"]
     firsts = []
     for t in tasks:

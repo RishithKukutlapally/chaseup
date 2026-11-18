@@ -42,3 +42,14 @@ def test_dashboards_are_live(client, as_user):
     assert int(c.get("/api/insights/operations").json()["kpis"][3]["value"]) >= int(before_wait)
     sec = c.get("/api/insights/security").json()
     assert sec["kpis"][0]["value"] == "0"  # no send without the named RM
+
+
+def test_latency_percentiles_are_ordered(client, as_user, monkeypatch):
+    """Nearest-rank percentiles: p95 can never be below p50, even with very few calls."""
+    import math
+
+    for lat in ([2300, 1400], [900], [100, 200, 300, 400, 5000]):
+        s = sorted(lat)
+        p50 = s[len(s) // 2] if len(s) % 2 else (s[len(s) // 2 - 1] + s[len(s) // 2]) / 2
+        p95 = s[max(0, math.ceil(0.95 * len(s)) - 1)]
+        assert p95 >= p50

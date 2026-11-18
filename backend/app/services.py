@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import statistics
 from collections.abc import Sequence
 from datetime import datetime, timezone
@@ -486,7 +487,7 @@ async def measure(session: AsyncSession, user: User) -> dict[str, Any]:
         if not vals:
             return {"n": 0}
         return {"n": len(vals), "median_days": round(statistics.median(vals), 1), "mean_days": round(statistics.mean(vals), 1),
-                "p90_days": round(sorted(vals)[int(0.9 * (len(vals) - 1))], 1),
+                "p90_days": round(sorted(vals)[max(0, math.ceil(0.9 * len(vals)) - 1)], 1),
                 "avg_rounds": round(statistics.mean(rounds), 2) if rounds else None,
                 "pct_more_than_one_round": round(100 * sum(1 for r in rounds if r > 1) / len(rounds), 1) if rounds else None}
 
